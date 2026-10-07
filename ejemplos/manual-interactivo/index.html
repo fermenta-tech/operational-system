@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 
 <head>
   <meta charset="UTF-8" />
@@ -7,7 +7,7 @@
   <title>REDUCTION CIRCUIT — Slide manual</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nata+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --navy: #1b2a4a;
@@ -54,6 +54,8 @@
     }
 
     html[data-theme="light"] {
+      --navy: #ffffff;
+      --navy-2: #f3f4f6;
       --focus: #2b6cb0;
       --ok: #1f7a4d;
       --ok-ink: #1f7a4d;
@@ -70,9 +72,9 @@
       --card: #fff;
       --card-border: #e6e0d4;
       --hover: #fff8ee;
-      --bg-app: #d7deea;
-      --bg-main: #e4eaf3;
-      --slide: #f6f3ec;
+      --bg-app: #f1f5f9;
+      --bg-main: #f8fafc;
+      --slide: #ffffff;
       --lead: #3a4456;
       --kicker-bg: #ece6da;
       --input-bg: #fff;
@@ -81,7 +83,7 @@
       --ghost-line: #d7dde8;
       --opt-bg: #fff;
       --opt-picked: #eef3fb;
-      --drawer-bg: #f7f8fb;
+      --drawer-bg: #ffffff;
       --admin-bg: #fff4d6;
       --admin-ink: #6a4b00;
       --admin-line: #e6d08a;
@@ -92,6 +94,41 @@
       --dot: #c9c1b2;
       --shadow: 0 18px 50px rgba(16, 25, 43, .18);
       color-scheme: light;
+    }
+
+    html[data-theme="light"] aside.nav {
+      color: var(--ink);
+      border-right: 1px solid var(--line);
+    }
+
+    html[data-theme="light"] aside.nav .sub,
+    html[data-theme="light"] .op-box label,
+    html[data-theme="light"] .role-box label,
+    html[data-theme="light"] .nav-label,
+    html[data-theme="light"] .progress-box {
+      color: var(--muted);
+    }
+
+    html[data-theme="light"] nav button {
+      color: var(--ink);
+    }
+
+    html[data-theme="light"] nav button:hover,
+    html[data-theme="light"] .role-row button {
+      background: #e9eef5;
+      color: #334155;
+    }
+
+    html[data-theme="light"] .role-row button.on {
+      background: #dbe5f1;
+      color: #0f172a;
+      box-shadow: none;
+    }
+
+    html[data-theme="light"] .layout-cover .btn.ghost,
+    html[data-theme="light"] .layout-recap .btn.ghost {
+      color: var(--ghost-ink);
+      border-color: var(--ghost-line);
     }
 
     * {
@@ -105,10 +142,18 @@
     }
 
     body {
-      font-family: 'Inter', "Segoe UI", system-ui, sans-serif;
+      font-family: "Nata Sans", "Segoe UI", system-ui, sans-serif;
       color: var(--ink);
       background: var(--bg-app);
       line-height: 1.45;
+    }
+
+    button,
+    input,
+    select,
+    textarea,
+    table {
+      font-family: inherit;
     }
 
     .app {
@@ -118,7 +163,7 @@
     }
 
     .app.editing {
-      grid-template-columns: 248px 1fr 360px;
+      grid-template-columns: 270px minmax(0, 1fr) 440px;
     }
 
     aside.nav {
@@ -797,6 +842,182 @@
       margin: 0;
     }
 
+    .manual-document {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .manual-document img {
+      display: block;
+      width: auto !important;
+      height: auto !important;
+      max-width: min(100%, 1180px);
+      max-height: 78vh;
+      margin: 28px auto 12px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .manual-document .manual-brand img {
+      width: 160px !important;
+      margin: 0 0 24px;
+      background: transparent;
+    }
+
+    .cover-hero {
+      padding: 34px;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 92% 8%, rgba(196, 92, 38, .14), transparent 28%),
+        linear-gradient(145deg, #ffffff 0%, #f8fafc 62%, #eef3f8 100%);
+      box-shadow: 0 22px 60px rgba(15, 23, 42, .10);
+    }
+
+    .cover-brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .manual-document .cover-brand img {
+      width: 132px !important;
+      height: auto !important;
+      margin: 0;
+      background: transparent;
+    }
+
+    .cover-eyebrow {
+      margin-top: 58px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .14em;
+    }
+
+    .cover-hero h3 {
+      max-width: 760px;
+      margin: 12px 0 18px;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 1;
+      letter-spacing: -.045em;
+      color: #0f172a;
+    }
+
+    .cover-copy {
+      max-width: 760px;
+      margin: 0;
+      color: #475569;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    .cover-equipment {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .cover-equipment div {
+      padding: 18px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .8);
+    }
+
+    .cover-equipment strong,
+    .cover-equipment span {
+      display: block;
+    }
+
+    .cover-equipment strong {
+      color: #0f172a;
+      font-size: 17px;
+    }
+
+    .cover-equipment span {
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .cover-start {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: #1b2a4a;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .cover-notice {
+      margin-top: 18px;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .cover-notice summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .cover-notice p {
+      font-size: 12px;
+    }
+
+    @media (max-width: 700px) {
+      .cover-hero {
+        padding: 22px;
+      }
+
+      .cover-brand {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .cover-eyebrow {
+        margin-top: 36px;
+      }
+
+      .cover-equipment {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .manual-document table {
+      display: block;
+      overflow-x: auto;
+      margin: 24px 0;
+      border: 1px solid var(--table-line);
+      border-radius: 10px;
+    }
+
+    .manual-document th,
+    .manual-document td {
+      min-width: 120px;
+      padding: 10px 12px;
+      border-right: 1px solid var(--table-line);
+    }
+
+    .manual-document blockquote {
+      margin: 20px 0;
+      padding: 4px 0 4px 20px;
+      border-left: 4px solid var(--accent);
+      color: var(--lead);
+    }
+
+    .manual-document a {
+      color: var(--focus);
+    }
+
     .video-art {
       min-height: 140px;
       display: flex;
@@ -1093,6 +1314,25 @@
       color: var(--ink);
     }
 
+    .field textarea.html-source {
+      min-height: 360px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .admin-editable {
+      outline: 1px dashed transparent;
+      outline-offset: 5px;
+      transition: outline-color .18s ease, background .18s ease;
+    }
+
+    .admin-editable:hover,
+    .admin-editable:focus {
+      outline-color: var(--accent);
+      background: #fffdf9;
+    }
+
     .editor-block {
       padding: 10px;
       margin: 8px 0;
@@ -1225,18 +1465,612 @@
       padding: 6px 10px;
     }
 
-    @media (max-width: 1100px) {
+    /* White UI refresh */
+    body {
+      background:
+        radial-gradient(900px 520px at 88% -10%, rgba(196, 92, 38, .09), transparent 58%),
+        #eef2f7;
+    }
 
-      .app,
+    .app {
+      grid-template-columns: 288px minmax(0, 1fr);
+    }
+
+    aside.nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 18px;
+      background: rgba(255, 255, 255, .94);
+      border-right: 1px solid #e2e8f0;
+      box-shadow: 12px 0 36px rgba(15, 23, 42, .05);
+      backdrop-filter: blur(18px);
+      z-index: 20;
+    }
+
+    aside.nav h1 {
+      color: #0f172a;
+      font-size: 17px;
+      letter-spacing: -.02em;
+    }
+
+    aside.nav .sub {
+      margin-top: 4px;
+    }
+
+    .op-box,
+    .role-box {
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+    }
+
+    .op-box input,
+    .role-box input {
+      min-height: 42px;
+      border: 1px solid #dbe3ed;
+      border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .op-box input:focus,
+    .role-box input:focus,
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: #7c9cc5;
+      box-shadow: 0 0 0 4px rgba(43, 108, 176, .12);
+    }
+
+    html[data-theme="light"] .role-row {
+      padding: 3px;
+      border-radius: 10px;
+      background: #e9eef5;
+    }
+
+    html[data-theme="light"] .role-row button {
+      min-height: 36px;
+      background: transparent;
+      color: #64748b;
+      border: 0;
+      border-radius: 8px;
+    }
+
+    html[data-theme="light"] .role-row button:hover {
+      color: #0f172a;
+      transform: translateY(-1px);
+    }
+
+    html[data-theme="light"] .role-row button.on {
+      background: #ffffff;
+      color: #17233a;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, .10);
+    }
+
+    nav {
+      gap: 6px;
+      padding-right: 3px;
+    }
+
+    .nav-label {
+      margin: 15px 10px 2px;
+      color: #8290a5;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    html[data-theme="light"] nav button {
+      min-height: 38px;
+      padding: 9px 11px;
+      color: #475569;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      line-height: 1.25;
+    }
+
+    html[data-theme="light"] nav button:hover {
+      color: #0f172a;
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+      transform: translateX(3px);
+    }
+
+    html[data-theme="light"] nav button.active {
+      color: #9a431e;
+      background: linear-gradient(135deg, #fff5ef, #f7e3d8);
+      border-color: #edc6b2;
+      box-shadow: 0 5px 14px rgba(196, 92, 38, .12);
+    }
+
+    nav button .dot {
+      width: 7px;
+      height: 7px;
+      box-shadow: 0 0 0 3px rgba(93, 111, 140, .09);
+    }
+
+    .progress-box {
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+    }
+
+    .bar {
+      height: 7px;
+      background: #e2e8f0;
+    }
+
+    .bar > span {
+      background: linear-gradient(90deg, #c45c26, #e48a55);
+    }
+
+    main {
+      padding: 28px;
+      background:
+        radial-gradient(800px 440px at 94% 0%, rgba(196, 92, 38, .09), transparent 58%),
+        linear-gradient(180deg, #f8fafc, #eef2f7);
+    }
+
+    .slide-board {
+      min-width: 0;
+      padding: 42px clamp(28px, 5vw, 72px) 28px;
+      border: 1px solid rgba(203, 213, 225, .8);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .97);
+      box-shadow:
+        0 28px 70px rgba(15, 23, 42, .10),
+        0 2px 6px rgba(15, 23, 42, .04);
+    }
+
+    .slide-board.layout-cover,
+    .slide-board.layout-recap,
+    .slide-board.layout-content {
+      background: rgba(255, 255, 255, .97);
+      color: #1c2333;
+    }
+
+    h2,
+    .slide-board.layout-cover h2 {
+      max-width: 14ch;
+      margin-bottom: 22px;
+      color: #0f172a;
+      font-size: clamp(42px, 6vw, 78px);
+      line-height: .98;
+    }
+
+    .lead,
+    .slide-board.layout-cover .lead {
+      max-width: 800px;
+      margin-bottom: 30px;
+      color: #475569;
+      opacity: 1;
+    }
+
+    .hello {
+      color: #b95022;
+    }
+
+    .kicker,
+    .layout-cover .kicker,
+    .layout-recap .kicker {
+      padding: 6px 11px;
+      color: #9a431e;
+      background: #fff1e8;
+      border: 1px solid #f1d2c1;
+    }
+
+    .btn,
+    .audio-bar button,
+    .actions button,
+    .home-card button {
+      min-height: 40px;
+      padding: 10px 16px;
+      border: 1px solid #1b2a4a;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #243b64, #172640);
+      color: #fff;
+      box-shadow: 0 5px 12px rgba(27, 42, 74, .18);
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+
+    .btn:hover,
+    .audio-bar button:hover,
+    .actions button:hover,
+    .home-card button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 9px 18px rgba(27, 42, 74, .22);
+      filter: brightness(1.06);
+    }
+
+    .btn:active,
+    .audio-bar button:active,
+    .actions button:active,
+    .home-card button:active {
+      transform: translateY(0);
+    }
+
+    .btn.ghost,
+    .actions button.ghost,
+    html[data-theme="light"] .layout-cover .btn.ghost,
+    html[data-theme="light"] .layout-recap .btn.ghost {
+      background: #fff;
+      color: #334155;
+      border-color: #cbd5e1;
+      box-shadow: 0 3px 9px rgba(15, 23, 42, .06);
+    }
+
+    .slide-chrome {
+      margin-top: 36px;
+      padding-top: 22px;
+      border-top-color: #e2e8f0;
+    }
+
+    .card,
+    .home-card,
+    .editor-block {
+      border-color: #e2e8f0;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, .07);
+    }
+
+    .manual-document table {
+      border-color: #dbe3ed;
+      background: #fff;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, .06);
+    }
+
+    .manual-document tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    .manual-document tbody tr:hover {
+      background: #fff7f2;
+    }
+
+    .cover-hero {
+      border-color: #dde5ee;
+      box-shadow: 0 18px 48px rgba(15, 23, 42, .09);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .cover-hero:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 26px 58px rgba(15, 23, 42, .12);
+    }
+
+    .nav-chapter {
+      display: grid;
+      gap: 5px;
+    }
+
+    html[data-theme="light"] nav .chapter-nav,
+    html[data-theme="light"] nav .subchapter-nav {
+      display: flex;
+      width: 100%;
+      height: auto;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transform: none;
+    }
+
+    html[data-theme="light"] nav .chapter-nav {
+      margin-top: 5px;
+      padding: 11px 12px;
+      color: #334155;
+      background: #f8fafc;
+      border-color: #dfe6ee;
+      font-size: 12px;
+    }
+
+    html[data-theme="light"] nav .chapter-nav.open {
+      color: #15233d;
+      background: #eaf0f7;
+      border-color: #cbd7e5;
+      box-shadow: 0 5px 13px rgba(15, 23, 42, .07);
+    }
+
+    nav .chapter-nav span,
+    nav .subchapter-nav span {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    nav .chapter-nav b {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .015em;
+    }
+
+    nav .chapter-nav small,
+    nav .subchapter-nav small {
+      color: #7c899a;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    nav .chapter-nav i,
+    nav .subchapter-nav i {
+      color: #9a431e;
+      font-size: 16px;
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    .nav-subchapters {
+      display: grid;
+      gap: 4px;
+      margin: 0 0 5px 10px;
+      padding-left: 10px;
+      border-left: 2px solid #e5ebf2;
+    }
+
+    html[data-theme="light"] nav .subchapter-nav {
+      padding: 8px 10px;
+      color: #526174;
+      background: transparent;
+      border-color: transparent;
+      font-size: 11px;
+    }
+
+    html[data-theme="light"] nav .subchapter-nav.open {
+      color: #9a431e;
+      background: #fff7f2;
+      border-color: #f0d1c1;
+    }
+
+    .nav-pages {
+      display: grid;
+      gap: 3px;
+      margin-left: 8px;
+    }
+
+    html[data-theme="light"] nav .nav-pages button {
+      min-height: 34px;
+      padding: 7px 9px;
+      font-size: 11px;
+    }
+
+    nav button.read .dot,
+    nav button.done .dot {
+      background: #22a06b;
+      box-shadow: 0 0 0 3px rgba(34, 160, 107, .12);
+    }
+
+    .read-status {
+      margin-top: 8px;
+      padding: 5px 9px;
+      color: #64748b;
+      background: #fff;
+      border: 1px solid #dbe3ed;
+      border-radius: 99px;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+      transition: all .18s ease;
+    }
+
+    .read-status:hover {
+      color: #1f5f48;
+      border-color: #86c8ad;
+      background: #f0fbf6;
+      transform: translateY(-1px);
+    }
+
+    .read-status.is-read {
+      color: #1f7a4d;
+      background: #e7f6ee;
+      border-color: #a6d8c1;
+    }
+
+    .coach-dock {
+      grid-template-columns: 150px minmax(0, 1fr);
+      padding: 22px;
+      background:
+        radial-gradient(circle at 0 0, rgba(56, 189, 248, .10), transparent 34%),
+        #f8fafc;
+      border-color: #dce5ef;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, .08);
+    }
+
+    .coach-orb.robot-orb {
+      width: 140px;
+      height: 140px;
+      overflow: hidden;
+      background: #fff;
+      border: 4px solid #fff;
+      border-radius: 28px;
+      box-shadow: 0 12px 26px rgba(15, 23, 42, .16);
+    }
+
+    .robot-coach {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 17%;
+      transform: scale(1.12);
+      transition: transform .25s ease;
+    }
+
+    .robot-orb:hover .robot-coach,
+    .robot-orb.talking .robot-coach {
+      transform: scale(1.18);
+    }
+
+    .robot-orb.talking {
+      box-shadow: 0 0 0 6px rgba(34, 160, 107, .14), 0 14px 30px rgba(15, 23, 42, .18);
+    }
+
+    .summary-language {
+      display: inline-flex;
+      gap: 3px;
+      padding: 3px;
+      background: #e8eef5;
+      border-radius: 10px;
+    }
+
+    .summary-language button {
+      padding: 7px 12px;
+      color: #64748b;
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .summary-language button.on {
+      color: #17233a;
+      background: #fff;
+      box-shadow: 0 3px 9px rgba(15, 23, 42, .10);
+    }
+
+    .coach-script {
+      color: #334155;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+    }
+
+    .quiz {
+      border: 1px solid #dce5ef;
+    }
+
+    .quiz .q {
+      padding: 16px 0;
+      border-bottom: 1px solid #edf1f5;
+    }
+
+    .quiz .q:last-of-type {
+      border-bottom: 0;
+    }
+
+    .opt {
+      min-height: 44px;
+      background: #f8fafc;
+      border-color: #dce5ef;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+
+    .opt:hover {
+      background: #fff7f2;
+      border-color: #dca98f;
+      transform: translateX(3px);
+    }
+
+    .layout-cover .cover-hero {
+      padding: 22px 26px;
+    }
+
+    .layout-cover .cover-eyebrow {
+      margin-top: 24px;
+    }
+
+    .layout-cover .cover-equipment {
+      margin-top: 22px;
+    }
+
+    .layout-cover .cover-start {
+      margin-top: 16px;
+    }
+
+    .layout-cover .cover-notice {
+      margin-top: 12px;
+    }
+
+    .layout-content h2,
+    .layout-recap h2 {
+      max-width: 18ch;
+      font-size: clamp(34px, 4.6vw, 58px);
+      line-height: 1.04;
+    }
+
+    .toc-grid,
+    .section-directory {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 14px;
+      margin: 8px 0 24px;
+    }
+
+    .toc-card,
+    .section-card {
+      position: relative;
+      display: flex;
+      min-height: 132px;
+      padding: 20px;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      overflow: hidden;
+      color: #17233a !important;
+      text-decoration: none;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(196, 92, 38, .13), transparent 42%),
+        #ffffff;
+      border: 1px solid #dfe6ee;
+      border-radius: 18px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, .06);
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .toc-card:hover,
+    .section-card:hover {
+      border-color: #ddb49f;
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, .10);
+    }
+
+    .toc-card > span {
+      color: #b95022;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .toc-card strong,
+    .section-card strong {
+      font-size: 17px;
+      line-height: 1.25;
+    }
+
+    .toc-card i,
+    .section-card span {
+      color: #64748b;
+      font-size: 13px;
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1100px) {
       .app.editing {
         grid-template-columns: 1fr;
       }
 
-      .drawer {
+      .app.editing .drawer {
         position: relative;
         max-height: none;
         border-left: 0;
         border-top: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside.nav {
+        position: relative;
+        height: auto;
+        max-height: none;
+        border-right: 0;
+        border-bottom: 1px solid #e2e8f0;
       }
 
       .media-grid,
@@ -1273,22 +2107,16 @@
           <button type="button" id="roleOp" class="on">Operator</button>
           <button type="button" id="roleAd">Administrator</button>
         </div>
-        <div id="pinWrap" class="hidden" style="margin-top:8px">
-          <label for="pin">Admin PIN</label>
-          <input id="pin" type="password" placeholder="Prototype PIN: 123456789" />
-          <button type="button" class="btn" id="unlock" style="margin-top:8px;width:100%">Unlock editor</button>
-          <div class="pin-msg" id="pinMsg"></div>
-        </div>
       </div>
       <div class="op-box">
         <label for="operator">Operator name</label>
         <input id="operator" placeholder="Type your name" />
       </div>
-      <div class="role-box">
+      <div class="role-box hidden">
         <label>Slide theme</label>
         <div class="theme-row">
-          <button type="button" id="themeDark" class="on">Dark</button>
-          <button type="button" id="themeLight">Light</button>
+          <button type="button" id="themeDark">Dark</button>
+          <button type="button" id="themeLight" class="on">Light</button>
         </div>
       </div>
       <nav id="nav"></nav>
@@ -1307,16 +2135,17 @@
   <script>
     const PASS = 70;
     const STORAGE = "iom-reduction-progress-v1";
-    const CONTENT_KEY = "iom-reduction-v4";
-    const CONTENT_VER = 4;
+    const READ_STORAGE = "iom-reduction-read-v1";
+    const CONTENT_KEY = "iom-reduction-v7";
+    const CONTENT_VER = 7;
     const THEME_KEY = "iom-theme";
-    const PIN = "123456789";
-
     let _ds = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}");
 
     const state = {
       operator: localStorage.getItem("iom-op") || "",
       done: JSON.parse(localStorage.getItem(STORAGE) || "{}"),
+      read: JSON.parse(localStorage.getItem(READ_STORAGE) || "{}"),
+      summaryLanguage: localStorage.getItem("iom-summary-language") || "en",
       page: "t01",
       speaking: false,
       role: "operator",
@@ -1423,6 +2252,7 @@
 
     function saveProgress() {
       localStorage.setItem(STORAGE, JSON.stringify(state.done));
+      localStorage.setItem(READ_STORAGE, JSON.stringify(state.read));
       localStorage.setItem("iom-op", state.operator);
     }
 
@@ -1471,20 +2301,27 @@
 
     function narratorCard(page) {
       const talking = state.speaking ? " talking" : "";
-      const preview = page.audio || "No summary has been written for this section yet.";
-      const who = state.operator ? `${esc(state.operator)}, listen to this recap.` : "Listen to this recap.";
+      const lang = state.summaryLanguage === "es" ? "es" : "en";
+      const preview = page.summary?.[lang] || page.audio || "No summary has been written for this section yet.";
+      const who = lang === "es"
+        ? (state.operator ? `${esc(state.operator)}, escucha este resumen.` : "Escucha este resumen.")
+        : (state.operator ? `${esc(state.operator)}, listen to this recap.` : "Listen to this recap.");
       return `<section class="coach-dock" aria-label="Section summary coach">
-        <button type="button" class="coach-orb${talking}" id="coachOrb" data-speak="${esc(page.id)}" title="Play summary">
-          ${coachSvg(talking)}
+        <button type="button" class="coach-orb robot-orb${talking}" id="coachOrb" data-speak="${esc(page.id)}" data-lang="${lang}" title="${lang === "es" ? "Narrar resumen" : "Play summary"}">
+          <img class="robot-coach" src="../../robot.png" alt="Robot safety coach" />
         </button>
         <div class="coach-meta">
-          <span class="tag">LIVE RECAP</span>
-          <h3>Coach Rivas · Chapter Summary</h3>
-          <p>${who} Male voice. Key points of this chapter.</p>
+          <span class="tag">${lang === "es" ? "RESUMEN DEL CAPÍTULO" : "CHAPTER RECAP"}</span>
+          <h3>Safety Coach · ${lang === "es" ? "Resumen bilingüe" : "Bilingual summary"}</h3>
+          <div class="summary-language" role="group" aria-label="Summary language">
+            <button type="button" class="${lang === "en" ? "on" : ""}" data-summary-lang="en">English</button>
+            <button type="button" class="${lang === "es" ? "on" : ""}" data-summary-lang="es">Español</button>
+          </div>
+          <p>${who}</p>
           <p class="coach-script" id="coachScript">${captionWords(preview)}</p>
           <div class="avatar-btns">
-            <button type="button" class="btn" data-speak="${esc(page.id)}">${state.speaking ? "Playing…" : "Play recap"}</button>
-            <button type="button" class="btn ghost" data-stop-speak>Stop</button>
+            <button type="button" class="btn" data-speak="${esc(page.id)}" data-lang="${lang}">${state.speaking ? (lang === "es" ? "Narrando…" : "Playing…") : (lang === "es" ? "Narrar resumen" : "Play summary")}</button>
+            <button type="button" class="btn ghost" data-stop-speak>${lang === "es" ? "Detener" : "Stop"}</button>
           </div>
         </div>
       </section>`;
@@ -1516,6 +2353,10 @@
 
     function renderBlock(block, pageId, bi) {
       const ed = state.admin ? ` contenteditable="true" data-inline-b="${bi}" data-inline-f="text"` : '';
+      if (block.type === "manual-html") {
+        const htmlEdit = state.admin ? ` contenteditable="true" data-inline-html="${bi}"` : "";
+        return `<section class="manual-document${state.admin ? " admin-editable" : ""}"${htmlEdit}>${block.html || ""}</section>`;
+      }
       if (block.type === "text") return `<p${ed}>${esc(block.text)}</p>`;
       if (block.type === "callout") return `<div class="callout"${ed}>${esc(block.text)}</div>`;
       if (block.type === "warn") return `<div class="warn"${ed}>${esc(block.text)}</div>`;
@@ -1594,19 +2435,20 @@
     function quizBlock(page) {
       const qs = page.quiz || [];
       if (!qs.length) return "";
+      const lang = state.summaryLanguage === "es" ? "es" : "en";
       const items = qs.map((item, i) => `
         <div class="q" data-qid="${esc(page.id)}-${i}">
-          <p><strong>${i + 1}.</strong> ${esc(item.q)}</p>
-          ${(item.options || []).map((opt, j) => `<button class="opt" type="button" data-choice="${j}">${["A", "B", "C"][j] || j}. ${esc(opt)}</button>`).join("")}
+          <p><strong>${i + 1}.</strong> ${esc(lang === "es" ? (item.qEs || item.q) : item.q)}</p>
+          ${(lang === "es" ? (item.optionsEs || item.options) : item.options || []).map((opt, j) => `<button class="opt" type="button" data-choice="${j}">${["A", "B", "C"][j] || j}. ${esc(opt)}</button>`).join("")}
           <div class="feedback" data-fb></div>
         </div>`).join("");
       return `<section class="quiz card">
-        <h3>Self-check · ${qs.length} questions · 70% recommended</h3>
-        <p>Three options. One correct. If you miss, you will see why the correct answer is correct.</p>
+        <h3>${lang === "es" ? "Evaluación" : "Knowledge check"} · ${qs.length} ${lang === "es" ? "preguntas" : "questions"} · 70%</h3>
+        <p>${lang === "es" ? "Selecciona una respuesta. Al finalizar recibirás feedback para cada pregunta." : "Select one answer. You will receive feedback for every question when finished."}</p>
         ${items}
         <div class="actions">
-          <button type="button" data-submit="${esc(page.id)}">Check answers</button>
-          <button class="ghost" type="button" data-retry="${esc(page.id)}">Repeat section</button>
+          <button type="button" data-submit="${esc(page.id)}">${lang === "es" ? "Revisar respuestas" : "Check answers"}</button>
+          <button class="ghost" type="button" data-retry="${esc(page.id)}">${lang === "es" ? "Reintentar" : "Try again"}</button>
         </div>
         <div class="score" data-score></div>
       </section>`;
@@ -1641,6 +2483,7 @@
       const groupSlides = pages().filter(p => p.group === current.group);
       const gi = groupSlides.findIndex(p => p.id === current.id);
       const dots = groupSlides.map((_, d) => `<i class="${d === gi ? "on" : ""}"></i>`).join("");
+      const hasRead = !!state.read[current.id];
       let logoInline = "";
       if (state.logoUrl && state.logoPos === 'bottom') {
         logoInline = `<img src="${esc(state.logoUrl)}" style="max-height: 24px; object-fit: contain; margin-right: 8px;" alt="Logo" />`;
@@ -1652,6 +2495,9 @@
           <div style="display:flex; flex-direction:column; align-items:center;">
             <div class="dots" style="margin-bottom:4px;">${dots}</div>
             <div class="slide-count">Slide ${i + 1} / ${n}</div>
+            <button type="button" class="read-status ${hasRead ? "is-read" : ""}" data-mark-read="${esc(current.id)}">
+              ${hasRead ? "✓ Read / Leído" : "Mark as read / Marcar leído"}
+            </button>
           </div>
         </div>
         <button type="button" class="btn" data-slide="1" ${i === n - 1 ? "disabled" : ""}>Next →</button>
@@ -1708,26 +2554,51 @@
     function renderNav() {
       const nav = document.getElementById("nav");
       const current = pageById(state.page);
-      const groups = [];
-      pages().forEach(p => { if (!groups.includes(p.group)) groups.push(p.group); });
-      nav.innerHTML = groups.map(g => {
-        const items = pages().filter(p => p.group === g);
-        const close = items.find(isCloser);
-        const done = close && state.done[close.id]?.pass;
-        const open = current.group === g;
-        const head = `<div class="nav-label">${esc(g)}</div>`;
-        if (!open) {
-          return `${head}<button class="${done ? "done" : ""}" data-go="${esc(items[0].id)}"><span class="dot"></span>${items.length} slides</button>`;
-        }
-        return head + items.map(p => {
-          const mark = isCloser(p) && done;
-          return `<button class="${p.id === state.page ? "active" : ""} ${mark ? "done" : ""}" data-go="${esc(p.id)}"><span class="dot"></span>${esc(p.title)}</button>`;
+      const chapters = [];
+      pages().forEach(p => {
+        const chapter = p.chapter || p.group;
+        if (!chapters.includes(chapter)) chapters.push(chapter);
+      });
+
+      nav.innerHTML = chapters.map(chapter => {
+        const chapterPages = pages().filter(p => (p.chapter || p.group) === chapter);
+        const chapterOpen = (current.chapter || current.group) === chapter;
+        const chapterRead = chapterPages.filter(p => state.read[p.id]).length;
+        const review = chapterPages.find(isCloser);
+        const passed = review && state.done[review.id]?.pass;
+        const groups = [];
+        chapterPages.forEach(p => { if (!groups.includes(p.group)) groups.push(p.group); });
+        const chapterHead = `
+          <button class="chapter-nav ${chapterOpen ? "open" : ""} ${passed ? "done" : ""}" data-go="${esc(chapterPages[0].id)}">
+            <span><b>${esc(chapter)}</b><small>${chapterRead}/${chapterPages.length} read${passed ? " · quiz passed" : ""}</small></span>
+            <i>${chapterOpen ? "−" : "+"}</i>
+          </button>`;
+        if (!chapterOpen) return chapterHead;
+
+        const groupHtml = groups.map(group => {
+          const items = chapterPages.filter(p => p.group === group);
+          const groupOpen = current.group === group;
+          const groupRead = items.filter(p => state.read[p.id]).length;
+          const groupHead = `
+            <button class="subchapter-nav ${groupOpen ? "open" : ""}" data-go="${esc(items[0].id)}">
+              <span>${esc(group)}<small>${groupRead}/${items.length}</small></span>
+              <i>${groupOpen ? "−" : "+"}</i>
+            </button>`;
+          if (!groupOpen || items.length === 1) return groupHead;
+          return groupHead + `<div class="nav-pages">${items.map(p => {
+            const read = !!state.read[p.id];
+            const done = isCloser(p) && state.done[p.id]?.pass;
+            return `<button class="${p.id === state.page ? "active" : ""} ${read ? "read" : ""} ${done ? "done" : ""}" data-go="${esc(p.id)}"><span class="dot"></span>${esc(p.title)}</button>`;
+          }).join("")}</div>`;
         }).join("");
+        return `<section class="nav-chapter">${chapterHead}<div class="nav-subchapters">${groupHtml}</div></section>`;
       }).join("");
-      const total = closers().length || 1;
-      const n = closers().filter(p => state.done[p.id]?.pass).length;
-      document.getElementById("bar").style.width = `${Math.round(n / total * 100)}%`;
-      document.getElementById("progressText").textContent = `${n} / ${total} sections · slide ${pageIndex() + 1}/${pages().length} · ${state.operator || "no name yet"}`;
+
+      const readCount = pages().filter(p => state.read[p.id]).length;
+      const quizCount = closers().filter(p => state.done[p.id]?.pass).length;
+      document.querySelector(".progress-box")?.classList.remove("hidden");
+      document.getElementById("bar").style.width = `${Math.round(readCount / Math.max(1, pages().length) * 100)}%`;
+      document.getElementById("progressText").textContent = `${readCount}/${pages().length} read · ${quizCount}/${closers().length} quizzes passed`;
     }
 
     function field(label, attrs, value, tag = "input") {
@@ -1745,6 +2616,9 @@
           <button class="btn danger" data-del-block="${i}">Delete</button>
         </span></header>`;
       const lines = (block.items || []).join("\n");
+      if (block.type === "manual-html") {
+        return `<div class="editor-block">${head}${field("Complete slide content (HTML)", { "data-b": i, "data-f": "html", class: "html-source" }, block.html || "", "textarea")}</div>`;
+      }
       if (["text", "callout", "warn", "ok"].includes(block.type)) {
         return `<div class="editor-block">${head}${field("Text", { "data-b": i, "data-f": "text" }, block.text || "", "textarea")}</div>`;
       }
@@ -1811,13 +2685,16 @@
     function quizEditor(page) {
       return (page.quiz || []).map((q, i) => `
         <div class="editor-block">
-          <header>Question ${i + 1}
+          <header>Question ${i + 1} · Bilingual
             <button class="btn danger" data-del-q="${i}">Delete</button>
           </header>
-          ${field("Question", { "data-q": i, "data-f": "q" }, q.q || "", "textarea")}
-          ${[0, 1, 2].map(n => field("Option " + ["A", "B", "C"][n], { "data-q": i, "data-opt": n }, (q.options || [])[n] || "")).join("")}
+          ${field("Question · English", { "data-q": i, "data-f": "q" }, q.q || "", "textarea")}
+          ${field("Pregunta · Español", { "data-q": i, "data-f": "qEs" }, q.qEs || "", "textarea")}
+          ${[0, 1, 2].map(n => field("English option " + ["A", "B", "C"][n], { "data-q": i, "data-opt": n, "data-array": "options" }, (q.options || [])[n] || "")).join("")}
+          ${[0, 1, 2].map(n => field("Opción español " + ["A", "B", "C"][n], { "data-q": i, "data-opt": n, "data-array": "optionsEs" }, (q.optionsEs || [])[n] || "")).join("")}
           ${field("Correct option (0=A, 1=B, 2=C)", { "data-q": i, "data-f": "a", type: "number", min: "0", max: "2" }, q.a ?? 0)}
-          ${field("Why the correct answer is correct", { "data-q": i, "data-f": "why" }, q.why || "", "textarea")}
+          ${field("Feedback · English", { "data-q": i, "data-f": "why" }, q.why || "", "textarea")}
+          ${field("Feedback · Español", { "data-q": i, "data-f": "whyEs" }, q.whyEs || "", "textarea")}
         </div>`).join("");
     }
 
@@ -1828,17 +2705,21 @@
       document.getElementById("app").classList.toggle("editing", show);
       if (!show) { drawer.innerHTML = ""; return; }
       const page = pageById(state.page);
-      const types = ["text", "callout", "warn", "ok", "list", "steps", "table", "photos", "videos", "flow", "checklist", "reveal", "simulator"];
+      const types = ["manual-html", "text", "callout", "warn", "ok", "list", "steps", "table", "photos", "videos", "flow", "checklist", "reveal", "simulator"];
       drawer.innerHTML = `
         <h3>Edit section</h3>
         <p style="font-size:12px;color:var(--muted)">Click Save before leaving. Export JSON to keep a copy.</p>
         <button class="btn${hasUnsavedChanges ? " unsaved-alert" : ""}" data-save-changes style="width:100%;margin-bottom:12px">Save changes</button>
-        ${field("Group", { "data-p": "group" }, page.group || "")}
+        ${field("Navbar chapter", { "data-p": "chapter" }, page.chapter || "")}
+        ${field("Navbar tab / subchapter", { "data-p": "group" }, page.group || "")}
+        ${field("Anchor", { "data-p": "anchor" }, page.anchor || "")}
         ${field("Section id", { "data-p": "id" }, page.id || "")}
         ${field("Title", { "data-p": "title" }, page.title || "")}
         ${field("Kicker", { "data-p": "kicker" }, page.kicker || "")}
         ${field("Lead text", { "data-p": "lead" }, page.lead || "", "textarea")}
         ${field("Audio summary (spoken)", { "data-p": "audio" }, page.audio || "", "textarea")}
+        ${field("Chapter summary · English", { "data-summary": "en" }, page.summary?.en || "", "textarea")}
+        ${field("Resumen del capítulo · Español", { "data-summary": "es" }, page.summary?.es || "", "textarea")}
         <div class="field">
           <label style="font-weight:bold; margin-top:12px;">Slide Colors (Overrides global)</label>
           <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer;">
@@ -1923,47 +2804,19 @@
     function applyPageColors(page) {
       if (!page) page = pageById(state.page);
       if (!page) return;
-      const useSlide = page.useColors;
-
-      const bg = (useSlide && page.bgColor) ? page.bgColor : state.bgColor;
-      if (bg) document.documentElement.style.setProperty("--bg-main", bg);
-      else document.documentElement.style.removeProperty("--bg-main");
-
-      const slide = (useSlide && page.slideColor) ? page.slideColor : state.slideColor;
-      if (slide) {
-        document.documentElement.style.setProperty("--slide", slide);
-        document.documentElement.style.setProperty("--slide-cover", slide);
-      } else {
-        document.documentElement.style.removeProperty("--slide");
-        document.documentElement.style.removeProperty("--slide-cover");
-      }
-
-      const drawer = state.drawerColor;
-      if (drawer) document.documentElement.style.setProperty("--bg-drawer", drawer);
-      else document.documentElement.style.removeProperty("--bg-drawer");
-
-      const text = (useSlide && page.textColor) ? page.textColor : state.textColor;
-      if (text) {
-        document.documentElement.style.setProperty("--ink", text);
-        document.documentElement.style.setProperty("--drawer-ink", text);
-        document.documentElement.style.setProperty("--lead", text);
-      } else {
-        document.documentElement.style.removeProperty("--ink");
-        document.documentElement.style.removeProperty("--drawer-ink");
-        document.documentElement.style.removeProperty("--lead");
-      }
-
-      const h1 = (useSlide && page.h1Color) ? page.h1Color : state.h1Color;
-      if (h1) document.documentElement.style.setProperty("--h1-color", h1);
-      else document.documentElement.style.removeProperty("--h1-color");
-
-      const h2 = (useSlide && page.h2Color) ? page.h2Color : state.h2Color;
-      if (h2) document.documentElement.style.setProperty("--h2-color", h2);
-      else document.documentElement.style.removeProperty("--h2-color");
+      document.documentElement.style.setProperty("--bg-main", "#f8fafc");
+      document.documentElement.style.setProperty("--slide", "#ffffff");
+      document.documentElement.style.setProperty("--slide-cover", "#ffffff");
+      document.documentElement.style.setProperty("--drawer-bg", "#ffffff");
+      document.documentElement.style.setProperty("--ink", "#1c2333");
+      document.documentElement.style.setProperty("--drawer-ink", "#1c2333");
+      document.documentElement.style.setProperty("--lead", "#3a4456");
+      document.documentElement.style.setProperty("--h1-color", "#111827");
+      document.documentElement.style.setProperty("--h2-color", "#1f2937");
     }
 
     function applyTheme(theme, isDraft = false) {
-      const next = theme === "light" ? "light" : "dark";
+      const next = "light";
       document.documentElement.setAttribute("data-theme", next);
       if (!isDraft) localStorage.setItem(THEME_KEY, next);
       document.getElementById("themeDark")?.classList.toggle("on", next === "dark");
@@ -1985,7 +2838,6 @@
       document.getElementById("operator").value = state.operator;
       document.getElementById("roleOp").classList.toggle("on", !state.admin);
       document.getElementById("roleAd").classList.toggle("on", state.admin);
-      document.getElementById("pinWrap").classList.toggle("hidden", state.admin || state.role !== "admin-try");
       applyTheme(localStorage.getItem(THEME_KEY) || "dark");
     }
 
@@ -1995,7 +2847,9 @@
       document.getElementById("coachOrb")?.classList.toggle("talking", on);
       document.getElementById("flatAvatar")?.classList.toggle("talking", on);
       const play = document.querySelector(".avatar-btns [data-speak]");
-      if (play) play.textContent = on ? "Playing…" : "Play recap";
+      if (play) play.textContent = on
+        ? (state.summaryLanguage === "es" ? "Narrando…" : "Playing…")
+        : (state.summaryLanguage === "es" ? "Narrar resumen" : "Play summary");
       else console.warn("[TTS] Play button not found in DOM.");
       if (!on) document.querySelectorAll("#coachScript .w").forEach(w => w.classList.remove("on"));
     }
@@ -2016,9 +2870,11 @@
       console.log("[TTS] onvoiceschanged fired, loaded voices:", synthVoices.length);
     };
 
-    function speak(id) {
+    function speak(id, requestedLanguage = "en") {
       console.log("[TTS] speak() triggered for id:", id);
-      const text = pageById(id).audio;
+      const language = requestedLanguage === "es" ? "es" : "en";
+      const page = pageById(id);
+      const text = page.summary?.[language] || page.audio;
       console.log("[TTS] Text to speak:", text);
 
       if (!text) {
@@ -2045,7 +2901,7 @@
 
         console.log("[TTS] Preparing utterance...");
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = "en-US";
+        u.lang = language === "es" ? "es-MX" : "en-US";
         u.rate = 0.95;
         u.pitch = 0.9;
 
@@ -2055,14 +2911,9 @@
           console.warn("[TTS] No voices loaded yet.");
         }
 
-        // Prioritize English male voices (warm/natural if available)
-        const selectedVoice = voices.find(v => v.name.includes("Google UK English Male"))
-          || voices.find(v => v.name.includes("Google US English"))
-          || voices.find(v => v.name.includes("Microsoft Guy Online"))
-          || voices.find(v => v.name.includes("Google") && /male/i.test(v.name))
-          || voices.find(v => /en[-_]?(US|GB|UK)/i.test(v.lang) && /male|david|mark|guy|george|brian/i.test(v.name))
-          || voices.find(v => /en/i.test(v.lang) && /male/i.test(v.name))
-          || voices.find(v => /en/i.test(v.lang))
+        const languagePattern = language === "es" ? /^es/i : /^en/i;
+        const selectedVoice = voices.find(v => languagePattern.test(v.lang) && /google|microsoft|premium|enhanced/i.test(v.name))
+          || voices.find(v => languagePattern.test(v.lang))
           || (voices.length ? voices[0] : null);
 
         if (selectedVoice) {
@@ -2096,6 +2947,13 @@
 
     function applyEditorInput(el) {
       const page = currentPage();
+      if (el.dataset.summary) {
+        page.summary ||= { en: "", es: "" };
+        page.summary[el.dataset.summary] = el.value;
+        saveContent();
+        renderPage(true);
+        return;
+      }
       if (el.dataset.p) {
         page[el.dataset.p] = el.type === "number" ? Number(el.value) : el.value;
         if (el.dataset.p === "id") state.page = page.id;
@@ -2105,7 +2963,9 @@
         return;
       }
       if (el.dataset.q != null && el.dataset.opt != null) {
-        page.quiz[el.dataset.q].options[el.dataset.opt] = el.value;
+        const key = el.dataset.array || "options";
+        page.quiz[el.dataset.q][key] ||= [];
+        page.quiz[el.dataset.q][key][el.dataset.opt] = el.value;
         saveContent(); renderPage(true); return;
       }
       if (el.dataset.q != null) {
@@ -2135,6 +2995,7 @@
 
     function emptyBlock(type) {
       const map = {
+        "manual-html": { type, html: "<p>Write or paste the slide content here.</p>" },
         text: { type, text: "New text" },
         callout: { type, text: "Note for the operator." },
         warn: { type, text: "Warning." },
@@ -2176,24 +3037,14 @@
       render();
     });
     document.getElementById("roleAd").addEventListener("click", () => {
-      if (state.admin) { state.editing = true; render(); return; }
-      state.role = "admin-try";
+      state.admin = true;
+      state.role = "administrator";
+      state.editing = true;
+      sessionStorage.setItem("iom-admin", "1");
       render();
     });
     document.getElementById("themeDark").addEventListener("click", () => applyTheme("dark"));
     document.getElementById("themeLight").addEventListener("click", () => applyTheme("light"));
-
-    document.getElementById("unlock").addEventListener("click", () => {
-      if (document.getElementById("pin").value === PIN) {
-        state.admin = true;
-        state.editing = true;
-        sessionStorage.setItem("iom-admin", "1");
-        document.getElementById("pinMsg").textContent = "";
-      } else {
-        document.getElementById("pinMsg").textContent = "Wrong PIN. Prototype PIN is 123456789.";
-      }
-      render();
-    });
 
     document.getElementById("editor").addEventListener("input", e => {
       if (e.target.dataset.setting) {
@@ -2274,6 +3125,12 @@
         const page = currentPage();
         page[e.target.dataset.inlineP] = e.target.innerText;
         saveContent();
+      } else if (e.target.matches("[data-inline-html]")) {
+        const block = currentPage().blocks[Number(e.target.dataset.inlineHtml)];
+        if (block) {
+          block.html = e.target.innerHTML;
+          saveContent();
+        }
       } else if (e.target.matches("[data-inline-b]")) {
         const page = currentPage();
         const block = page.blocks[Number(e.target.dataset.inlineB)];
@@ -2285,6 +3142,34 @@
     });
 
     document.body.addEventListener("click", e => {
+      const language = e.target.closest("[data-summary-lang]");
+      if (language) {
+        state.summaryLanguage = language.getAttribute("data-summary-lang") === "es" ? "es" : "en";
+        localStorage.setItem("iom-summary-language", state.summaryLanguage);
+        stopSpeak();
+        renderPage(true);
+        return;
+      }
+      const readButton = e.target.closest("[data-mark-read]");
+      if (readButton) {
+        state.read[readButton.getAttribute("data-mark-read")] = true;
+        saveProgress();
+        renderPage(true);
+        renderNav();
+        return;
+      }
+      const manualLink = e.target.closest('.manual-document a[href^="#"]');
+      if (manualLink) {
+        e.preventDefault();
+        const anchor = manualLink.getAttribute("href").slice(1);
+        const target = pages().find(page => page.anchor === anchor);
+        if (target) {
+          state.page = target.id;
+          render();
+          window.scrollTo(0, 0);
+        }
+        return;
+      }
       if (e.target.closest("[data-save-changes]")) {
         commitContent();
         return;
@@ -2317,7 +3202,7 @@
       }
       if (e.target.closest("[data-stop-speak]")) { stopSpeak(); return; }
       const sp = e.target.closest("[data-speak]");
-      if (sp) { speak(sp.getAttribute("data-speak")); return; }
+      if (sp) { speak(sp.getAttribute("data-speak"), sp.dataset.lang || state.summaryLanguage); return; }
       const play = e.target.closest("[data-play-steps]");
       if (play) {
         const el = document.getElementById("vidsteps-" + play.getAttribute("data-play-steps"));
@@ -2429,7 +3314,16 @@
         return;
       }
       if (e.target.closest("[data-add-q]")) {
-        currentPage().quiz.push({ q: "New question?", options: ["A", "B", "C"], a: 0, why: "Because this is the safe action." });
+        currentPage().quiz ||= [];
+        currentPage().quiz.push({
+          q: "New question?",
+          qEs: "¿Nueva pregunta?",
+          options: ["A", "B", "C"],
+          optionsEs: ["A", "B", "C"],
+          a: 0,
+          why: "Explanation of the correct answer.",
+          whyEs: "Explicación de la respuesta correcta."
+        });
         saveContent(); render(); return;
       }
       const delQ = e.target.closest("[data-del-q]");
@@ -2440,9 +3334,15 @@
       if (e.target.closest("[data-add-page]")) {
         const id = "sec-" + Date.now();
         content.pages.splice(pages().findIndex(p => p.id === state.page) + 1, 0, {
-          id, group: currentPage().group, title: "New slide", kicker: currentPage().group,
+          id,
+          chapter: currentPage().chapter,
+          group: currentPage().group,
+          anchor: "",
+          title: "New slide",
+          kicker: currentPage().group,
           lead: "Write the key idea in simple English.",
           audio: "",
+          summary: { en: "", es: "" },
           blocks: [{ type: "text", text: "Replace this with operating content." }],
           quiz: []
         });
@@ -2513,6 +3413,7 @@
 
     function grade(id) {
       const qs = pageById(id).quiz || [];
+      const lang = state.summaryLanguage === "es" ? "es" : "en";
       let right = 0;
       qs.forEach((item, i) => {
         const box = document.querySelector(`[data-qid="${id}-${i}"]`);
@@ -2527,18 +3428,27 @@
         if (choice === item.a) {
           right += 1;
           fb.className = "feedback show good";
-          fb.textContent = "Correct.";
+          fb.textContent = lang === "es"
+            ? `Correcto. ${item.whyEs || ""}`
+            : `Correct. ${item.why || ""}`;
         } else {
           fb.className = "feedback show bad";
-          fb.textContent = `Incorrect. Review this section. The correct option is ${["A", "B", "C"][item.a]}. ${item.why}`;
+          fb.textContent = lang === "es"
+            ? `Incorrecto. La opción correcta es ${["A", "B", "C"][item.a]}. ${item.whyEs || ""}`
+            : `Incorrect. The correct option is ${["A", "B", "C"][item.a]}. ${item.why || ""}`;
         }
       });
       const pct = Math.round(right / qs.length * 100);
       const pass = pct >= PASS;
-      document.querySelector("[data-score]").textContent = pass
-        ? `Score ${pct}%. Section complete. You can continue.`
-        : `Score ${pct}%. Below 70%. Repeat this section. No penalty — this does not affect your record.`;
+      document.querySelector("[data-score]").textContent = lang === "es"
+        ? (pass
+          ? `Resultado ${pct}%. Capítulo completado.`
+          : `Resultado ${pct}%. Revisa el resumen e inténtalo nuevamente.`)
+        : (pass
+          ? `Score ${pct}%. Chapter complete.`
+          : `Score ${pct}%. Review the summary and try again.`);
       state.done[id] = { pass, pct, at: new Date().toISOString(), operator: state.operator || "unknown" };
+      if (pass) state.read[id] = true;
       saveProgress();
       renderNav();
     }
@@ -2551,7 +3461,7 @@
 
     if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => { };
     let _tm = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}").themeMode;
-    applyTheme(_tm || localStorage.getItem(THEME_KEY) || "dark", !!_tm);
+    applyTheme("light");
     render();
   </script>
 </body>
