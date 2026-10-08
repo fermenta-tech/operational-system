@@ -2131,9 +2131,12 @@
   </div>
   <input type="file" id="importFile" accept="application/json" hidden />
   <input type="file" id="photoFile" accept="image/*" hidden />
-  <script src="content.js"></script>
+  <script src="/ejemplos/manual-interactivo/content.js"></script>
   <script>
     const PASS = 70;
+    const VIEWER_PARAMS = new URLSearchParams(location.search);
+    const VIEWER_DRAFT_ID = VIEWER_PARAMS.get("draft");
+    const VIEWER_EXAMPLE = VIEWER_PARAMS.get("example") === "1";
     const STORAGE = "iom-reduction-progress-v1";
     const READ_STORAGE = "iom-reduction-read-v1";
     const CONTENT_KEY = "iom-reduction-v7";
@@ -2200,8 +2203,18 @@
 
     function loadContent() {
       try {
+        if (VIEWER_EXAMPLE) {
+          return structuredClone(DEFAULT_CONTENT);
+        }
+        if (VIEWER_DRAFT_ID) {
+          const draftRaw = localStorage.getItem(`manual-draft-${VIEWER_DRAFT_ID}`);
+          if (draftRaw) {
+            const draftParsed = JSON.parse(draftRaw);
+            if (draftParsed?.pages?.length) return draftParsed;
+          }
+        }
         const draft = localStorage.getItem("iom-draft-content");
-        if (draft) {
+        if (draft && !VIEWER_DRAFT_ID && !VIEWER_EXAMPLE) {
           hasUnsavedChanges = true;
           return JSON.parse(draft);
         }
@@ -3462,7 +3475,12 @@
     if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => { };
     let _tm = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}").themeMode;
     applyTheme("light");
-    render();
+    if (!pages().length) {
+      document.getElementById("main").innerHTML = `<section class="card"><h2>No se pudo cargar el manual</h2><p>Verifica que <code>/ejemplos/manual-interactivo/content.js</code> responda correctamente. En modo ejemplo usa <code>?example=1</code>.</p></section>`;
+      document.getElementById("progressText").textContent = "0 / 0 sections";
+    } else {
+      render();
+    }
   </script>
 </body>
 

@@ -1,0 +1,21 @@
+{
+  "name": "operational-system",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "build-content": "npx --yes marked -i manual/index.md -o /tmp/reduction-manual.html && node ejemplos/manual-interactivo/build-content.mjs /tmp/reduction-manual.html ejemplos/manual-interactivo/content.js"
+  },
+  "dependencies": {
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0"
+  }
+}
