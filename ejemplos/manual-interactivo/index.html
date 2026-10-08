@@ -2131,9 +2131,12 @@
   </div>
   <input type="file" id="importFile" accept="application/json" hidden />
   <input type="file" id="photoFile" accept="image/*" hidden />
-  <script src="content.js"></script>
+  <script src="/ejemplos/manual-interactivo/content.js"></script>
   <script>
     const PASS = 70;
+    const VIEWER_PARAMS = new URLSearchParams(location.search);
+    const VIEWER_DRAFT_ID = VIEWER_PARAMS.get("draft");
+    const VIEWER_EXAMPLE = VIEWER_PARAMS.get("example") === "1";
     const STORAGE = "iom-reduction-progress-v1";
     const READ_STORAGE = "iom-reduction-read-v1";
     const CONTENT_KEY = "iom-reduction-v7";
@@ -2196,12 +2199,27 @@
 
     ["iom-reduction-v1", "iom-reduction-v2", "iom-reduction-v3"].forEach(k => localStorage.removeItem(k));
     let hasUnsavedChanges = false;
-    let content = loadContent();
+    let content = structuredClone(DEFAULT_CONTENT);
 
-    function loadContent() {
+    async function loadContentAsync() {
       try {
+        if (VIEWER_EXAMPLE) {
+          const res = await fetch("/api/manuals/public/example");
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.pages?.length) return data;
+          }
+          return structuredClone(DEFAULT_CONTENT);
+        }
+        if (VIEWER_DRAFT_ID) {
+          const res = await fetch(`/api/manuals/${encodeURIComponent(VIEWER_DRAFT_ID)}`, { credentials: "include" });
+          if (res.ok) {
+            const draftParsed = await res.json();
+            if (draftParsed?.pages?.length) return draftParsed;
+          }
+        }
         const draft = localStorage.getItem("iom-draft-content");
-        if (draft) {
+        if (draft && !VIEWER_DRAFT_ID && !VIEWER_EXAMPLE) {
           hasUnsavedChanges = true;
           return JSON.parse(draft);
         }
@@ -3462,7 +3480,15 @@
     if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => { };
     let _tm = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}").themeMode;
     applyTheme("light");
-    render();
+    (async function initViewer() {
+      content = await loadContentAsync();
+      if (!pages().length) {
+        document.getElementById("main").innerHTML = `<section class="card"><h2>No se pudo cargar el manual</h2><p>Verifica Supabase (seed del ejemplo) o la API <code>/api/manuals/…</code>. Fallback: <code>content.js</code> embebido.</p></section>`;
+        document.getElementById("progressText").textContent = "0 / 0 sections";
+      } else {
+        render();
+      }
+    })();
   </script>
 </body>
 

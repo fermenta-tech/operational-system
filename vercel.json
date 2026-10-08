@@ -1,12 +1,3 @@
 {
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/ejemplos/manual-interactivo/index.html"
-    },
-    {
-      "source": "/content.js",
-      "destination": "/ejemplos/manual-interactivo/content.js"
-    }
-  ]
+  "framework": "nextjs"
 }
