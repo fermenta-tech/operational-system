@@ -26,7 +26,14 @@ function esc(value: string): string {
 function inferSectionLevel(page: ManualPage): ManualSectionLevel {
   if (page.sectionLevel) return page.sectionLevel;
   if (page.kicker?.startsWith("Subchapter")) return "subchapter";
+  if (page.kicker === "Content" || page.kicker === "Contenido") return "content";
   return "chapter";
+}
+
+function tocLabel(level: ManualSectionLevel): string {
+  if (level === "subchapter") return "Subchapter";
+  if (level === "content") return "Content";
+  return "Chapter";
 }
 
 function isStructuralPage(page: ManualPage): boolean {
@@ -40,7 +47,8 @@ function buildTocHtml(pages: ManualPage[]): string {
   const links = chapters
     .map((p) => {
       const level = inferSectionLevel(p);
-      const label = level === "subchapter" ? "Subchapter" : "Chapter";
+      if (level === "content") return "";
+      const label = tocLabel(level);
       const href = p.anchor ? `#${p.anchor}` : `#${p.id}`;
       return `
         <a class="toc-card" href="${href}" data-go="${p.id}">
@@ -82,9 +90,14 @@ export function buildCoverHtml(input: {
         </details>`
     : "";
 
+  const logoHtml = cover.logoUrl?.trim()
+    ? `<img src="${esc(cover.logoUrl.trim())}" alt="Logo">`
+    : "";
+
   return `
       <div class="cover-hero">
         <div class="cover-brand">
+          ${logoHtml}
           <span>${esc(brandLine)}</span>
         </div>
         <div class="cover-eyebrow">${esc(eyebrow)}</div>
@@ -157,22 +170,58 @@ export function newSectionPage(input: {
   const chapter = level === "chapter" ? title : parentChapter;
   const group = level === "chapter" ? title : title;
   const kicker =
-    level === "chapter" ? "Chapter" : `Subchapter · ${parentChapter}`;
+    level === "chapter"
+      ? "Chapter"
+      : level === "subchapter"
+        ? `Subchapter · ${parentChapter}`
+        : `Content · ${parentChapter}`;
+  const slideKind =
+    level === "chapter"
+      ? "chapter"
+      : level === "subchapter"
+        ? "subchapter"
+        : "content";
   return {
     id,
     chapter,
     group,
     title,
+    slideKind,
     kicker,
     lead: "",
-    anchor: slug(title, index),
+    anchor: level === "content" ? undefined : slug(title, index),
     sectionLevel: level,
     blocks: [
       {
         type: "text",
-        text: "Describe this section. Add blocks below or paste manual-html from the format guide.",
+        text: "Describe this section. Add blocks below or use the block toolbar.",
       },
     ],
+  };
+}
+
+export function newReviewPage(input: {
+  chapterTitle: string;
+  anchor: string;
+  index: number;
+}): ManualPage {
+  const { chapterTitle, anchor, index } = input;
+  const id = `review-${anchor || slug(chapterTitle, index)}`;
+  return {
+    id,
+    chapter: chapterTitle,
+    group: `${chapterTitle} · Summary`,
+    title: "Chapter summary & knowledge check",
+    slideKind: "review",
+    kicker: `${chapterTitle} · Review`,
+    lead: "Choose English or Español, listen to the coach, then complete the multiple-choice questions.",
+    summary: {
+      en: `Summary for ${chapterTitle}. Edit this text in the review slide editor.`,
+      es: `Resumen de ${chapterTitle}. Edita este texto en el editor de slide de revisión.`,
+    },
+    audio: "",
+    quiz: [],
+    blocks: [],
   };
 }
 

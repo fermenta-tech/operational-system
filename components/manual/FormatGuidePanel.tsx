@@ -5,6 +5,7 @@ import {
   BLOCK_TYPES_GUIDE,
   COPY_SNIPPETS,
   PAGE_FIELDS_GUIDE,
+  SLIDE_KINDS_GUIDE,
 } from "@/lib/manual/format-guide";
 
 type Props = {
@@ -14,7 +15,9 @@ type Props = {
 
 export function FormatGuidePanel({ onInsertSnippet, compact }: Props) {
   const [copied, setCopied] = useState("");
-  const [tab, setTab] = useState<"pages" | "blocks" | "snippets">("pages");
+  const [tab, setTab] = useState<"slides" | "pages" | "blocks" | "snippets">(
+    "slides",
+  );
 
   async function copy(code: string, id: string) {
     await navigator.clipboard.writeText(code);
@@ -34,7 +37,8 @@ export function FormatGuidePanel({ onInsertSnippet, compact }: Props) {
       <div className="format-tabs" role="tablist">
         {(
           [
-            ["pages", "Páginas"],
+            ["slides", "Tipos slide"],
+            ["pages", "Campos"],
             ["blocks", "Bloques"],
             ["snippets", "Ejemplos"],
           ] as const
@@ -50,6 +54,20 @@ export function FormatGuidePanel({ onInsertSnippet, compact }: Props) {
           </button>
         ))}
       </div>
+
+      {tab === "slides" ? (
+        <ul className="guide-list">
+          {SLIDE_KINDS_GUIDE.map((row) => (
+            <li key={row.kind}>
+              <strong>
+                {row.kind}
+                {"id" in row && row.id ? ` · ${row.id}` : ""}
+              </strong>
+              <span>{row.detail}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {tab === "pages" ? (
         <ul className="guide-list">
@@ -75,11 +93,11 @@ export function FormatGuidePanel({ onInsertSnippet, compact }: Props) {
             </li>
           ))}
           <li>
-            <strong>Visor extendido</strong>
+            <strong>Legacy admin</strong>
             <span>
-              warn, ok, list, steps, table, flow, checklist, reveal, simulator y
-              nav-cards existen en el visor; en el MVP del editor usa{" "}
-              <code>manual-html</code> o pega JSON avanzado al exportar.
+              El visor legacy incluye edición inline y temas; el editor Next.js
+              persiste JSON vía Supabase. Usa <code>manual-html</code> solo para
+              HTML que no tenga bloque dedicado.
             </span>
           </li>
         </ul>
