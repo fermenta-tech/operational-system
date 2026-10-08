@@ -11,7 +11,7 @@ export default function NewManualPage() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
 
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
     const id = newManualId();
     const content = createEmptyManual({
@@ -19,7 +19,11 @@ export default function NewManualPage() {
       title: title.trim() || "Nuevo manual",
       subtitle: subtitle.trim(),
     });
-    saveDraft(id, content);
+    const ok = await saveDraft(id, content);
+    if (!ok) {
+      alert("No se pudo crear el borrador en Supabase. ¿Ejecutaste la migración y el seed?");
+      return;
+    }
     router.push(`/manuals/new/${id}`);
   }
 

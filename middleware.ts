@@ -1,10 +1,12 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { AUTH_COOKIE, isAuthenticated } from "@/lib/auth";
+import { supabaseConfig } from "@/lib/supabase/config";
 
 const PUBLIC_PREFIXES = [
   "/login",
   "/api/auth/login",
+  "/api/manuals/public/",
   "/_next",
   "/favicon.ico",
   "/ejemplos/",
@@ -18,23 +20,50 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  let supabaseResponse = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    supabaseConfig.url,
+    supabaseConfig.publishableKey,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) => {
+            supabaseResponse.cookies.set(name, value, options);
+          });
+        },
+      },
+    },
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (isPublicPath(pathname)) {
-    if (pathname === "/login" && isAuthenticated(request.cookies.get(AUTH_COOKIE)?.value)) {
+    if (pathname === "/login" && user) {
       return NextResponse.redirect(new URL("/manuals", request.url));
     }
-    return NextResponse.next();
+    return supabaseResponse;
   }
 
-  if (!isAuthenticated(request.cookies.get(AUTH_COOKIE)?.value)) {
+  if (!user) {
     const login = new URL("/login", request.url);
     login.searchParams.set("next", pathname);
     return NextResponse.redirect(login);
   }
 
-  return NextResponse.next();
+  return supabaseResponse;
 }
 
 export const config = {

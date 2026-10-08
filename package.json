@@ -5,9 +5,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "build-content": "npx --yes marked -i manual/index.md -o /tmp/reduction-manual.html && node ejemplos/manual-interactivo/build-content.mjs /tmp/reduction-manual.html ejemplos/manual-interactivo/content.js"
+    "build-content": "npx --yes marked -i manual/index.md -o /tmp/reduction-manual.html && node ejemplos/manual-interactivo/build-content.mjs /tmp/reduction-manual.html ejemplos/manual-interactivo/content.js",
+    "seed:supabase": "node scripts/seed-supabase.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

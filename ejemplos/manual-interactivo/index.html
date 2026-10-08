@@ -2199,17 +2199,22 @@
 
     ["iom-reduction-v1", "iom-reduction-v2", "iom-reduction-v3"].forEach(k => localStorage.removeItem(k));
     let hasUnsavedChanges = false;
-    let content = loadContent();
+    let content = structuredClone(DEFAULT_CONTENT);
 
-    function loadContent() {
+    async function loadContentAsync() {
       try {
         if (VIEWER_EXAMPLE) {
+          const res = await fetch("/api/manuals/public/example");
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.pages?.length) return data;
+          }
           return structuredClone(DEFAULT_CONTENT);
         }
         if (VIEWER_DRAFT_ID) {
-          const draftRaw = localStorage.getItem(`manual-draft-${VIEWER_DRAFT_ID}`);
-          if (draftRaw) {
-            const draftParsed = JSON.parse(draftRaw);
+          const res = await fetch(`/api/manuals/${encodeURIComponent(VIEWER_DRAFT_ID)}`, { credentials: "include" });
+          if (res.ok) {
+            const draftParsed = await res.json();
             if (draftParsed?.pages?.length) return draftParsed;
           }
         }
@@ -3475,12 +3480,15 @@
     if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => { };
     let _tm = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}").themeMode;
     applyTheme("light");
-    if (!pages().length) {
-      document.getElementById("main").innerHTML = `<section class="card"><h2>No se pudo cargar el manual</h2><p>Verifica que <code>/ejemplos/manual-interactivo/content.js</code> responda correctamente. En modo ejemplo usa <code>?example=1</code>.</p></section>`;
-      document.getElementById("progressText").textContent = "0 / 0 sections";
-    } else {
-      render();
-    }
+    (async function initViewer() {
+      content = await loadContentAsync();
+      if (!pages().length) {
+        document.getElementById("main").innerHTML = `<section class="card"><h2>No se pudo cargar el manual</h2><p>Verifica Supabase (seed del ejemplo) o la API <code>/api/manuals/…</code>. Fallback: <code>content.js</code> embebido.</p></section>`;
+        document.getElementById("progressText").textContent = "0 / 0 sections";
+      } else {
+        render();
+      }
+    })();
   </script>
 </body>
 

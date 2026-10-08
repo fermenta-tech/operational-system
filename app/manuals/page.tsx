@@ -10,7 +10,7 @@ export default function ManualsHubPage() {
   const [drafts, setDrafts] = useState<ManualIndexEntry[]>([]);
 
   useEffect(() => {
-    setDrafts(loadDraftIndex());
+    void loadDraftIndex().then(setDrafts);
   }, []);
 
   return (
@@ -30,8 +30,7 @@ export default function ManualsHubPage() {
         <Link className="action-card" href="/manuals/new">
           <strong>Crear nuevo manual</strong>
           <span>
-            Carátula, índice y páginas con texto, imágenes y video (MVP en
-            localStorage).
+            Carátula, índice y páginas con texto, imágenes y video (Supabase).
           </span>
         </Link>
       </div>

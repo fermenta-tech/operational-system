@@ -7,7 +7,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/manuals";
-  const [user, setUser] = useState("demo");
+  const [user, setUser] = useState("demo@demo.com");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ function LoginForm() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user, password }),
+      body: JSON.stringify({ email: user, password }),
     });
     setLoading(false);
     if (!res.ok) {
@@ -35,14 +35,14 @@ function LoginForm() {
       <div className="glass-panel">
         <h1 style={{ marginTop: 0 }}>Acceso</h1>
         <p className="hint">
-          Credenciales demo: usuario <code>demo</code>, contraseña{" "}
-          <code>demo123</code> (configurable con{" "}
-          <code>MANUAL_USER</code> / <code>MANUAL_PASSWORD</code>).
+          Credenciales demo (Supabase Auth):{" "}
+          <code>demo@demo.com</code> / <code>demo123</code>.
         </p>
         <form className="form-stack" onSubmit={onSubmit}>
           <label>
-            Usuario
+            Email
             <input
+              type="email"
               value={user}
               onChange={(e) => setUser(e.target.value)}
               autoComplete="username"

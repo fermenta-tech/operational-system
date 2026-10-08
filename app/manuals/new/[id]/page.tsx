@@ -15,12 +15,13 @@ export default function EditManualPage() {
   const [content, setContent] = useState<ManualContent | null>(null);
 
   useEffect(() => {
-    const draft = loadDraft(id);
-    if (!draft) {
-      router.replace("/manuals/new");
-      return;
-    }
-    setContent(normalizeManualContent(draft));
+    void loadDraft(id).then((draft) => {
+      if (!draft) {
+        router.replace("/manuals/new");
+        return;
+      }
+      setContent(normalizeManualContent(draft));
+    });
   }, [id, router]);
 
   if (!content) {

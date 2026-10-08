@@ -100,10 +100,11 @@ export function ManualEditor({ manualId, initial }: Props) {
     (next: ManualContent) => {
       const normalized = syncCoverPage(refreshTocPage(next));
       setContent(normalized);
-      saveDraft(manualId, normalized);
-      setPreviewRev((v) => v + 1);
-      setSavedHint("Guardado en localStorage");
-      window.setTimeout(() => setSavedHint(""), 2000);
+      void saveDraft(manualId, normalized).then((ok) => {
+        setPreviewRev((v) => v + 1);
+        setSavedHint(ok ? "Guardado en Supabase" : "Error al guardar");
+        window.setTimeout(() => setSavedHint(""), 2000);
+      });
     },
     [manualId],
   );
@@ -225,12 +226,9 @@ export function ManualEditor({ manualId, initial }: Props) {
   }
 
   async function exportToServer() {
-    await fetch(`/api/manuals/${manualId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(content),
-    });
-    setSavedHint("Copia en servidor (data/drafts)");
+    const ok = await saveDraft(manualId, content);
+    setSavedHint(ok ? "JSON sincronizado con Supabase" : "Error al exportar");
+    window.setTimeout(() => setSavedHint(""), 2000);
   }
 
   const previewSrc = `/ejemplos/manual-interactivo/index.html?draft=${encodeURIComponent(manualId)}&v=${previewRev}`;
@@ -521,7 +519,7 @@ export function ManualEditor({ manualId, initial }: Props) {
         ) : (
           <div className="editor-preview-wrap">
             <p className="hint preview-label">
-              Vista previa en vivo (lee localStorage vía{" "}
+              Vista previa en vivo (API Supabase vía{" "}
               <code>?draft=</code>)
             </p>
             <iframe

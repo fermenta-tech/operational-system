@@ -2,36 +2,32 @@
 
 import type { ManualContent, ManualIndexEntry } from "./types";
 
-const INDEX_KEY = "manual-draft-index";
-
 export function draftStorageKey(id: string): string {
   return `manual-draft-${id}`;
 }
 
-export function loadDraftIndex(): ManualIndexEntry[] {
-  if (typeof window === "undefined") return [];
+async function parseJsonResponse<T>(res: Response): Promise<T | null> {
+  if (!res.ok) return null;
   try {
-    return JSON.parse(localStorage.getItem(INDEX_KEY) || "[]") as ManualIndexEntry[];
-  } catch {
-    return [];
-  }
-}
-
-export function saveDraftIndex(entries: ManualIndexEntry[]): void {
-  localStorage.setItem(INDEX_KEY, JSON.stringify(entries));
-}
-
-export function loadDraft(id: string): ManualContent | null {
-  try {
-    const raw = localStorage.getItem(draftStorageKey(id));
-    if (!raw) return null;
-    return JSON.parse(raw) as ManualContent;
+    return (await res.json()) as T;
   } catch {
     return null;
   }
 }
 
-export function saveDraft(id: string, content: ManualContent): void {
+export async function loadDraftIndex(): Promise<ManualIndexEntry[]> {
+  const res = await fetch("/api/manuals", { credentials: "include" });
+  return (await parseJsonResponse<ManualIndexEntry[]>(res)) ?? [];
+}
+
+export async function loadDraft(id: string): Promise<ManualContent | null> {
+  const res = await fetch(`/api/manuals/${encodeURIComponent(id)}`, {
+    credentials: "include",
+  });
+  return await parseJsonResponse<ManualContent>(res);
+}
+
+export async function saveDraft(id: string, content: ManualContent): Promise<boolean> {
   const updated: ManualContent = {
     ...content,
     meta: {
@@ -41,18 +37,20 @@ export function saveDraft(id: string, content: ManualContent): void {
       updatedAt: new Date().toISOString(),
     },
   };
-  localStorage.setItem(draftStorageKey(id), JSON.stringify(updated));
 
-  const index = loadDraftIndex().filter((e) => e.id !== id);
-  index.unshift({
-    id,
-    title: updated.meta?.title ?? id,
-    updatedAt: updated.meta!.updatedAt,
+  const res = await fetch(`/api/manuals/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updated),
   });
-  saveDraftIndex(index);
+  return res.ok;
 }
 
-export function deleteDraft(id: string): void {
-  localStorage.removeItem(draftStorageKey(id));
-  saveDraftIndex(loadDraftIndex().filter((e) => e.id !== id));
+export async function deleteDraft(id: string): Promise<boolean> {
+  const res = await fetch(`/api/manuals/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return res.ok;
 }
