@@ -2,7 +2,21 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
+import { BlockEditor } from "@/components/manual/BlockEditor";
 import { FormatGuidePanel } from "@/components/manual/FormatGuidePanel";
+import { QuizEditor } from "@/components/manual/QuizEditor";
+import {
+  BLOCK_TYPE_LABELS,
+  EDITOR_BLOCK_TYPES,
+  emptyBlock,
+} from "@/lib/manual/blocks";
+import { saveDraft } from "@/lib/manual/client-storage";
+import { normalizeQuiz } from "@/lib/manual/quiz";
+import {
+  inferSlideKind,
+  isReviewPage,
+  slideKindLabel,
+} from "@/lib/manual/slides";
 import type {
   ManualBlock,
   ManualContent,
@@ -10,12 +24,13 @@ import type {
   ManualEquipmentLine,
   ManualPage,
   ManualSectionLevel,
+  ManualSlideKind,
 } from "@/lib/manual/types";
-import { saveDraft } from "@/lib/manual/client-storage";
 import {
   MANUAL_COVER_ID,
   MANUAL_TOC_ID,
   listChapters,
+  newReviewPage,
   newSectionPage,
   normalizeManualContent,
   refreshTocPage,
@@ -29,62 +44,38 @@ type Props = {
 
 type RightPanel = "guide" | "preview";
 
-const BLOCK_TYPES: ManualBlock["type"][] = [
-  "text",
-  "callout",
-  "manual-html",
-  "photos",
-  "videos",
-];
-
-function emptyBlock(type: ManualBlock["type"]): ManualBlock {
-  switch (type) {
-    case "text":
-      return { type: "text", text: "Nuevo párrafo" };
-    case "callout":
-      return { type: "callout", text: "Nota destacada" };
-    case "manual-html":
-      return { type: "manual-html", html: "<p>Contenido HTML del manual</p>" };
-    case "photos":
-      return {
-        type: "photos",
-        items: [{ url: "/manual/images/image1.png", caption: "Leyenda" }],
-      };
-    case "videos":
-      return {
-        type: "videos",
-        items: [
-          {
-            title: "Video de ejemplo",
-            url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            steps: [],
-          },
-        ],
-      };
-    default:
-      return { type: "text", text: "" };
-  }
-}
+type NewSlideKind = "chapter" | "subchapter" | "content" | "review";
 
 function isStructuralPageId(id: string): boolean {
   return id === MANUAL_COVER_ID || id === "cover" || id === MANUAL_TOC_ID;
+}
+
+function sectionLevelForKind(kind: NewSlideKind): ManualSectionLevel | null {
+  if (kind === "chapter") return "chapter";
+  if (kind === "subchapter") return "subchapter";
+  if (kind === "content") return "content";
+  return null;
 }
 
 export function ManualEditor({ manualId, initial }: Props) {
   const [content, setContent] = useState(() => normalizeManualContent(initial));
   const [selectedPageId, setSelectedPageId] = useState<string>(MANUAL_COVER_ID);
   const [newSectionTitle, setNewSectionTitle] = useState("");
-  const [newSectionLevel, setNewSectionLevel] =
-    useState<ManualSectionLevel>("chapter");
+  const [newSlideKind, setNewSlideKind] = useState<NewSlideKind>("chapter");
   const [savedHint, setSavedHint] = useState("");
   const [rightPanel, setRightPanel] = useState<RightPanel>("guide");
   const [previewRev, setPreviewRev] = useState(0);
 
-  const sections = useMemo(
+  const bodyPages = useMemo(
     () =>
       content.pages.filter(
-        (p) => !isStructuralPageId(p.id) && !p.id.startsWith("review-"),
+        (p) => !isStructuralPageId(p.id) && !isReviewPage(p),
       ),
+    [content.pages],
+  );
+
+  const reviewPages = useMemo(
+    () => content.pages.filter((p) => isReviewPage(p)),
     [content.pages],
   );
 
@@ -93,8 +84,13 @@ export function ManualEditor({ manualId, initial }: Props) {
   const selectedPage =
     content.pages.find((p) => p.id === selectedPageId) ?? content.pages[0];
 
+  const selectedKind = inferSlideKind(selectedPage);
+
   const parentChapter =
-    chapters.at(-1) ?? sections.find((s) => s.sectionLevel !== "subchapter")?.chapter ?? "Manual";
+    chapters.at(-1) ??
+    bodyPages.find((s) => s.sectionLevel !== "subchapter" && s.sectionLevel !== "content")
+      ?.chapter ??
+    "Manual";
 
   const persist = useCallback(
     (next: ManualContent) => {
@@ -138,19 +134,46 @@ export function ManualEditor({ manualId, initial }: Props) {
     updateCoverMeta({ equipment });
   }
 
-  function addSection() {
+  function addSlide() {
     const title = newSectionTitle.trim();
     if (!title) return;
-    if (newSectionLevel === "subchapter" && !chapters.length) {
-      setSavedHint("Crea un capítulo antes de un subcapítulo");
+
+    if (newSlideKind === "review") {
+      if (!chapters.length) {
+        setSavedHint("Crea un capítulo antes del resumen");
+        return;
+      }
+      const chapterTitle = parentChapter;
+      const anchor =
+        bodyPages.find((p) => p.chapter === chapterTitle && p.anchor)?.anchor ??
+        title.toLowerCase().replace(/\s+/g, "-");
+      const page = newReviewPage({
+        chapterTitle,
+        anchor,
+        index: content.pages.length,
+      });
+      page.title = title;
+      persist({ ...content, pages: [...content.pages, page] });
+      setNewSectionTitle("");
+      setSelectedPageId(page.id);
+      return;
+    }
+
+    const level = sectionLevelForKind(newSlideKind);
+    if (!level) return;
+    if (
+      (level === "subchapter" || level === "content") &&
+      !chapters.length
+    ) {
+      setSavedHint("Crea un capítulo antes de este slide");
       return;
     }
     const page = newSectionPage({
       title,
-      level: newSectionLevel,
+      level,
       parentChapter:
-        newSectionLevel === "subchapter" ? parentChapter : title,
-      index: sections.length,
+        level === "chapter" ? title : parentChapter,
+      index: bodyPages.length,
     });
     persist({ ...content, pages: [...content.pages, page] });
     setNewSectionTitle("");
@@ -159,26 +182,18 @@ export function ManualEditor({ manualId, initial }: Props) {
 
   function removeSelectedSection() {
     if (isStructuralPageId(selectedPage.id)) return;
-    if (!window.confirm(`¿Eliminar la sección «${selectedPage.title}»?`)) return;
+    if (!window.confirm(`¿Eliminar la slide «${selectedPage.title}»?`)) return;
     const pages = content.pages.filter((p) => p.id !== selectedPage.id);
     persist({ ...content, pages });
     setSelectedPageId(MANUAL_TOC_ID);
   }
 
-  function moveSection(delta: -1 | 1) {
-    if (isStructuralPageId(selectedPage.id)) return;
-    const ids = sections.map((s) => s.id);
-    const idx = ids.indexOf(selectedPage.id);
-    const target = idx + delta;
-    if (idx < 0 || target < 0 || target >= ids.length) return;
-    const reordered = [...sections];
-    const [item] = reordered.splice(idx, 1);
-    reordered.splice(target, 0, item);
+  function reorderBodyPages(reordered: ManualPage[]) {
     const cover = content.pages.find(
       (p) => p.id === MANUAL_COVER_ID || p.id === "cover",
     );
     const toc = content.pages.find((p) => p.id === MANUAL_TOC_ID);
-    const reviews = content.pages.filter((p) => p.id.startsWith("review-"));
+    const reviews = content.pages.filter((p) => isReviewPage(p));
     persist({
       ...content,
       pages: [
@@ -188,6 +203,18 @@ export function ManualEditor({ manualId, initial }: Props) {
         ...reviews,
       ],
     });
+  }
+
+  function moveSection(delta: -1 | 1) {
+    if (isStructuralPageId(selectedPage.id) || isReviewPage(selectedPage)) return;
+    const ids = bodyPages.map((s) => s.id);
+    const idx = ids.indexOf(selectedPage.id);
+    const target = idx + delta;
+    if (idx < 0 || target < 0 || target >= ids.length) return;
+    const reordered = [...bodyPages];
+    const [item] = reordered.splice(idx, 1);
+    reordered.splice(target, 0, item);
+    reorderBodyPages(reordered);
   }
 
   function updatePage(patch: Partial<ManualPage>) {
@@ -211,8 +238,15 @@ export function ManualEditor({ manualId, initial }: Props) {
   }
 
   function insertSnippet(code: string) {
-    if (isStructuralPageId(selectedPage.id) && selectedPage.id !== MANUAL_COVER_ID) {
-      setSavedHint("Abre una sección de contenido para insertar HTML");
+    if (
+      isStructuralPageId(selectedPage.id) &&
+      selectedPage.id !== MANUAL_COVER_ID
+    ) {
+      setSavedHint("Abre una slide de contenido para insertar HTML");
+      return;
+    }
+    if (isReviewPage(selectedPage)) {
+      setSavedHint("El resumen usa summary/quiz, no bloques HTML");
       return;
     }
     addBlock("manual-html", { html: code });
@@ -223,6 +257,10 @@ export function ManualEditor({ manualId, initial }: Props) {
     const blocks = [...(selectedPage.blocks || [])];
     blocks.splice(index, 1);
     updatePage({ blocks });
+  }
+
+  function updateQuiz(questions: ManualPage["quiz"]) {
+    updatePage({ quiz: normalizeQuiz(questions) });
   }
 
   async function exportToServer() {
@@ -259,47 +297,68 @@ export function ManualEditor({ manualId, initial }: Props) {
             <span>Index</span>
             <strong>Índice (auto)</strong>
           </button>
-          {sections.map((p) => (
+          {bodyPages.map((p) => (
             <button
               key={p.id}
               type="button"
               className={selectedPageId === p.id ? "active" : ""}
               onClick={() => setSelectedPageId(p.id)}
             >
-              <span>
-                {p.sectionLevel === "subchapter" ? "Subchapter" : "Chapter"}
-              </span>
+              <span>{slideKindLabel(inferSlideKind(p))}</span>
+              <strong>{p.title}</strong>
+            </button>
+          ))}
+          {reviewPages.length ? (
+            <p className="field-label nav-divider">Resúmenes</p>
+          ) : null}
+          {reviewPages.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className={selectedPageId === p.id ? "active" : ""}
+              onClick={() => setSelectedPageId(p.id)}
+            >
+              <span>Review</span>
               <strong>{p.title}</strong>
             </button>
           ))}
         </nav>
 
         <div className="editor-nav-add">
-          <label className="field-label">Nueva sección</label>
+          <label className="field-label">Nueva slide</label>
           <select
-            value={newSectionLevel}
-            onChange={(e) =>
-              setNewSectionLevel(e.target.value as ManualSectionLevel)
-            }
+            value={newSlideKind}
+            onChange={(e) => setNewSlideKind(e.target.value as NewSlideKind)}
           >
             <option value="chapter">Capítulo (H1)</option>
             <option value="subchapter">Subcapítulo (H2)</option>
+            <option value="content">Contenido normal</option>
+            <option value="review">Resumen y autoevaluación</option>
           </select>
-          {newSectionLevel === "subchapter" ? (
+          {newSlideKind === "subchapter" || newSlideKind === "content" ? (
             <p className="hint tiny">
               Dentro de: <strong>{parentChapter}</strong>
+            </p>
+          ) : null}
+          {newSlideKind === "review" ? (
+            <p className="hint tiny">
+              Capítulo: <strong>{parentChapter}</strong> · layout-recap + quiz
             </p>
           ) : null}
           <input
             value={newSectionTitle}
             onChange={(e) => setNewSectionTitle(e.target.value)}
-            placeholder="Título de la sección"
+            placeholder={
+              newSlideKind === "review"
+                ? "Título del slide de revisión"
+                : "Título de la slide"
+            }
             onKeyDown={(e) => {
-              if (e.key === "Enter") addSection();
+              if (e.key === "Enter") addSlide();
             }}
           />
-          <button type="button" className="btn block" onClick={addSection}>
-            Añadir al índice
+          <button type="button" className="btn block" onClick={addSlide}>
+            Añadir slide
           </button>
         </div>
       </aside>
@@ -307,9 +366,11 @@ export function ManualEditor({ manualId, initial }: Props) {
       <section className="editor-main glass-panel">
         <div className="editor-toolbar">
           <div>
-            <h2 className="editor-page-title">Editor de slide</h2>
+            <h2 className="editor-page-title">
+              Editor · {slideKindLabel(selectedKind)}
+            </h2>
             <p className="hint toolbar-hint">
-              {savedHint || "Los cambios se guardan al editar."}
+              {savedHint || "Los cambios se guardan al editar (PUT /api/manuals/[id])."}
             </p>
           </div>
           <div className="toolbar-actions">
@@ -340,33 +401,35 @@ export function ManualEditor({ manualId, initial }: Props) {
           </div>
         </div>
 
-        {selectedPage.id === MANUAL_COVER_ID || selectedPage.id === "cover" ? (
+        {selectedKind === "cover" ? (
           <div className="form-stack cover-form">
             <label>
               Título (slide)
               <input
                 value={content.meta?.title ?? selectedPage.title}
-                onChange={(e) =>
-                  updateMeta({ title: e.target.value })
-                }
+                onChange={(e) => updateMeta({ title: e.target.value })}
               />
             </label>
             <label>
               Eyebrow (cover-eyebrow)
               <input
                 value={coverMeta?.eyebrow ?? content.meta?.subtitle ?? ""}
-                onChange={(e) =>
-                  updateCoverMeta({ eyebrow: e.target.value })
-                }
+                onChange={(e) => updateCoverMeta({ eyebrow: e.target.value })}
               />
             </label>
             <label>
               Línea de marca (cover-brand)
               <input
                 value={coverMeta?.brandLine ?? ""}
-                onChange={(e) =>
-                  updateCoverMeta({ brandLine: e.target.value })
-                }
+                onChange={(e) => updateCoverMeta({ brandLine: e.target.value })}
+              />
+            </label>
+            <label>
+              Logo (URL opcional)
+              <input
+                value={coverMeta?.logoUrl ?? ""}
+                onChange={(e) => updateCoverMeta({ logoUrl: e.target.value })}
+                placeholder="/manual/images/image1.png"
               />
             </label>
             {[0, 1, 2].map((i) => (
@@ -392,23 +455,113 @@ export function ManualEditor({ manualId, initial }: Props) {
               />
             </label>
             <p className="hint">
-              La carátula usa la misma estructura HTML que REDUCTION CIRCUIT
-              (cover-hero). El visor aplica layout-cover con id{" "}
-              <code>t01</code>.
+              Carátula <code>cover-hero</code> · id <code>t01</code> · layout-cover.
             </p>
           </div>
-        ) : selectedPage.id === MANUAL_TOC_ID ? (
+        ) : selectedKind === "toc" ? (
           <div className="toc-readonly">
             <p className="hint">
-              El índice (<code>toc-grid</code> / <code>toc-card</code>) se
-              regenera al añadir capítulos o subcapítulos. Abre la vista previa
-              para navegar como en el manual de ejemplo.
+              Índice auto (<code>toc-grid</code> / <code>toc-card</code>). Capítulos
+              y subcapítulos; el contenido normal no aparece en el índice.
             </p>
             <pre className="toc-preview">
               {(selectedPage.blocks?.[0]?.type === "manual-html"
                 ? selectedPage.blocks[0].html
                 : "") || ""}
             </pre>
+          </div>
+        ) : selectedKind === "review" ? (
+          <div className="form-stack wide review-form">
+            <div className="section-toolbar">
+              <button
+                type="button"
+                className="btn ghost small danger"
+                onClick={removeSelectedSection}
+              >
+                Eliminar slide de revisión
+              </button>
+            </div>
+            <label>
+              Título
+              <input
+                value={selectedPage.title}
+                onChange={(e) => updatePage({ title: e.target.value })}
+              />
+            </label>
+            <label>
+              Kicker
+              <input
+                value={selectedPage.kicker ?? ""}
+                onChange={(e) => updatePage({ kicker: e.target.value })}
+              />
+            </label>
+            <label>
+              Lead
+              <textarea
+                rows={2}
+                value={selectedPage.lead ?? ""}
+                onChange={(e) => updatePage({ lead: e.target.value })}
+              />
+            </label>
+            <label>
+              Capítulo padre
+              <input
+                value={selectedPage.chapter}
+                onChange={(e) =>
+                  updatePage({
+                    chapter: e.target.value,
+                    group: `${e.target.value} · Summary`,
+                  })
+                }
+              />
+            </label>
+            <label>
+              Audio / narración (EN por defecto)
+              <textarea
+                rows={2}
+                value={selectedPage.audio ?? ""}
+                onChange={(e) => updatePage({ audio: e.target.value })}
+              />
+            </label>
+            <label>
+              Resumen · English (coach-dock)
+              <textarea
+                rows={4}
+                value={selectedPage.summary?.en ?? ""}
+                onChange={(e) =>
+                  updatePage({
+                    summary: {
+                      en: e.target.value,
+                      es: selectedPage.summary?.es ?? "",
+                    },
+                  })
+                }
+              />
+            </label>
+            <label>
+              Resumen · Español
+              <textarea
+                rows={4}
+                value={selectedPage.summary?.es ?? ""}
+                onChange={(e) =>
+                  updatePage({
+                    summary: {
+                      en: selectedPage.summary?.en ?? "",
+                      es: e.target.value,
+                    },
+                  })
+                }
+              />
+            </label>
+            <h3 className="blocks-heading">Autoevaluación (quiz)</h3>
+            <p className="hint">
+              Misma estructura que <code>review-objectives</code> en content.js:
+              bilingüe, 70% para aprobar, avatar Safety Coach en el visor.
+            </p>
+            <QuizEditor
+              questions={selectedPage.quiz ?? []}
+              onChange={updateQuiz}
+            />
           </div>
         ) : (
           <>
@@ -432,19 +585,48 @@ export function ManualEditor({ manualId, initial }: Props) {
                 className="btn ghost small danger"
                 onClick={removeSelectedSection}
               >
-                Eliminar sección
+                Eliminar slide
               </button>
             </div>
             <div className="form-stack wide">
               <label>
-                Título
+                Tipo de slide
+                <select
+                  value={selectedPage.sectionLevel ?? "chapter"}
+                  onChange={(e) => {
+                    const level = e.target.value as ManualSectionLevel;
+                    const slideKind: ManualSlideKind =
+                      level === "chapter"
+                        ? "chapter"
+                        : level === "subchapter"
+                          ? "subchapter"
+                          : "content";
+                    updatePage({
+                      sectionLevel: level,
+                      slideKind,
+                      kicker:
+                        level === "chapter"
+                          ? "Chapter"
+                          : level === "subchapter"
+                            ? `Subchapter · ${selectedPage.chapter}`
+                            : `Content · ${selectedPage.chapter}`,
+                    });
+                  }}
+                >
+                  <option value="chapter">Capítulo</option>
+                  <option value="subchapter">Subcapítulo</option>
+                  <option value="content">Contenido normal</option>
+                </select>
+              </label>
+              <label>
+                Título (H1/H2 del visor)
                 <input
                   value={selectedPage.title}
                   onChange={(e) => updatePage({ title: e.target.value })}
                 />
               </label>
               <label>
-                Kicker
+                Kicker / etiqueta superior
                 <input
                   value={selectedPage.kicker ?? ""}
                   onChange={(e) => updatePage({ kicker: e.target.value })}
@@ -466,24 +648,6 @@ export function ManualEditor({ manualId, initial }: Props) {
                   placeholder="objectives"
                 />
               </label>
-              <label>
-                Nivel
-                <select
-                  value={selectedPage.sectionLevel ?? "chapter"}
-                  onChange={(e) =>
-                    updatePage({
-                      sectionLevel: e.target.value as ManualSectionLevel,
-                      kicker:
-                        e.target.value === "chapter"
-                          ? "Chapter"
-                          : `Subchapter · ${selectedPage.chapter}`,
-                    })
-                  }
-                >
-                  <option value="chapter">Capítulo</option>
-                  <option value="subchapter">Subcapítulo</option>
-                </select>
-              </label>
             </div>
 
             <h3 className="blocks-heading">Bloques de contenido</h3>
@@ -498,14 +662,15 @@ export function ManualEditor({ manualId, initial }: Props) {
               ))}
             </div>
             <div className="block-add-row">
-              {BLOCK_TYPES.map((type) => (
+              {EDITOR_BLOCK_TYPES.map((type) => (
                 <button
                   key={type}
                   type="button"
                   className="btn ghost small"
+                  title={BLOCK_TYPE_LABELS[type]}
                   onClick={() => addBlock(type)}
                 >
-                  + {type}
+                  + {BLOCK_TYPE_LABELS[type]}
                 </button>
               ))}
             </div>
@@ -519,8 +684,7 @@ export function ManualEditor({ manualId, initial }: Props) {
         ) : (
           <div className="editor-preview-wrap">
             <p className="hint preview-label">
-              Vista previa en vivo (API Supabase vía{" "}
-              <code>?draft=</code>)
+              Vista previa en vivo (<code>?draft=</code>)
             </p>
             <iframe
               key={previewSrc}
@@ -531,109 +695,6 @@ export function ManualEditor({ manualId, initial }: Props) {
           </div>
         )}
       </aside>
-    </div>
-  );
-}
-
-function BlockEditor({
-  block,
-  onChange,
-  onRemove,
-}: {
-  block: ManualBlock;
-  onChange: (b: ManualBlock) => void;
-  onRemove: () => void;
-}) {
-  return (
-    <div className="block-item">
-      <div className="block-item-head">
-        <strong>{block.type}</strong>
-        <button type="button" className="btn ghost small" onClick={onRemove}>
-          Quitar
-        </button>
-      </div>
-      {block.type === "text" || block.type === "callout" ? (
-        <textarea
-          rows={3}
-          value={block.text}
-          onChange={(e) => onChange({ ...block, text: e.target.value })}
-        />
-      ) : null}
-      {block.type === "manual-html" ? (
-        <textarea
-          rows={8}
-          className="code-area"
-          value={block.html}
-          onChange={(e) => onChange({ ...block, html: e.target.value })}
-        />
-      ) : null}
-      {block.type === "photos" ? (
-        <div className="form-stack wide">
-          {(block.items || []).map((item, i) => (
-            <div key={i} className="equipment-row">
-              <input
-                value={item.url}
-                placeholder="URL imagen"
-                onChange={(e) => {
-                  const items = [...block.items];
-                  items[i] = { ...items[i], url: e.target.value };
-                  onChange({ ...block, items });
-                }}
-              />
-              <input
-                placeholder="Leyenda"
-                value={item.caption ?? ""}
-                onChange={(e) => {
-                  const items = [...block.items];
-                  items[i] = { ...items[i], caption: e.target.value };
-                  onChange({ ...block, items });
-                }}
-              />
-            </div>
-          ))}
-          <button
-            type="button"
-            className="btn ghost small"
-            onClick={() =>
-              onChange({
-                ...block,
-                items: [
-                  ...(block.items || []),
-                  { url: "", caption: "" },
-                ],
-              })
-            }
-          >
-            + imagen
-          </button>
-        </div>
-      ) : null}
-      {block.type === "videos" ? (
-        <div className="form-stack wide">
-          {(block.items || []).map((item, i) => (
-            <div key={i} className="form-stack wide">
-              <input
-                value={item.title}
-                placeholder="Título"
-                onChange={(e) => {
-                  const items = [...block.items];
-                  items[i] = { ...items[i], title: e.target.value };
-                  onChange({ ...block, items });
-                }}
-              />
-              <input
-                placeholder="URL (YouTube o .mp4)"
-                value={item.url}
-                onChange={(e) => {
-                  const items = [...block.items];
-                  items[i] = { ...items[i], url: e.target.value };
-                  onChange({ ...block, items });
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }

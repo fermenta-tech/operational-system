@@ -816,6 +816,63 @@
       gap: 12px;
     }
 
+    .column-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .column-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .column-card strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .block-heading {
+      margin: 18px 0 8px;
+    }
+
+    .chart-block .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      min-height: 140px;
+      margin-top: 12px;
+      padding-top: 8px;
+    }
+
+    .chart-bar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .chart-bar i {
+      display: block;
+      width: 100%;
+      max-width: 48px;
+      min-height: 4px;
+      background: var(--accent);
+      border-radius: 4px 4px 0 0;
+    }
+
+    .chart-bar em {
+      font-style: normal;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
     .photo,
     .video {
       background: var(--photo-bg);
@@ -2347,8 +2404,9 @@
 
     function renderPhoto(item) {
       const cap = esc(item.caption || "Photo");
-      if (item.src) {
-        return `<figure class="photo"><img src="${esc(item.src)}" alt="${cap}" /><figcaption>${cap}</figcaption></figure>`;
+      const src = item.src || item.url;
+      if (src) {
+        return `<figure class="photo"><img src="${esc(src)}" alt="${cap}" /><figcaption>${cap}</figcaption></figure>`;
       }
       return `<figure class="photo">${svgPreset(item.kind || "pump", item.caption || "Example photo")}<figcaption>${cap}</figcaption></figure>`;
     }
@@ -2376,6 +2434,29 @@
         return `<section class="manual-document${state.admin ? " admin-editable" : ""}"${htmlEdit}>${block.html || ""}</section>`;
       }
       if (block.type === "text") return `<p${ed}>${esc(block.text)}</p>`;
+      if (block.type === "heading") {
+        const tag = block.level === 2 ? "h2" : block.level === 4 ? "h4" : "h3";
+        return `<${tag} class="block-heading"${ed}>${esc(block.text)}</${tag}>`;
+      }
+      if (block.type === "columns") {
+        const cols = (block.columns || []).map(c => `
+          <div class="column-card">
+            ${c.title ? `<strong>${esc(c.title)}</strong>` : ""}
+            <p>${esc(c.body || "")}</p>
+          </div>`).join("");
+        return `<div class="column-grid">${cols}</div>`;
+      }
+      if (block.type === "chart") {
+        const labels = block.labels || [];
+        const values = block.values || [];
+        const max = Math.max(1, ...values.map(v => Number(v) || 0));
+        const bars = labels.map((lab, i) => {
+          const v = Number(values[i]) || 0;
+          const h = Math.round((v / max) * 100);
+          return `<div class="chart-bar"><span>${esc(lab)}</span><i style="height:${h}%"></i><em>${v}</em></div>`;
+        }).join("");
+        return `<div class="card chart-block"><strong>${esc(block.title || "Chart")}</strong><div class="chart-bars">${bars}</div></div>`;
+      }
       if (block.type === "callout") return `<div class="callout"${ed}>${esc(block.text)}</div>`;
       if (block.type === "warn") return `<div class="warn"${ed}>${esc(block.text)}</div>`;
       if (block.type === "ok") return `<div class="ok"${ed}>${esc(block.text)}</div>`;
@@ -3027,7 +3108,10 @@
         checklist: { type, title: "Checklist", items: ["Check 1"] },
         reveal: { type, title: "Click to reveal", items: [{ label: "Topic", detail: "Explanation." }] },
         simulator: { type, title: "Start simulator", items: ["Permissive 1"], success: "Started.", fail: "Blocked." },
-        "nav-cards": { type, items: [{ tag: "NEW", title: "Card", text: "Text", go: "home" }] }
+        "nav-cards": { type, items: [{ tag: "NEW", title: "Card", text: "Text", go: "home" }] },
+        heading: { type, level: 3, text: "Section subtitle" },
+        columns: { type, columns: [{ title: "Column A", body: "Text" }, { title: "Column B", body: "Text" }] },
+        chart: { type, title: "Trend", chartKind: "bar", labels: ["A", "B"], values: [40, 70] }
       };
       return map[type] || map.text;
     }
