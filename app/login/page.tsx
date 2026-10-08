@@ -31,9 +31,11 @@ function LoginForm() {
   }
 
   return (
-    <main className="app-shell" style={{ maxWidth: 480 }}>
-      <div className="glass-panel">
-        <h1 style={{ marginTop: 0 }}>Acceso</h1>
+    <main className="app-shell auth-shell">
+      <div className="auth-panel glass-panel">
+        <div className="auth-brand" aria-hidden="true">OS</div>
+        <p className="eyebrow">Operational System</p>
+        <h1>Acceso</h1>
         <p className="hint">
           Credenciales demo (Supabase Auth):{" "}
           <code>demo@demo.com</code> / <code>demo123</code>.
