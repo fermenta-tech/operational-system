@@ -19,11 +19,16 @@ export function AppHeader({ title, subtitle }: Props) {
 
   return (
     <header className="app-header">
-      <div>
-        <h1>{title}</h1>
-        {subtitle ? <p>{subtitle}</p> : null}
+      <div className="app-header-copy">
+        <Link className="brand-mark" href="/manuals" aria-label="Ir al inicio de Manuales">
+          OS
+        </Link>
+        <div>
+          <h1>{title}</h1>
+          {subtitle ? <p>{subtitle}</p> : null}
+        </div>
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
+      <div className="app-header-actions">
         <Link className="btn ghost" href="/manuals">
           Manuales
         </Link>
