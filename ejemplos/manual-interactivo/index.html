@@ -173,6 +173,14 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      max-height: 100vh;
+      overflow: hidden;
+    }
+
+    #nav {
+      overflow: auto;
+      min-height: 0;
+      flex: 1;
     }
 
     aside.nav h1 {
@@ -1390,6 +1398,77 @@
       background: #fffdf9;
     }
 
+    .compose-block {
+      position: relative;
+      margin: 14px 0;
+      border-radius: 12px;
+    }
+
+    .compose-block:hover,
+    .compose-block:focus-within {
+      outline: 1px dashed var(--accent);
+      outline-offset: 8px;
+    }
+
+    .compose-tools {
+      position: absolute;
+      top: -12px;
+      right: 0;
+      display: flex;
+      gap: 4px;
+      z-index: 3;
+    }
+
+    .compose-tools button {
+      border: 1px solid var(--line, #d7dde8);
+      background: #fff;
+      color: #1c2333;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      line-height: 1.4;
+      cursor: pointer;
+    }
+
+    .compose-tools button.danger {
+      color: #9b2c2c;
+    }
+
+    .compose-add {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+    }
+
+    .compose-add span {
+      font-size: 12px;
+      color: var(--muted, #5b6578);
+      margin-right: 4px;
+    }
+
+    .compose-add button {
+      border: 1px dashed var(--line, #d7dde8);
+      background: transparent;
+      color: inherit;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .compose-add button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .compose-save {
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0.85;
+    }
+
     .editor-block {
       padding: 10px;
       margin: 8px 0;
@@ -1886,6 +1965,98 @@
       margin-left: 8px;
     }
 
+    .nav-create {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 10px;
+      border: 1px solid #e6ebf2;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .nav-create p {
+      margin: 4px 0 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .nav-create-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .nav-create button {
+      border: 1px solid #d7dde8;
+      background: #fff;
+      color: #1c2333;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .nav-create button:hover {
+      border-color: var(--accent, #c45c26);
+      color: var(--accent, #c45c26);
+    }
+
+    .quiz-compose {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .quiz-compose-q {
+      position: relative;
+      padding: 14px 14px 12px;
+      border: 1px dashed #d7dde8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .quiz-compose-q [contenteditable="true"] {
+      outline: none;
+    }
+
+    .quiz-compose-q .q-ask {
+      margin: 0 0 8px;
+      font-weight: 650;
+    }
+
+    .q-opt {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
+
+    .q-opt button {
+      flex: none;
+      border: 1px solid #d7dde8;
+      background: #fff;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .q-opt button.on {
+      border-color: #1f7a4d;
+      color: #1f7a4d;
+      background: #eefaf3;
+    }
+
+    .q-opt span {
+      flex: 1;
+      min-height: 1.2em;
+    }
+
     html[data-theme="light"] nav .nav-pages button {
       min-height: 34px;
       padding: 7px 9px;
@@ -2148,6 +2319,25 @@
         font-size: 32px;
       }
     }
+
+    .install-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .install-brand img {
+      height: 36px;
+      width: auto;
+      max-width: 120px;
+      object-fit: contain;
+    }
+
+    .install-brand strong {
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
   </style>
 </head>
 
@@ -2155,6 +2345,10 @@
   <div class="app" id="app">
     <aside class="nav">
       <div>
+        <div class="install-brand" id="installBrand" hidden>
+          <img id="installLogo" alt="" hidden />
+          <strong id="installName"></strong>
+        </div>
         <h1>REDUCTION CIRCUIT</h1>
         <p class="sub">HYL 4M · slides · English</p>
       </div>
@@ -2177,6 +2371,7 @@
         </div>
       </div>
       <nav id="nav"></nav>
+      <div id="navCreate"></div>
       <div class="progress-box">
         Training progress
         <div class="bar"><span id="bar"></span></div>
@@ -2194,6 +2389,8 @@
     const VIEWER_PARAMS = new URLSearchParams(location.search);
     const VIEWER_DRAFT_ID = VIEWER_PARAMS.get("draft");
     const VIEWER_EXAMPLE = VIEWER_PARAMS.get("example") === "1";
+    const VIEWER_EDIT = VIEWER_PARAMS.get("edit") === "1" && !!VIEWER_DRAFT_ID;
+    const VIEWER_PUBLISHED = VIEWER_PARAMS.get("published") === "1" && !VIEWER_EDIT;
     const STORAGE = "iom-reduction-progress-v1";
     const READ_STORAGE = "iom-reduction-read-v1";
     const CONTENT_KEY = "iom-reduction-v7";
@@ -2211,6 +2408,8 @@
       role: "operator",
       admin: sessionStorage.getItem("iom-admin") === "1",
       editing: false,
+      compose: false,
+      installBrand: null,
       ui: { hotspot: {}, checks: {}, sim: {}, reveal: {} },
       photoTarget: null,
       logoUrl: _ds.logoUrl !== undefined ? _ds.logoUrl : (localStorage.getItem("iom-logo") || ""),
@@ -2256,6 +2455,8 @@
 
     ["iom-reduction-v1", "iom-reduction-v2", "iom-reduction-v3"].forEach(k => localStorage.removeItem(k));
     let hasUnsavedChanges = false;
+    let saveStatus = "Los cambios se guardan solos";
+    let remoteSaveTimer = null;
     let content = structuredClone(DEFAULT_CONTENT);
 
     async function loadContentAsync() {
@@ -2295,6 +2496,29 @@
       hasUnsavedChanges = true;
       localStorage.setItem("iom-draft-content", JSON.stringify(content));
       document.querySelectorAll("[data-save-changes]").forEach(btn => btn.classList.add("unsaved-alert"));
+      if (!VIEWER_EDIT) return;
+      saveStatus = "Guardando…";
+      const label = document.getElementById("composeSave");
+      if (label) label.textContent = saveStatus;
+      clearTimeout(remoteSaveTimer);
+      remoteSaveTimer = setTimeout(pushDraft, 450);
+    }
+
+    async function pushDraft() {
+      try {
+        const res = await fetch(`/api/manuals/${encodeURIComponent(VIEWER_DRAFT_ID)}`, {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(content)
+        });
+        saveStatus = res.ok ? "Guardado" : "No se pudo guardar";
+        if (res.ok) hasUnsavedChanges = false;
+      } catch {
+        saveStatus = "No se pudo guardar";
+      }
+      const label = document.getElementById("composeSave");
+      if (label) label.textContent = saveStatus;
     }
 
     function commitContent() {
@@ -2393,7 +2617,9 @@
             <button type="button" class="${lang === "es" ? "on" : ""}" data-summary-lang="es">Español</button>
           </div>
           <p>${who}</p>
-          <p class="coach-script" id="coachScript">${captionWords(preview)}</p>
+          ${state.compose
+            ? `<p class="coach-script" id="coachScript" contenteditable="true" data-inline-summary="es">${esc(page.summary?.es || page.summary?.en || page.audio || "Escribe el resumen que narrará el avatar.")}</p>`
+            : `<p class="coach-script" id="coachScript">${captionWords(preview)}</p>`}
           <div class="avatar-btns">
             <button type="button" class="btn" data-speak="${esc(page.id)}" data-lang="${lang}">${state.speaking ? (lang === "es" ? "Narrando…" : "Playing…") : (lang === "es" ? "Narrar resumen" : "Play summary")}</button>
             <button type="button" class="btn ghost" data-stop-speak>${lang === "es" ? "Detener" : "Stop"}</button>
@@ -2461,10 +2687,16 @@
       if (block.type === "warn") return `<div class="warn"${ed}>${esc(block.text)}</div>`;
       if (block.type === "ok") return `<div class="ok"${ed}>${esc(block.text)}</div>`;
       if (block.type === "list") {
-        return `<div class="card">${block.title ? `<strong>${esc(block.title)}</strong>` : ""}<ul>${(block.items || []).map(i => `<li>${esc(i)}</li>`).join("")}</ul></div>`;
+        const items = (block.items || []).map((item, n) => state.admin
+          ? `<li contenteditable="true" data-inline-items="${bi}" data-item-i="${n}">${esc(item)}</li>`
+          : `<li>${esc(item)}</li>`).join("");
+        return `<div class="card">${block.title ? `<strong>${esc(block.title)}</strong>` : ""}<ul>${items}</ul></div>`;
       }
       if (block.type === "steps") {
-        return `${block.title ? `<h3>${esc(block.title)}</h3>` : ""}<ol class="steps">${(block.items || []).map(i => `<li>${esc(i)}</li>`).join("")}</ol>`;
+        const items = (block.items || []).map((item, n) => state.admin
+          ? `<li contenteditable="true" data-inline-items="${bi}" data-item-i="${n}">${esc(item)}</li>`
+          : `<li>${esc(item)}</li>`).join("");
+        return `${block.title ? `<h3>${esc(block.title)}</h3>` : ""}<ol class="steps">${items}</ol>`;
       }
       if (block.type === "table") {
         const head = (block.headers || []).map(h => `<th>${esc(h)}</th>`).join("");
@@ -2538,7 +2770,7 @@
       const items = qs.map((item, i) => `
         <div class="q" data-qid="${esc(page.id)}-${i}">
           <p><strong>${i + 1}.</strong> ${esc(lang === "es" ? (item.qEs || item.q) : item.q)}</p>
-          ${(lang === "es" ? (item.optionsEs || item.options) : item.options || []).map((opt, j) => `<button class="opt" type="button" data-choice="${j}">${["A", "B", "C"][j] || j}. ${esc(opt)}</button>`).join("")}
+          ${(lang === "es" ? (item.optionsEs || item.options) : item.options || []).map((opt, j) => `<button class="opt" type="button" data-choice="${j}">${optionLetter(j)}. ${esc(opt)}</button>`).join("")}
           <div class="feedback" data-fb></div>
         </div>`).join("");
       return `<section class="quiz card">
@@ -2554,7 +2786,23 @@
     }
 
     function isCloser(page) {
-      return (page.quiz || []).length > 0;
+      return (page.quiz || []).length > 0 || page.slideKind === "quiz" || page.slideKind === "summary";
+    }
+
+    function optionLetter(index) {
+      return String.fromCharCode(65 + index);
+    }
+
+    function blankQuestion() {
+      return {
+        q: "¿Nueva pregunta?",
+        qEs: "¿Nueva pregunta?",
+        options: ["Respuesta A", "Respuesta B"],
+        optionsEs: ["Respuesta A", "Respuesta B"],
+        a: 0,
+        why: "",
+        whyEs: ""
+      };
     }
 
     function closers() {
@@ -2609,6 +2857,64 @@
       return "layout-content";
     }
 
+    function composeWrap(html, index) {
+      if (!state.compose) return html;
+      return `<div class="compose-block">
+        <div class="compose-tools">
+          <button type="button" data-move-block="${index}" data-dir="-1" title="Subir">↑</button>
+          <button type="button" data-move-block="${index}" data-dir="1" title="Bajar">↓</button>
+          <button type="button" class="danger" data-del-inline="${index}" title="Quitar">Quitar</button>
+        </div>
+        ${html}
+      </div>`;
+    }
+
+    function composeBar() {
+      if (!state.compose) return "";
+      const kinds = [
+        ["text", "Párrafo"],
+        ["heading", "Subtítulo"],
+        ["callout", "Nota"],
+        ["warn", "Aviso"],
+        ["ok", "OK"],
+        ["list", "Lista"],
+        ["steps", "Pasos"],
+        ["photos", "Foto"],
+        ["videos", "Video"]
+      ];
+      return `<div class="compose-add">
+        <span>Agregar</span>
+        ${kinds.map(([type, label]) => `<button type="button" data-add-inline="${type}">${label}</button>`).join("")}
+        <button type="button" data-del-slide>Quitar slide</button>
+      </div>`;
+    }
+
+    function quizComposer(page) {
+      if (!state.compose) return "";
+      if (page.slideKind !== "quiz" && page.slideKind !== "summary" && !(page.quiz || []).length) return "";
+      const questions = page.quiz || [];
+      const cards = questions.map((q, i) => {
+        const options = q.options || [];
+        return `<article class="quiz-compose-q">
+          <div class="compose-tools">
+            <button type="button" class="danger" data-del-q="${i}">Quitar</button>
+          </div>
+          <p class="q-ask" contenteditable="true" data-inline-q="${i}" data-q-f="q">${esc(q.q || "")}</p>
+          ${options.map((opt, j) => `<div class="q-opt">
+            <button type="button" class="${Number(q.a) === j ? "on" : ""}" data-set-correct="${i}" data-choice-i="${j}">${Number(q.a) === j ? "Correcta" : "Marcar"}</button>
+            <span contenteditable="true" data-inline-opt="${i}" data-opt-i="${j}">${esc(opt)}</span>
+            <button type="button" class="danger" data-del-opt="${i}:${j}">✕</button>
+          </div>`).join("")}
+          <button type="button" data-add-opt="${i}">Agregar respuesta</button>
+        </article>`;
+      }).join("");
+      return `<section class="quiz-compose">
+        <h3>Preguntas y respuestas</h3>
+        ${cards || "<p class=\"hint\">Todavía no hay preguntas.</p>"}
+        <button type="button" class="btn" data-add-q>Agregar pregunta</button>
+      </section>`;
+    }
+
     function renderPage(noAnim = false) {
       const page = pageById(state.page);
       applyPageColors(page);
@@ -2620,11 +2926,13 @@
         ? (closer ? `Ready, ${esc(name)}? Recap this chapter.` : `Hi, ${esc(name)}. Keep going.`)
         : (closer ? "Recap this chapter, then check yourself." : "Type your name on the left to personalize this deck.");
       const alertCls = hasUnsavedChanges ? " unsaved-alert" : "";
-      const adminBar = state.admin ? `<div class="admin-banner">Administrator mode
+      const adminBar = state.compose
+        ? `<div class="admin-banner">Editando en el visor <span class="compose-save" id="composeSave">${esc(saveStatus)}</span></div>`
+        : (state.admin ? `<div class="admin-banner">Administrator mode
         <span>
           <button class="btn${alertCls}" type="button" data-save-changes>Save changes</button>
           <button class="btn ghost" type="button" data-toggle-editor>${state.editing ? "Hide editor" : "Edit this slide"}</button>
-        </span></div>` : "";
+        </span></div>` : "");
       let logoHtmlTop = "";
       let logoHtmlContent = "";
       if (state.logoUrl) {
@@ -2638,16 +2946,28 @@
           ${logoHtmlTop}
           <div class="slide-content-wrapper" style="margin: auto 0;">
             <p class="hello">${hello}</p>
-            <p class="kicker">${esc(page.kicker)}</p>
+            <p class="kicker" ${state.compose ? 'contenteditable="true" data-inline-p="kicker"' : ''}>${esc(page.kicker)}</p>
             <h2 ${state.admin ? 'contenteditable="true" data-inline-p="title"' : ''}>${esc(page.title)}</h2>
             <p class="lead" ${state.admin ? 'contenteditable="true" data-inline-p="lead"' : ''}>${esc(page.lead)}</p>
-            ${(page.blocks || []).map((b, i) => renderBlock(b, page.id, i)).join("")}
+            ${(page.blocks || []).map((b, i) => composeWrap(renderBlock(b, page.id, i), i)).join("")}
+            ${composeBar()}
             ${closer ? narratorCard(page) : ""}
             ${closer ? quizBlock(page) : ""}
+            ${quizComposer(page)}
             ${logoHtmlContent}
           </div>
           ${slideChrome()}
         </article>`;
+    }
+
+    function pageKindLabel(page) {
+      if (page.id === "t01" || page.slideKind === "cover") return "Carátula";
+      if (page.id === "toc" || page.slideKind === "toc") return "Índice";
+      if (page.slideKind === "summary") return "Resumen";
+      if (page.slideKind === "quiz") return "Cuestionario";
+      if (page.slideKind === "chapter" || page.sectionLevel === "chapter") return "Módulo";
+      if (page.slideKind === "subchapter" || page.sectionLevel === "subchapter") return "Submódulo";
+      return "Slide";
     }
 
     function renderNav() {
@@ -2683,15 +3003,36 @@
               <span>${esc(group)}<small>${groupRead}/${items.length}</small></span>
               <i>${groupOpen ? "−" : "+"}</i>
             </button>`;
-          if (!groupOpen || items.length === 1) return groupHead;
+          if (!groupOpen || (items.length === 1 && !state.compose)) return groupHead;
           return groupHead + `<div class="nav-pages">${items.map(p => {
             const read = !!state.read[p.id];
             const done = isCloser(p) && state.done[p.id]?.pass;
-            return `<button class="${p.id === state.page ? "active" : ""} ${read ? "read" : ""} ${done ? "done" : ""}" data-go="${esc(p.id)}"><span class="dot"></span>${esc(p.title)}</button>`;
+            const kind = state.compose ? `<small>${esc(pageKindLabel(p))}</small> ` : "";
+            return `<button class="${p.id === state.page ? "active" : ""} ${read ? "read" : ""} ${done ? "done" : ""}" data-go="${esc(p.id)}">${kind}<span class="dot"></span>${esc(p.title)}</button>`;
           }).join("")}</div>`;
         }).join("");
         return `<section class="nav-chapter">${chapterHead}<div class="nav-subchapters">${groupHtml}</div></section>`;
       }).join("");
+
+      const create = document.getElementById("navCreate");
+      if (create) {
+        create.innerHTML = state.compose ? `<div class="nav-create">
+          <p>Estructura</p>
+          <div class="nav-create-row">
+            <button type="button" data-preset="module">Módulo</button>
+            <button type="button" data-preset="submodule">Submódulo</button>
+            <button type="button" data-preset="slide">Slide</button>
+          </div>
+          <p>Preformato</p>
+          <div class="nav-create-row">
+            <button type="button" data-preset="cover">Carátula</button>
+            <button type="button" data-preset="toc">Índice</button>
+            <button type="button" data-preset="info">Información</button>
+            <button type="button" data-preset="summary">Resumen</button>
+            <button type="button" data-preset="quiz">Cuestionario</button>
+          </div>
+        </div>` : "";
+      }
 
       const readCount = pages().filter(p => state.read[p.id]).length;
       const quizCount = closers().filter(p => state.done[p.id]?.pass).length;
@@ -2930,7 +3271,61 @@
       applyPageColors();
     }
 
+    async function loadInstallBrand() {
+      try {
+        const res = await fetch("/api/brand");
+        if (!res.ok) return null;
+        return await res.json();
+      } catch {
+        return null;
+      }
+    }
+
+    function paintInstallBrand() {
+      const brand = state.installBrand;
+      if (!brand) return;
+      const box = document.getElementById("installBrand");
+      const img = document.getElementById("installLogo");
+      const name = document.getElementById("installName");
+      if (name) name.textContent = brand.companyName || "";
+      if (img) {
+        if (brand.logoUrl) {
+          if (img.getAttribute("src") !== brand.logoUrl) img.src = brand.logoUrl;
+          img.hidden = false;
+        } else {
+          img.hidden = true;
+        }
+      }
+      if (box) box.hidden = !(brand.companyName || brand.logoUrl);
+      document.querySelectorAll(".cover-brand").forEach((el) => {
+        let logo = el.querySelector("img.install-cover-logo");
+        if (brand.logoUrl) {
+          if (!logo) {
+            logo = document.createElement("img");
+            logo.className = "install-cover-logo";
+            logo.alt = "";
+            el.prepend(logo);
+          }
+          if (logo.getAttribute("src") !== brand.logoUrl) logo.setAttribute("src", brand.logoUrl);
+        }
+        const span = el.querySelector("span");
+        if (span && brand.companyName) {
+          const text = (span.textContent || "").trim();
+          if (!text || text === "Operational manual · Draft" || text === "Plant operation · Training manual") {
+            span.textContent = brand.companyName;
+          }
+        }
+      });
+    }
+
     function render() {
+      const sideTitle = document.querySelector("aside.nav h1");
+      const sideSub = document.querySelector("aside.nav .sub");
+      if (VIEWER_DRAFT_ID && sideTitle) {
+        sideTitle.textContent = content.meta?.title || "Manual";
+        if (sideSub) sideSub.textContent = state.compose ? "Edición en el visor" : (VIEWER_PUBLISHED ? "Publicado" : "Borrador");
+      }
+      document.querySelector("aside.nav .role-box")?.classList.toggle("hidden", VIEWER_PUBLISHED);
       renderPage();
       renderNav();
       renderEditor();
@@ -2938,6 +3333,7 @@
       document.getElementById("roleOp").classList.toggle("on", !state.admin);
       document.getElementById("roleAd").classList.toggle("on", state.admin);
       applyTheme(localStorage.getItem(THEME_KEY) || "dark");
+      paintInstallBrand();
     }
 
     function setTalking(on) {
@@ -3135,13 +3531,16 @@
       state.admin = false;
       state.role = "operator";
       state.editing = false;
+      state.compose = false;
       sessionStorage.removeItem("iom-admin");
       render();
     });
     document.getElementById("roleAd").addEventListener("click", () => {
+      if (VIEWER_PUBLISHED) return;
       state.admin = true;
       state.role = "administrator";
-      state.editing = true;
+      state.compose = VIEWER_EDIT;
+      state.editing = !VIEWER_EDIT;
       sessionStorage.setItem("iom-admin", "1");
       render();
     });
@@ -3225,7 +3624,38 @@
       if (!state.admin) return;
       if (e.target.matches("[data-inline-p]")) {
         const page = currentPage();
-        page[e.target.dataset.inlineP] = e.target.innerText;
+        const field = e.target.dataset.inlineP;
+        const previous = page[field];
+        page[field] = e.target.innerText;
+        if (field === "title" && (page.slideKind === "chapter" || page.sectionLevel === "chapter")) {
+          pages().forEach(item => {
+            if (item.chapter === previous) item.chapter = page.title;
+          });
+          if (page.group === previous) page.group = page.title;
+          page.chapter = page.title;
+          renderNav();
+        }
+        saveContent();
+      } else if (e.target.matches("[data-inline-q]")) {
+        const question = (currentPage().quiz || [])[Number(e.target.dataset.inlineQ)];
+        if (question) {
+          question.q = e.target.innerText;
+          question.qEs = e.target.innerText;
+          saveContent();
+        }
+      } else if (e.target.matches("[data-inline-opt]")) {
+        const question = (currentPage().quiz || [])[Number(e.target.dataset.inlineOpt)];
+        const index = Number(e.target.dataset.optI);
+        if (question && question.options) {
+          question.options[index] = e.target.innerText;
+          question.optionsEs = question.options.slice();
+          saveContent();
+        }
+      } else if (e.target.matches("[data-inline-summary]")) {
+        const page = currentPage();
+        page.summary = page.summary || { en: "", es: "" };
+        page.summary.es = e.target.innerText;
+        if (!page.summary.en) page.summary.en = e.target.innerText;
         saveContent();
       } else if (e.target.matches("[data-inline-html]")) {
         const block = currentPage().blocks[Number(e.target.dataset.inlineHtml)];
@@ -3240,10 +3670,283 @@
           block[e.target.dataset.inlineF] = e.target.innerText;
           saveContent();
         }
+      } else if (e.target.matches("[data-inline-items]")) {
+        const block = currentPage().blocks[Number(e.target.dataset.inlineItems)];
+        const index = Number(e.target.dataset.itemI);
+        if (block && Array.isArray(block.items)) {
+          block.items[index] = e.target.innerText;
+          saveContent();
+        }
       }
     });
 
+    function insertSlideAfterCurrent() {
+      const id = "sec-" + Date.now();
+      content.pages.splice(pages().findIndex(p => p.id === state.page) + 1, 0, {
+        id,
+        chapter: currentPage().chapter || "Manual",
+        group: currentPage().group || "Contenido",
+        anchor: "",
+        title: "Nueva slide",
+        kicker: "Contenido",
+        lead: "Escribe la idea principal.",
+        audio: "",
+        summary: { en: "", es: "" },
+        blocks: [{ type: "text", text: "Nuevo párrafo" }],
+        quiz: []
+      });
+      state.page = id;
+      saveContent();
+      render();
+    }
+
+    function moduleName() {
+      const cur = currentPage();
+      if (cur && cur.chapter && cur.chapter !== "Start" && cur.chapter !== "Inicio") return cur.chapter;
+      const found = [...pages()].reverse().find(p =>
+        p.chapter && p.chapter !== "Start" && p.chapter !== "Inicio" && p.id !== "t01" && p.id !== "toc"
+      );
+      return found ? found.chapter : "Módulo";
+    }
+
+    function placePage(page, where) {
+      if (where === "start") {
+        content.pages.unshift(page);
+      } else if (where === "after-chapter") {
+        let last = -1;
+        pages().forEach((item, index) => {
+          if ((item.chapter || item.group) === page.chapter) last = index;
+        });
+        content.pages.splice(last < 0 ? content.pages.length : last + 1, 0, page);
+      } else if (where === "after") {
+        const index = pages().findIndex(item => item.id === state.page);
+        content.pages.splice(index < 0 ? content.pages.length : index + 1, 0, page);
+      } else {
+        content.pages.push(page);
+      }
+      state.page = page.id;
+      saveContent();
+      render();
+    }
+
+    function openOrCreate(match, page, where) {
+      const existing = pages().find(match);
+      if (existing) {
+        state.page = existing.id;
+        render();
+        return;
+      }
+      placePage(page, where);
+    }
+
+    function addPreset(kind) {
+      const chapter = moduleName();
+      const id = "p-" + Date.now().toString(36);
+      if (kind === "module") {
+        const title = "Nuevo módulo";
+        placePage({
+          id, chapter: title, group: title, title,
+          kicker: "Módulo", lead: "Idea principal de este módulo.",
+          slideKind: "chapter", sectionLevel: "chapter",
+          blocks: [{ type: "text", text: "Contenido del módulo." }],
+          quiz: []
+        }, "end");
+        return;
+      }
+      if (kind === "submodule") {
+        const title = "Nuevo submódulo";
+        placePage({
+          id, chapter, group: title, title,
+          kicker: "Submódulo", lead: "Contenido de este submódulo.",
+          slideKind: "subchapter", sectionLevel: "subchapter",
+          blocks: [{ type: "text", text: "Contenido del submódulo." }],
+          quiz: []
+        }, "after-chapter");
+        return;
+      }
+      if (kind === "cover") {
+        openOrCreate(
+          p => p.id === "t01" || p.slideKind === "cover",
+          {
+            id: "t01", chapter: "Inicio", group: "Carátula", title: content.meta?.title || "Carátula",
+            kicker: "Inicio", lead: "Portada del manual.",
+            slideKind: "cover",
+            blocks: [{ type: "text", text: "Título, equipo y aviso de la carátula." }],
+            quiz: []
+          },
+          "start"
+        );
+        return;
+      }
+      if (kind === "toc") {
+        openOrCreate(
+          p => p.id === "toc" || p.slideKind === "toc",
+          {
+            id: "toc", chapter: "Inicio", group: "Índice", title: "Índice",
+            kicker: "Contenido", lead: "Los módulos están en el menú de la izquierda.",
+            slideKind: "toc",
+            blocks: [{ type: "text", text: "Desde aquí se entra a cada módulo." }],
+            quiz: []
+          },
+          "start"
+        );
+        return;
+      }
+      if (kind === "summary") {
+        placePage({
+          id, chapter, group: chapter + " · Resumen", title: "Resumen",
+          kicker: "Resumen", lead: "Escucha al avatar y repasa la idea.",
+          slideKind: "summary",
+          summary: { es: "Escribe aquí el resumen que narrará el avatar.", en: "" },
+          blocks: [],
+          quiz: []
+        }, "after-chapter");
+        return;
+      }
+      if (kind === "quiz") {
+        placePage({
+          id, chapter, group: chapter + " · Cuestionario", title: "Cuestionario",
+          kicker: "Evaluación", lead: "Responde y revisa el resultado.",
+          slideKind: "quiz",
+          summary: { es: "Antes de responder, escucha este resumen.", en: "" },
+          blocks: [],
+          quiz: [blankQuestion()]
+        }, "after-chapter");
+        return;
+      }
+      const cur = currentPage();
+      placePage({
+        id,
+        chapter,
+        group: cur && cur.group && cur.id !== "t01" && cur.id !== "toc" ? cur.group : "Información",
+        title: kind === "info" ? "Información" : "Nueva slide",
+        kicker: kind === "info" ? "Información" : "Slide",
+        lead: "Explica este punto en pocas líneas.",
+        slideKind: "content",
+        sectionLevel: "content",
+        blocks: [{ type: "text", text: "Nuevo párrafo" }],
+        quiz: []
+      }, "after");
+    }
+
     document.body.addEventListener("click", e => {
+      if (state.compose) {
+        const preset = e.target.closest("[data-preset]");
+        if (preset) {
+          e.preventDefault();
+          addPreset(preset.getAttribute("data-preset"));
+          return;
+        }
+        const addInline = e.target.closest("[data-add-inline]");
+        if (addInline) {
+          e.preventDefault();
+          const page = currentPage();
+          page.blocks = page.blocks || [];
+          const type = addInline.getAttribute("data-add-inline");
+          const seeded = {
+            text: { type, text: "Nuevo párrafo" },
+            heading: { type, level: 3, text: "Subtítulo" },
+            callout: { type, text: "Nota para el operador." },
+            warn: { type, text: "Advertencia." },
+            ok: { type, text: "Condición correcta." },
+            list: { type, title: "Lista", items: ["Elemento 1"] },
+            steps: { type, title: "Pasos", items: ["Paso 1"] }
+          };
+          page.blocks.push(seeded[type] || emptyBlock(type));
+          saveContent();
+          render();
+          return;
+        }
+        const delInline = e.target.closest("[data-del-inline]");
+        if (delInline) {
+          e.preventDefault();
+          currentPage().blocks.splice(Number(delInline.getAttribute("data-del-inline")), 1);
+          saveContent();
+          render();
+          return;
+        }
+        const moveInline = e.target.closest("[data-move-block]");
+        if (moveInline) {
+          e.preventDefault();
+          const i = Number(moveInline.getAttribute("data-move-block"));
+          const j = i + Number(moveInline.dataset.dir);
+          const arr = currentPage().blocks || [];
+          if (j >= 0 && j < arr.length) {
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+            saveContent();
+            render();
+          }
+          return;
+        }
+        if (e.target.closest("[data-add-slide]")) {
+          e.preventDefault();
+          insertSlideAfterCurrent();
+          return;
+        }
+        if (e.target.closest("[data-del-slide]")) {
+          e.preventDefault();
+          if (pages().length < 2) return;
+          content.pages = pages().filter(p => p.id !== state.page);
+          state.page = pages()[0].id;
+          saveContent();
+          render();
+          return;
+        }
+        if (e.target.closest("[data-add-q]")) {
+          e.preventDefault();
+          const page = currentPage();
+          page.quiz = page.quiz || [];
+          page.slideKind = page.slideKind === "summary" ? "summary" : "quiz";
+          page.quiz.push(blankQuestion());
+          saveContent();
+          render();
+          return;
+        }
+        const setCorrect = e.target.closest("[data-set-correct]");
+        if (setCorrect) {
+          e.preventDefault();
+          const question = (currentPage().quiz || [])[Number(setCorrect.getAttribute("data-set-correct"))];
+          if (question) question.a = Number(setCorrect.dataset.choiceI);
+          saveContent();
+          render();
+          return;
+        }
+        const addOpt = e.target.closest("[data-add-opt]");
+        if (addOpt) {
+          e.preventDefault();
+          const question = (currentPage().quiz || [])[Number(addOpt.getAttribute("data-add-opt"))];
+          if (question) {
+            question.options = question.options || [];
+            question.options.push("Nueva respuesta");
+            question.optionsEs = question.options.slice();
+          }
+          saveContent();
+          render();
+          return;
+        }
+        const delOpt = e.target.closest("[data-del-opt]");
+        if (delOpt) {
+          e.preventDefault();
+          const [qi, oi] = delOpt.getAttribute("data-del-opt").split(":").map(Number);
+          const question = (currentPage().quiz || [])[qi];
+          if (question && (question.options || []).length > 2) {
+            question.options.splice(oi, 1);
+            question.optionsEs = question.options.slice();
+            if (question.a >= question.options.length) question.a = 0;
+            saveContent();
+            render();
+          }
+          return;
+        }
+        const delQ = e.target.closest("[data-del-q]");
+        if (delQ) {
+          e.preventDefault();
+          currentPage().quiz.splice(Number(delQ.getAttribute("data-del-q")), 1);
+          saveContent();
+          render();
+          return;
+        }
+      }
       const language = e.target.closest("[data-summary-lang]");
       if (language) {
         state.summaryLanguage = language.getAttribute("data-summary-lang") === "es" ? "es" : "en";
@@ -3536,8 +4239,8 @@
         } else {
           fb.className = "feedback show bad";
           fb.textContent = lang === "es"
-            ? `Incorrecto. La opción correcta es ${["A", "B", "C"][item.a]}. ${item.whyEs || ""}`
-            : `Incorrect. The correct option is ${["A", "B", "C"][item.a]}. ${item.why || ""}`;
+            ? `Incorrecto. La opción correcta es ${optionLetter(item.a)}. ${item.whyEs || ""}`
+            : `Incorrect. The correct option is ${optionLetter(item.a)}. ${item.why || ""}`;
         }
       });
       const pct = Math.round(right / qs.length * 100);
@@ -3556,7 +4259,7 @@
     }
 
     document.addEventListener("keydown", e => {
-      if (e.target.matches("input, textarea, select")) return;
+      if (e.target.matches("input, textarea, select") || e.target.isContentEditable) return;
       if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); goRel(1); }
       if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); goRel(-1); }
     });
@@ -3566,6 +4269,19 @@
     applyTheme("light");
     (async function initViewer() {
       content = await loadContentAsync();
+      state.installBrand = await loadInstallBrand();
+      if (VIEWER_EDIT) {
+        state.admin = true;
+        state.role = "administrator";
+        state.editing = false;
+        state.compose = true;
+        sessionStorage.setItem("iom-admin", "1");
+      }
+      if (VIEWER_PUBLISHED) {
+        state.admin = false;
+        state.compose = false;
+        state.editing = false;
+      }
       if (!pages().length) {
         document.getElementById("main").innerHTML = `<section class="card"><h2>No se pudo cargar el manual</h2><p>Verifica Supabase (seed del ejemplo) o la API <code>/api/manuals/…</code>. Fallback: <code>content.js</code> embebido.</p></section>`;
         document.getElementById("progressText").textContent = "0 / 0 sections";

@@ -122,6 +122,8 @@ export type ManualIndexEntry = {
   id: string;
   title: string;
   updatedAt: string;
+  status: "draft" | "published";
+  inviteeIds: string[];
 };
 
 export const MANUAL_CONTENT_VER = 8;

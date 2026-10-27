@@ -29,7 +29,7 @@ Login en `/login` → Supabase Auth email/password. La sesión viaja en cookies 
 | `title` | `text` | Título carátula |
 | `subtitle` | `text` | Subtítulo opcional |
 | `kind` | `text` | `example` \| `draft` |
-| `owner_id` | `uuid` | `auth.users.id` (null en ejemplo) |
+| `owner_id` | `uuid` | Id local de `data/workspace.json`. Nullable. La migración 002 quita la FK a `auth.users` |
 | `content` | `jsonb` | `{ ver, meta?, pages[] }` — mismo shape que `REDUCTION_SLIDES` |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
@@ -53,6 +53,7 @@ Manual de ejemplo sembrado: **`m-reduction-circuit-example`** (contenido desde `
 ## Migración y seed remoto
 
 1. **SQL (una vez)** — Supabase Dashboard → SQL Editor → pegar y ejecutar `supabase/migrations/001_manuals.sql`.
+   Si la tabla ya existía con `manuals_owner_id_fkey`, ejecutar también `supabase/migrations/002_manuals_owner_no_auth_fk.sql`.
 
 2. **Seed** (usuario demo + manual REDUCTION):
 

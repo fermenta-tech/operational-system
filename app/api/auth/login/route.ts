@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { DEMO_SESSION_COOKIE } from "@/lib/auth/demo-session";
+import {
+  createSessionToken,
+  SESSION_COOKIE,
+  SESSION_COOKIE_OPTIONS,
+} from "@/lib/auth/session-token";
 import { demoAuth } from "@/lib/supabase/config";
+import { authenticate } from "@/lib/workspace/store";
 
 export async function POST(request: Request) {
   let body: { email?: string; user?: string; password?: string };
@@ -10,9 +16,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const rawUser = String(body.email ?? body.user ?? "").trim();
+  const rawUser = String(body.email ?? body.user ?? "").trim().toLowerCase();
   const password = String(body.password ?? "");
-
   const email = rawUser.includes("@")
     ? rawUser
     : rawUser === "demo"
@@ -23,12 +28,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) {
+  const user = await authenticate(email, password);
+  if (!user) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  return NextResponse.json({ ok: true });
+  const token = await createSessionToken(user);
+  const res = NextResponse.json({ ok: true, role: user.role });
+  res.cookies.set(SESSION_COOKIE, token, SESSION_COOKIE_OPTIONS);
+  res.cookies.set(DEMO_SESSION_COOKIE, "", { ...SESSION_COOKIE_OPTIONS, maxAge: 0 });
+  return res;
 }

@@ -9,11 +9,12 @@
     "seed:supabase": "node scripts/seed-supabase.mjs"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.12.7",
+    "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.117.3",
     "next": "^15.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "sweetalert2": "^11.26.25"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
