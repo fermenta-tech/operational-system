@@ -2,7 +2,7 @@
   "name": "operational-system",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/prepare-public-assets.mjs && next dev",
     "build": "node scripts/prepare-public-assets.mjs && next build",
     "start": "next start",
     "build-content": "npx --yes marked -i manual/index.md -o /tmp/reduction-manual.html && node ejemplos/manual-interactivo/build-content.mjs /tmp/reduction-manual.html ejemplos/manual-interactivo/content.js",
