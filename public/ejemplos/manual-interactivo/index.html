@@ -1,0 +1,4295 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>REDUCTION CIRCUIT — Slide manual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nata+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1b2a4a;
+      --navy-2: #243656;
+      --accent: #c45c26;
+      --focus: #7eb0e0;
+      --ok: #3ecf8e;
+      --ok-ink: #9af0c7;
+      --ok-bg: rgba(62, 207, 142, .14);
+      --bad: #f07178;
+      --bad-ink: #ffb4b8;
+      --bad-bg: rgba(240, 113, 120, .14);
+      --warn: #f0b27a;
+      --warn-ink: #f7d3aa;
+      --warn-bg: rgba(240, 178, 122, .14);
+      --ink: #e8eef8;
+      --muted: #9aa8bd;
+      --line: #2d3b55;
+      --card: #24344f;
+      --card-border: #4a5f80;
+      --hover: rgba(224, 122, 61, .12);
+      --bg-app: #0b1220;
+      --bg-main: #10192b;
+      --slide: #151d2e;
+      --lead: #b7c4d8;
+      --kicker-bg: rgba(255, 255, 255, .07);
+      --input-bg: #0f1726;
+      --ghost-bg: transparent;
+      --ghost-ink: #e8eef8;
+      --ghost-line: #3a4d68;
+      --opt-bg: #121a2b;
+      --opt-picked: rgba(91, 155, 213, .16);
+      --drawer-bg: #121a2b;
+      --admin-bg: rgba(240, 178, 122, .14);
+      --admin-ink: #f0b27a;
+      --admin-line: rgba(240, 178, 122, .38);
+      --callout-bg: rgba(196, 92, 38, .16);
+      --table-line: #2d3b55;
+      --photo-bg: #121a2b;
+      --chrome: rgba(255, 255, 255, .1);
+      --dot: #3a4d68;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .38);
+      color-scheme: dark;
+    }
+
+    html[data-theme="light"] {
+      --navy: #ffffff;
+      --navy-2: #f3f4f6;
+      --focus: #2b6cb0;
+      --ok: #1f7a4d;
+      --ok-ink: #1f7a4d;
+      --ok-bg: #e7f6ee;
+      --bad: #9b2c2c;
+      --bad-ink: #9b2c2c;
+      --bad-bg: #fdecec;
+      --warn: #8a5a00;
+      --warn-ink: #8a5a00;
+      --warn-bg: #fff4d6;
+      --ink: #1c2333;
+      --muted: #5b6578;
+      --line: #d7dde8;
+      --card: #fff;
+      --card-border: #e6e0d4;
+      --hover: #fff8ee;
+      --bg-app: #f1f5f9;
+      --bg-main: #f8fafc;
+      --slide: #ffffff;
+      --lead: #3a4456;
+      --kicker-bg: #ece6da;
+      --input-bg: #fff;
+      --ghost-bg: #fff;
+      --ghost-ink: #1b2a4a;
+      --ghost-line: #d7dde8;
+      --opt-bg: #fff;
+      --opt-picked: #eef3fb;
+      --drawer-bg: #ffffff;
+      --admin-bg: #fff4d6;
+      --admin-ink: #6a4b00;
+      --admin-line: #e6d08a;
+      --callout-bg: #fff4ec;
+      --table-line: #ece6da;
+      --photo-bg: #e8edf5;
+      --chrome: rgba(27, 42, 74, .12);
+      --dot: #c9c1b2;
+      --shadow: 0 18px 50px rgba(16, 25, 43, .18);
+      color-scheme: light;
+    }
+
+    html[data-theme="light"] aside.nav {
+      color: var(--ink);
+      border-right: 1px solid var(--line);
+    }
+
+    html[data-theme="light"] aside.nav .sub,
+    html[data-theme="light"] .op-box label,
+    html[data-theme="light"] .role-box label,
+    html[data-theme="light"] .nav-label,
+    html[data-theme="light"] .progress-box {
+      color: var(--muted);
+    }
+
+    html[data-theme="light"] nav button {
+      color: var(--ink);
+    }
+
+    html[data-theme="light"] nav button:hover,
+    html[data-theme="light"] .role-row button {
+      background: #e9eef5;
+      color: #334155;
+    }
+
+    html[data-theme="light"] .role-row button.on {
+      background: #dbe5f1;
+      color: #0f172a;
+      box-shadow: none;
+    }
+
+    html[data-theme="light"] .layout-cover .btn.ghost,
+    html[data-theme="light"] .layout-recap .btn.ghost {
+      color: var(--ghost-ink);
+      border-color: var(--ghost-line);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+    }
+
+    body {
+      font-family: "Nata Sans", "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg-app);
+      line-height: 1.45;
+    }
+
+    button,
+    input,
+    select,
+    textarea,
+    table {
+      font-family: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 268px 1fr;
+      min-height: 100%;
+    }
+
+    .app.editing {
+      grid-template-columns: 270px minmax(0, 1fr) 440px;
+    }
+
+    aside.nav {
+      background: var(--navy);
+      color: #e8eef8;
+      padding: 20px 16px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 100vh;
+      overflow: hidden;
+    }
+
+    #nav {
+      overflow: auto;
+      min-height: 0;
+      flex: 1;
+    }
+
+    aside.nav h1 {
+      font-size: 15px;
+      margin: 0 0 4px;
+      font-weight: 700;
+    }
+
+    aside.nav .sub {
+      font-size: 12px;
+      color: #a9b6cc;
+      margin: 0;
+    }
+
+    .op-box,
+    .role-box {
+      background: var(--navy-2);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .op-box label,
+    .role-box label,
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: #a9b6cc;
+      margin-bottom: 4px;
+    }
+
+    .op-box input,
+    .role-box input,
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 0;
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--input-bg);
+      color: var(--ink);
+    }
+
+    .op-box input,
+    .role-box input {
+      background: #fff;
+      color: #1c2333;
+    }
+
+    .theme-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .theme-row button {
+      flex: 1;
+      border: 0;
+      border-radius: 6px;
+      padding: 8px;
+      cursor: pointer;
+      background: #31466a;
+      color: #d5deee;
+      font-size: 12px;
+    }
+
+    .theme-row button.on {
+      background: #3ecf8e;
+      color: #0b1220;
+    }
+
+    .field textarea {
+      min-height: 72px;
+      resize: vertical;
+    }
+
+    .role-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .role-row button {
+      flex: 1;
+      border: 0;
+      border-radius: 6px;
+      padding: 8px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.05);
+      color: #8ea0bb;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .role-row button.on {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 1;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #8ea0bb;
+      margin: 10px 8px 4px;
+    }
+
+    nav button,
+    .tiny {
+      text-align: left;
+      background: transparent;
+      color: #d5deee;
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    nav button:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateX(4px);
+    }
+
+    nav button.active {
+      background: rgba(196, 92, 38, 0.15);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    nav button .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #5d6f8c;
+      margin-right: 8px;
+      transition: background 0.2s ease;
+    }
+
+    nav button.done .dot {
+      background: #3ecf8e;
+    }
+
+    nav button.active .dot {
+      background: var(--accent);
+    }
+
+    .progress-box {
+      font-size: 12px;
+      color: #b7c4d8;
+    }
+
+    .bar {
+      height: 6px;
+      background: #31466a;
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .bar>span {
+      display: block;
+      height: 100%;
+      background: #3ecf8e;
+      width: 0;
+    }
+
+    main {
+      padding: 22px 28px 22px;
+      max-width: none;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(900px 420px at 90% -10%, rgba(224, 122, 61, .16), transparent 50%),
+        radial-gradient(700px 360px at 0% 100%, rgba(42, 157, 143, .12), transparent 45%),
+        var(--bg-main);
+    }
+
+    .slide-board {
+      margin: 0;
+      width: 100%;
+      border-radius: 22px;
+      padding: 40px 60px 32px;
+      position: relative;
+      overflow-y: auto;
+      animation: slideIn .42s ease;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .slide-board.layout-content {
+      background: var(--slide);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+    }
+
+    .slide-board.layout-cover,
+    .slide-board.layout-recap {
+      background: var(--slide-cover, linear-gradient(160deg, rgba(224, 122, 61, .18), transparent 42%), linear-gradient(#172235, #101827));
+      color: var(--ink);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .35);
+    }
+
+    .slide-board.layout-cover h2 {
+      font-size: 80px;
+      line-height: 1.05;
+      letter-spacing: -.03em;
+      max-width: 14ch;
+      margin: 0 0 32px;
+      color: var(--h1-color, var(--ink));
+    }
+
+    .slide-board.layout-cover .lead {
+      font-size: 19px;
+      max-width: 46ch;
+      color: var(--ink);
+      opacity: 0.8;
+    }
+
+    .slide-board.layout-recap {
+      padding-top: 20px;
+    }
+
+    .hello {
+      font-size: 13px;
+      letter-spacing: .04em;
+      color: var(--accent, #c45c26);
+      margin: 0 0 10px;
+      font-weight: 700;
+    }
+
+    .layout-cover .hello,
+    .layout-recap .hello {
+      color: var(--accent, #f0b27a);
+    }
+
+    .kicker {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      margin: 0 0 8px;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background: var(--kicker-bg);
+    }
+
+    .layout-cover .kicker,
+    .layout-recap .kicker {
+      background: rgba(255, 255, 255, .08);
+      color: var(--accent, #f0b27a);
+    }
+
+    h2 {
+      margin: 0 0 32px;
+      font-size: 70px;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+      color: var(--h1-color, var(--ink));
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+      color: var(--h2-color, var(--ink));
+    }
+
+    p,
+    li {
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .lead {
+      font-size: 21px;
+      color: var(--lead, var(--ink));
+      margin: 0 0 40px;
+    }
+
+    .layout-cover .lead,
+    .layout-recap .lead {
+      color: var(--lead, var(--ink));
+      opacity: 0.8;
+    }
+
+    .card,
+    .editor-block {
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin: 24px 0;
+      color: var(--ink);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .layout-content .card {
+      animation: rise .45s ease both;
+    }
+
+    .layout-content .card:nth-of-type(2) {
+      animation-delay: .06s;
+    }
+
+    .layout-content .card:nth-of-type(3) {
+      animation-delay: .12s;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(.985);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .no-anim,
+    .no-anim .card {
+      animation: none !important;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: 3px 8px;
+      border-radius: 99px;
+      background: var(--kicker-bg);
+      color: var(--ink);
+    }
+
+    .unsaved-alert {
+      background: #3ecf8e !important;
+      color: #0b1220 !important;
+      border-color: #3ecf8e !important;
+    }
+
+    .coach-dock .tag {
+      background: rgba(240, 178, 122, .15);
+      color: #f0b27a;
+    }
+
+    .audio-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 14px 0 18px;
+    }
+
+    .audio-bar button,
+    .actions button,
+    .home-card button,
+    .btn {
+      background: var(--navy);
+      color: #fff;
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .home-card button:hover,
+    .btn:hover {
+      transform: translateY(-1.5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      filter: brightness(1.1);
+    }
+
+    .btn.ghost,
+    .actions button.ghost {
+      background: var(--ghost-bg);
+      color: var(--ghost-ink);
+      border: 1px solid var(--ghost-line);
+    }
+
+    .btn.danger {
+      background: var(--bad);
+    }
+
+    .audio-bar small {
+      color: var(--muted);
+    }
+
+    .coach-dock {
+      display: grid;
+      grid-template-columns: 108px 1fr;
+      gap: 18px;
+      align-items: center;
+      margin: 8px 0 18px;
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(8, 14, 26, .55);
+      border: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    .coach-orb {
+      width: 108px;
+      height: 108px;
+      border-radius: 50%;
+      padding: 0;
+      border: 0;
+      cursor: pointer;
+      position: relative;
+      background: #0d1524;
+    }
+
+    .coach-orb::after {
+      content: "";
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 2px dashed rgba(240, 178, 122, .45);
+      animation: spin 12s linear infinite;
+      pointer-events: none;
+    }
+
+    .coach-orb.talking::after {
+      border-color: #3ecf8e;
+      animation-duration: 3s;
+    }
+
+    .coach-face {
+      width: 108px;
+      height: 108px;
+      display: block;
+      border-radius: 50%;
+    }
+
+    .coach-face .mouth {
+      transform-box: fill-box;
+      transform-origin: 50% 50%;
+    }
+
+    .coach-orb.talking .mouth {
+      animation: talk .2s ease-in-out infinite;
+    }
+
+    .eq {
+      display: flex;
+      gap: 3px;
+      height: 16px;
+      align-items: flex-end;
+      margin-top: 8px;
+    }
+
+    .eq i {
+      width: 3px;
+      height: 4px;
+      background: #f0b27a;
+      border-radius: 2px;
+      display: block;
+    }
+
+    .coach-orb.talking .eq i {
+      animation: bar .35s ease-in-out infinite alternate;
+    }
+
+    .coach-orb.talking .eq i:nth-child(2) {
+      animation-delay: .08s;
+    }
+
+    .coach-orb.talking .eq i:nth-child(3) {
+      animation-delay: .16s;
+    }
+
+    .coach-orb.talking .eq i:nth-child(4) {
+      animation-delay: .04s;
+    }
+
+    .coach-orb.talking .eq i:nth-child(5) {
+      animation-delay: .2s;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes talk {
+
+      0%,
+      100% {
+        transform: scaleY(.25);
+      }
+
+      50% {
+        transform: scaleY(1.15);
+      }
+    }
+
+    @keyframes bar {
+      from {
+        height: 4px;
+      }
+
+      to {
+        height: 16px;
+      }
+    }
+
+    .coach-meta {
+      color: var(--muted);
+    }
+
+    .coach-meta h3 {
+      margin: 4px 0 6px;
+      color: var(--h2-color, var(--ink));
+    }
+
+    .coach-script {
+      background: var(--bg-main, rgba(255, 255, 255, .06));
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--ink);
+      margin: 0 0 12px;
+    }
+
+    .coach-script .w.on {
+      color: var(--accent, #f0b27a);
+      font-weight: 700;
+    }
+
+    .avatar-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 700px) {
+      .coach-dock {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--table-line);
+      text-align: left;
+      padding: 9px 6px;
+      vertical-align: top;
+    }
+
+    th {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    tbody tr:hover td {
+      background: var(--hover);
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      padding: 16px 20px;
+      background: var(--callout-bg);
+      margin: 24px 0;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .warn {
+      border-left: 4px solid var(--warn);
+      background: var(--warn-bg);
+      color: var(--warn-ink);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .ok {
+      border-left: 4px solid var(--ok);
+      background: var(--ok-bg);
+      color: var(--ok-ink);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .media-grid,
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+    }
+
+    .column-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .column-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .column-card strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .block-heading {
+      margin: 18px 0 8px;
+    }
+
+    .chart-block .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      min-height: 140px;
+      margin-top: 12px;
+      padding-top: 8px;
+    }
+
+    .chart-bar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .chart-bar i {
+      display: block;
+      width: 100%;
+      max-width: 48px;
+      min-height: 4px;
+      background: var(--accent);
+      border-radius: 4px 4px 0 0;
+    }
+
+    .chart-bar em {
+      font-style: normal;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .photo,
+    .video {
+      background: var(--photo-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .photo img,
+    .video iframe,
+    .video video {
+      width: 100%;
+      display: block;
+      max-height: 220px;
+      object-fit: cover;
+      background: #121c2e;
+    }
+
+    .photo figcaption,
+    .video figcaption {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px 10px 10px;
+      margin: 0;
+    }
+
+    .manual-document {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .manual-document img {
+      display: block;
+      width: auto !important;
+      height: auto !important;
+      max-width: min(100%, 1180px);
+      max-height: 78vh;
+      margin: 28px auto 12px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .manual-document .manual-brand img {
+      width: 160px !important;
+      margin: 0 0 24px;
+      background: transparent;
+    }
+
+    .cover-hero {
+      padding: 34px;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 92% 8%, rgba(196, 92, 38, .14), transparent 28%),
+        linear-gradient(145deg, #ffffff 0%, #f8fafc 62%, #eef3f8 100%);
+      box-shadow: 0 22px 60px rgba(15, 23, 42, .10);
+    }
+
+    .cover-brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .manual-document .cover-brand img {
+      width: 132px !important;
+      height: auto !important;
+      margin: 0;
+      background: transparent;
+    }
+
+    .cover-eyebrow {
+      margin-top: 58px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .14em;
+    }
+
+    .cover-hero h3 {
+      max-width: 760px;
+      margin: 12px 0 18px;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 1;
+      letter-spacing: -.045em;
+      color: #0f172a;
+    }
+
+    .cover-copy {
+      max-width: 760px;
+      margin: 0;
+      color: #475569;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    .cover-equipment {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .cover-equipment div {
+      padding: 18px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .8);
+    }
+
+    .cover-equipment strong,
+    .cover-equipment span {
+      display: block;
+    }
+
+    .cover-equipment strong {
+      color: #0f172a;
+      font-size: 17px;
+    }
+
+    .cover-equipment span {
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .cover-start {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: #1b2a4a;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .cover-notice {
+      margin-top: 18px;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .cover-notice summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .cover-notice p {
+      font-size: 12px;
+    }
+
+    @media (max-width: 700px) {
+      .cover-hero {
+        padding: 22px;
+      }
+
+      .cover-brand {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .cover-eyebrow {
+        margin-top: 36px;
+      }
+
+      .cover-equipment {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .manual-document table {
+      display: block;
+      overflow-x: auto;
+      margin: 24px 0;
+      border: 1px solid var(--table-line);
+      border-radius: 10px;
+    }
+
+    .manual-document th,
+    .manual-document td {
+      min-width: 120px;
+      padding: 10px 12px;
+      border-right: 1px solid var(--table-line);
+    }
+
+    .manual-document blockquote {
+      margin: 20px 0;
+      padding: 4px 0 4px 20px;
+      border-left: 4px solid var(--accent);
+      color: var(--lead);
+    }
+
+    .manual-document a {
+      color: var(--focus);
+    }
+
+    .video-art {
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #121c2e;
+      color: #d7e4f7;
+      padding: 12px;
+    }
+
+    .play {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(12, 20, 36, .75);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .quiz {
+      margin-top: 18px;
+      background: var(--card);
+      color: var(--ink);
+    }
+
+    .quiz h3 {
+      margin-top: 0;
+    }
+
+    .q {
+      margin: 0 0 14px;
+    }
+
+    .opt {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin: 6px 0;
+      padding: 10px 12px;
+      border: 1px solid var(--card-border);
+      background: var(--opt-bg);
+      color: var(--ink);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .opt:hover {
+      border-color: var(--focus);
+    }
+
+    .opt.picked {
+      border-color: var(--focus);
+      background: var(--opt-picked);
+    }
+
+    .opt.right {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+    }
+
+    .opt.wrong {
+      border-color: var(--bad);
+      background: var(--bad-bg);
+    }
+
+    .feedback {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.good {
+      background: var(--ok-bg);
+      color: var(--ok-ink);
+    }
+
+    .feedback.bad {
+      background: var(--bad-bg);
+      color: var(--bad-ink);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .score {
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    .home-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .home-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(16, 25, 43, .12);
+    }
+
+    .home-card h3 {
+      margin: 8px 0;
+    }
+
+    ol.steps {
+      padding-left: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    ol.steps li {
+      margin: 8px 0;
+      padding: 10px 12px 10px 48px;
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+    }
+
+    ol.steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #1b2a4a;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+    }
+
+    .equip {
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 13px;
+    }
+
+    .admin-banner {
+      background: var(--admin-bg);
+      border: 1px solid var(--admin-line);
+      color: var(--admin-ink);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .flow-board {
+      background: #0f1c33;
+      color: #d7e4f7;
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .flow-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .flow-node {
+      background: #1f3b5c;
+      color: #fff;
+      border: 1px solid #7ea2d0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      min-width: 120px;
+      text-align: left;
+    }
+
+    .flow-node:hover,
+    .flow-node.on {
+      border-color: #c45c26;
+      background: #2a4d73;
+    }
+
+    .flow-node small {
+      display: block;
+      color: #9db0cc;
+    }
+
+    .arrow {
+      color: #3ecf8e;
+      font-weight: 700;
+    }
+
+    .flow-detail {
+      margin-top: 10px;
+      background: #17304f;
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-height: 48px;
+      font-size: 14px;
+    }
+
+    .check-item,
+    .sim-row,
+    .reveal-card {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: var(--opt-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+
+    .check-item.on,
+    .sim-row.on {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+    }
+
+    .reveal-card {
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .reveal-card .detail {
+      display: none;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .reveal-card.open .detail {
+      display: block;
+      margin-top: 6px;
+    }
+
+    .sim-result {
+      margin-top: 10px;
+      font-weight: 700;
+    }
+
+    .drawer {
+      background: var(--drawer-bg);
+      color: var(--ink);
+      border-left: 1px solid var(--line);
+      padding: 16px 14px 40px;
+      overflow: auto;
+      max-height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    .drawer h3 {
+      margin: 0 0 10px;
+    }
+
+    .field {
+      margin: 8px 0 12px;
+    }
+
+    .field label {
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--ink);
+    }
+
+    .field textarea.html-source {
+      min-height: 360px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .admin-editable {
+      outline: 1px dashed transparent;
+      outline-offset: 5px;
+      transition: outline-color .18s ease, background .18s ease;
+    }
+
+    .admin-editable:hover,
+    .admin-editable:focus {
+      outline-color: var(--accent);
+      background: #fffdf9;
+    }
+
+    .compose-block {
+      position: relative;
+      margin: 14px 0;
+      border-radius: 12px;
+    }
+
+    .compose-block:hover,
+    .compose-block:focus-within {
+      outline: 1px dashed var(--accent);
+      outline-offset: 8px;
+    }
+
+    .compose-tools {
+      position: absolute;
+      top: -12px;
+      right: 0;
+      display: flex;
+      gap: 4px;
+      z-index: 3;
+    }
+
+    .compose-tools button {
+      border: 1px solid var(--line, #d7dde8);
+      background: #fff;
+      color: #1c2333;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      line-height: 1.4;
+      cursor: pointer;
+    }
+
+    .compose-tools button.danger {
+      color: #9b2c2c;
+    }
+
+    .compose-add {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+    }
+
+    .compose-add span {
+      font-size: 12px;
+      color: var(--muted, #5b6578);
+      margin-right: 4px;
+    }
+
+    .compose-add button {
+      border: 1px dashed var(--line, #d7dde8);
+      background: transparent;
+      color: inherit;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .compose-add button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .compose-save {
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0.85;
+    }
+
+    .editor-block {
+      padding: 10px;
+      margin: 8px 0;
+    }
+
+    .editor-block header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .row-btns {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .row-btns button {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    .pin-msg {
+      font-size: 12px;
+      color: #f8d2d2;
+      margin-top: 6px;
+      min-height: 16px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .slide-chrome {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 24px;
+      border-top: 1px solid var(--chrome);
+    }
+
+    .corp-logo {
+      max-width: 160px;
+      max-height: 50px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    .corp-logo.top-right {
+      position: absolute;
+      top: 28px;
+      right: 32px;
+      z-index: 10;
+    }
+
+    .corp-logo.content-bottom {
+      display: block;
+      margin: 30px auto 0;
+    }
+
+    .layout-cover .slide-chrome,
+    .layout-recap .slide-chrome {
+      border-top-color: rgba(255, 255, 255, .1);
+    }
+
+    .slide-count {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .layout-cover .slide-count,
+    .layout-recap .slide-count {
+      color: var(--muted);
+      opacity: 0.7;
+    }
+
+    .dots {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 220px;
+    }
+
+    .dots i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--dot);
+      display: block;
+    }
+
+    .dots i.on {
+      background: var(--accent, #c45c26);
+      transform: scale(1.25);
+    }
+
+    .layout-cover .dots i,
+    .layout-recap .dots i {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .layout-cover .dots i.on,
+    .layout-recap .dots i.on {
+      background: var(--accent, #f0b27a);
+    }
+
+    .slide-chrome button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .layout-cover .btn.ghost,
+    .layout-recap .btn.ghost {
+      background: transparent;
+      color: #eef3f8;
+      border-color: rgba(255, 255, 255, .25);
+    }
+
+    nav button {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+
+    /* White UI refresh */
+    body {
+      background:
+        radial-gradient(900px 520px at 88% -10%, rgba(196, 92, 38, .09), transparent 58%),
+        #eef2f7;
+    }
+
+    .app {
+      grid-template-columns: 288px minmax(0, 1fr);
+    }
+
+    aside.nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 18px;
+      background: rgba(255, 255, 255, .94);
+      border-right: 1px solid #e2e8f0;
+      box-shadow: 12px 0 36px rgba(15, 23, 42, .05);
+      backdrop-filter: blur(18px);
+      z-index: 20;
+    }
+
+    aside.nav h1 {
+      color: #0f172a;
+      font-size: 17px;
+      letter-spacing: -.02em;
+    }
+
+    aside.nav .sub {
+      margin-top: 4px;
+    }
+
+    .op-box,
+    .role-box {
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+    }
+
+    .op-box input,
+    .role-box input {
+      min-height: 42px;
+      border: 1px solid #dbe3ed;
+      border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .op-box input:focus,
+    .role-box input:focus,
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: #7c9cc5;
+      box-shadow: 0 0 0 4px rgba(43, 108, 176, .12);
+    }
+
+    html[data-theme="light"] .role-row {
+      padding: 3px;
+      border-radius: 10px;
+      background: #e9eef5;
+    }
+
+    html[data-theme="light"] .role-row button {
+      min-height: 36px;
+      background: transparent;
+      color: #64748b;
+      border: 0;
+      border-radius: 8px;
+    }
+
+    html[data-theme="light"] .role-row button:hover {
+      color: #0f172a;
+      transform: translateY(-1px);
+    }
+
+    html[data-theme="light"] .role-row button.on {
+      background: #ffffff;
+      color: #17233a;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, .10);
+    }
+
+    nav {
+      gap: 6px;
+      padding-right: 3px;
+    }
+
+    .nav-label {
+      margin: 15px 10px 2px;
+      color: #8290a5;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    html[data-theme="light"] nav button {
+      min-height: 38px;
+      padding: 9px 11px;
+      color: #475569;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      line-height: 1.25;
+    }
+
+    html[data-theme="light"] nav button:hover {
+      color: #0f172a;
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+      transform: translateX(3px);
+    }
+
+    html[data-theme="light"] nav button.active {
+      color: #9a431e;
+      background: linear-gradient(135deg, #fff5ef, #f7e3d8);
+      border-color: #edc6b2;
+      box-shadow: 0 5px 14px rgba(196, 92, 38, .12);
+    }
+
+    nav button .dot {
+      width: 7px;
+      height: 7px;
+      box-shadow: 0 0 0 3px rgba(93, 111, 140, .09);
+    }
+
+    .progress-box {
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+    }
+
+    .bar {
+      height: 7px;
+      background: #e2e8f0;
+    }
+
+    .bar > span {
+      background: linear-gradient(90deg, #c45c26, #e48a55);
+    }
+
+    main {
+      padding: 28px;
+      background:
+        radial-gradient(800px 440px at 94% 0%, rgba(196, 92, 38, .09), transparent 58%),
+        linear-gradient(180deg, #f8fafc, #eef2f7);
+    }
+
+    .slide-board {
+      min-width: 0;
+      padding: 42px clamp(28px, 5vw, 72px) 28px;
+      border: 1px solid rgba(203, 213, 225, .8);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .97);
+      box-shadow:
+        0 28px 70px rgba(15, 23, 42, .10),
+        0 2px 6px rgba(15, 23, 42, .04);
+    }
+
+    .slide-board.layout-cover,
+    .slide-board.layout-recap,
+    .slide-board.layout-content {
+      background: rgba(255, 255, 255, .97);
+      color: #1c2333;
+    }
+
+    h2,
+    .slide-board.layout-cover h2 {
+      max-width: 14ch;
+      margin-bottom: 22px;
+      color: #0f172a;
+      font-size: clamp(42px, 6vw, 78px);
+      line-height: .98;
+    }
+
+    .lead,
+    .slide-board.layout-cover .lead {
+      max-width: 800px;
+      margin-bottom: 30px;
+      color: #475569;
+      opacity: 1;
+    }
+
+    .hello {
+      color: #b95022;
+    }
+
+    .kicker,
+    .layout-cover .kicker,
+    .layout-recap .kicker {
+      padding: 6px 11px;
+      color: #9a431e;
+      background: #fff1e8;
+      border: 1px solid #f1d2c1;
+    }
+
+    .btn,
+    .audio-bar button,
+    .actions button,
+    .home-card button {
+      min-height: 40px;
+      padding: 10px 16px;
+      border: 1px solid #1b2a4a;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #243b64, #172640);
+      color: #fff;
+      box-shadow: 0 5px 12px rgba(27, 42, 74, .18);
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+
+    .btn:hover,
+    .audio-bar button:hover,
+    .actions button:hover,
+    .home-card button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 9px 18px rgba(27, 42, 74, .22);
+      filter: brightness(1.06);
+    }
+
+    .btn:active,
+    .audio-bar button:active,
+    .actions button:active,
+    .home-card button:active {
+      transform: translateY(0);
+    }
+
+    .btn.ghost,
+    .actions button.ghost,
+    html[data-theme="light"] .layout-cover .btn.ghost,
+    html[data-theme="light"] .layout-recap .btn.ghost {
+      background: #fff;
+      color: #334155;
+      border-color: #cbd5e1;
+      box-shadow: 0 3px 9px rgba(15, 23, 42, .06);
+    }
+
+    .slide-chrome {
+      margin-top: 36px;
+      padding-top: 22px;
+      border-top-color: #e2e8f0;
+    }
+
+    .card,
+    .home-card,
+    .editor-block {
+      border-color: #e2e8f0;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, .07);
+    }
+
+    .manual-document table {
+      border-color: #dbe3ed;
+      background: #fff;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, .06);
+    }
+
+    .manual-document tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    .manual-document tbody tr:hover {
+      background: #fff7f2;
+    }
+
+    .cover-hero {
+      border-color: #dde5ee;
+      box-shadow: 0 18px 48px rgba(15, 23, 42, .09);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .cover-hero:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 26px 58px rgba(15, 23, 42, .12);
+    }
+
+    .nav-chapter {
+      display: grid;
+      gap: 5px;
+    }
+
+    html[data-theme="light"] nav .chapter-nav,
+    html[data-theme="light"] nav .subchapter-nav {
+      display: flex;
+      width: 100%;
+      height: auto;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transform: none;
+    }
+
+    html[data-theme="light"] nav .chapter-nav {
+      margin-top: 5px;
+      padding: 11px 12px;
+      color: #334155;
+      background: #f8fafc;
+      border-color: #dfe6ee;
+      font-size: 12px;
+    }
+
+    html[data-theme="light"] nav .chapter-nav.open {
+      color: #15233d;
+      background: #eaf0f7;
+      border-color: #cbd7e5;
+      box-shadow: 0 5px 13px rgba(15, 23, 42, .07);
+    }
+
+    nav .chapter-nav span,
+    nav .subchapter-nav span {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    nav .chapter-nav b {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .015em;
+    }
+
+    nav .chapter-nav small,
+    nav .subchapter-nav small {
+      color: #7c899a;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    nav .chapter-nav i,
+    nav .subchapter-nav i {
+      color: #9a431e;
+      font-size: 16px;
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    .nav-subchapters {
+      display: grid;
+      gap: 4px;
+      margin: 0 0 5px 10px;
+      padding-left: 10px;
+      border-left: 2px solid #e5ebf2;
+    }
+
+    html[data-theme="light"] nav .subchapter-nav {
+      padding: 8px 10px;
+      color: #526174;
+      background: transparent;
+      border-color: transparent;
+      font-size: 11px;
+    }
+
+    html[data-theme="light"] nav .subchapter-nav.open {
+      color: #9a431e;
+      background: #fff7f2;
+      border-color: #f0d1c1;
+    }
+
+    .nav-pages {
+      display: grid;
+      gap: 3px;
+      margin-left: 8px;
+    }
+
+    .nav-create {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 10px;
+      border: 1px solid #e6ebf2;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .nav-create p {
+      margin: 4px 0 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .nav-create-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .nav-create button {
+      border: 1px solid #d7dde8;
+      background: #fff;
+      color: #1c2333;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .nav-create button:hover {
+      border-color: var(--accent, #c45c26);
+      color: var(--accent, #c45c26);
+    }
+
+    .quiz-compose {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .quiz-compose-q {
+      position: relative;
+      padding: 14px 14px 12px;
+      border: 1px dashed #d7dde8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .quiz-compose-q [contenteditable="true"] {
+      outline: none;
+    }
+
+    .quiz-compose-q .q-ask {
+      margin: 0 0 8px;
+      font-weight: 650;
+    }
+
+    .q-opt {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
+
+    .q-opt button {
+      flex: none;
+      border: 1px solid #d7dde8;
+      background: #fff;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .q-opt button.on {
+      border-color: #1f7a4d;
+      color: #1f7a4d;
+      background: #eefaf3;
+    }
+
+    .q-opt span {
+      flex: 1;
+      min-height: 1.2em;
+    }
+
+    html[data-theme="light"] nav .nav-pages button {
+      min-height: 34px;
+      padding: 7px 9px;
+      font-size: 11px;
+    }
+
+    nav button.read .dot,
+    nav button.done .dot {
+      background: #22a06b;
+      box-shadow: 0 0 0 3px rgba(34, 160, 107, .12);
+    }
+
+    .read-status {
+      margin-top: 8px;
+      padding: 5px 9px;
+      color: #64748b;
+      background: #fff;
+      border: 1px solid #dbe3ed;
+      border-radius: 99px;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+      transition: all .18s ease;
+    }
+
+    .read-status:hover {
+      color: #1f5f48;
+      border-color: #86c8ad;
+      background: #f0fbf6;
+      transform: translateY(-1px);
+    }
+
+    .read-status.is-read {
+      color: #1f7a4d;
+      background: #e7f6ee;
+      border-color: #a6d8c1;
+    }
+
+    .coach-dock {
+      grid-template-columns: 150px minmax(0, 1fr);
+      padding: 22px;
+      background:
+        radial-gradient(circle at 0 0, rgba(56, 189, 248, .10), transparent 34%),
+        #f8fafc;
+      border-color: #dce5ef;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, .08);
+    }
+
+    .coach-orb.robot-orb {
+      width: 140px;
+      height: 140px;
+      overflow: hidden;
+      background: #fff;
+      border: 4px solid #fff;
+      border-radius: 28px;
+      box-shadow: 0 12px 26px rgba(15, 23, 42, .16);
+    }
+
+    .robot-coach {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 17%;
+      transform: scale(1.12);
+      transition: transform .25s ease;
+    }
+
+    .robot-orb:hover .robot-coach,
+    .robot-orb.talking .robot-coach {
+      transform: scale(1.18);
+    }
+
+    .robot-orb.talking {
+      box-shadow: 0 0 0 6px rgba(34, 160, 107, .14), 0 14px 30px rgba(15, 23, 42, .18);
+    }
+
+    .summary-language {
+      display: inline-flex;
+      gap: 3px;
+      padding: 3px;
+      background: #e8eef5;
+      border-radius: 10px;
+    }
+
+    .summary-language button {
+      padding: 7px 12px;
+      color: #64748b;
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .summary-language button.on {
+      color: #17233a;
+      background: #fff;
+      box-shadow: 0 3px 9px rgba(15, 23, 42, .10);
+    }
+
+    .coach-script {
+      color: #334155;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+    }
+
+    .quiz {
+      border: 1px solid #dce5ef;
+    }
+
+    .quiz .q {
+      padding: 16px 0;
+      border-bottom: 1px solid #edf1f5;
+    }
+
+    .quiz .q:last-of-type {
+      border-bottom: 0;
+    }
+
+    .opt {
+      min-height: 44px;
+      background: #f8fafc;
+      border-color: #dce5ef;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+
+    .opt:hover {
+      background: #fff7f2;
+      border-color: #dca98f;
+      transform: translateX(3px);
+    }
+
+    .layout-cover .cover-hero {
+      padding: 22px 26px;
+    }
+
+    .layout-cover .cover-eyebrow {
+      margin-top: 24px;
+    }
+
+    .layout-cover .cover-equipment {
+      margin-top: 22px;
+    }
+
+    .layout-cover .cover-start {
+      margin-top: 16px;
+    }
+
+    .layout-cover .cover-notice {
+      margin-top: 12px;
+    }
+
+    .layout-content h2,
+    .layout-recap h2 {
+      max-width: 18ch;
+      font-size: clamp(34px, 4.6vw, 58px);
+      line-height: 1.04;
+    }
+
+    .toc-grid,
+    .section-directory {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 14px;
+      margin: 8px 0 24px;
+    }
+
+    .toc-card,
+    .section-card {
+      position: relative;
+      display: flex;
+      min-height: 132px;
+      padding: 20px;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      overflow: hidden;
+      color: #17233a !important;
+      text-decoration: none;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(196, 92, 38, .13), transparent 42%),
+        #ffffff;
+      border: 1px solid #dfe6ee;
+      border-radius: 18px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, .06);
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .toc-card:hover,
+    .section-card:hover {
+      border-color: #ddb49f;
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, .10);
+    }
+
+    .toc-card > span {
+      color: #b95022;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .toc-card strong,
+    .section-card strong {
+      font-size: 17px;
+      line-height: 1.25;
+    }
+
+    .toc-card i,
+    .section-card span {
+      color: #64748b;
+      font-size: 13px;
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1100px) {
+      .app.editing {
+        grid-template-columns: 1fr;
+      }
+
+      .app.editing .drawer {
+        position: relative;
+        max-height: none;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside.nav {
+        position: relative;
+        height: auto;
+        max-height: none;
+        border-right: 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .media-grid,
+      .home-grid {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding: 12px;
+      }
+
+      .slide-board {
+        padding: 20px 16px 16px;
+        min-height: auto;
+      }
+
+      .slide-board.layout-cover h2 {
+        font-size: 32px;
+      }
+    }
+
+    .install-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .install-brand img {
+      height: 36px;
+      width: auto;
+      max-width: 120px;
+      object-fit: contain;
+    }
+
+    .install-brand strong {
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app">
+    <aside class="nav">
+      <div>
+        <div class="install-brand" id="installBrand" hidden>
+          <img id="installLogo" alt="" hidden />
+          <strong id="installName"></strong>
+        </div>
+        <h1>REDUCTION CIRCUIT</h1>
+        <p class="sub">HYL 4M · slides · English</p>
+      </div>
+      <div class="role-box">
+        <label>Mode</label>
+        <div class="role-row">
+          <button type="button" id="roleOp" class="on">Operator</button>
+          <button type="button" id="roleAd">Administrator</button>
+        </div>
+      </div>
+      <div class="op-box">
+        <label for="operator">Operator name</label>
+        <input id="operator" placeholder="Type your name" />
+      </div>
+      <div class="role-box hidden">
+        <label>Slide theme</label>
+        <div class="theme-row">
+          <button type="button" id="themeDark">Dark</button>
+          <button type="button" id="themeLight" class="on">Light</button>
+        </div>
+      </div>
+      <nav id="nav"></nav>
+      <div id="navCreate"></div>
+      <div class="progress-box">
+        Training progress
+        <div class="bar"><span id="bar"></span></div>
+        <div id="progressText">0 / 0 sections</div>
+      </div>
+    </aside>
+    <main id="main"></main>
+    <aside class="drawer hidden" id="editor"></aside>
+  </div>
+  <input type="file" id="importFile" accept="application/json" hidden />
+  <input type="file" id="photoFile" accept="image/*" hidden />
+  <script src="/ejemplos/manual-interactivo/content.js"></script>
+  <script>
+    const PASS = 70;
+    const VIEWER_PARAMS = new URLSearchParams(location.search);
+    const VIEWER_DRAFT_ID = VIEWER_PARAMS.get("draft");
+    const VIEWER_EXAMPLE = VIEWER_PARAMS.get("example") === "1";
+    const VIEWER_EDIT = VIEWER_PARAMS.get("edit") === "1" && !!VIEWER_DRAFT_ID;
+    const VIEWER_PUBLISHED = VIEWER_PARAMS.get("published") === "1" && !VIEWER_EDIT;
+    const STORAGE = "iom-reduction-progress-v1";
+    const READ_STORAGE = "iom-reduction-read-v1";
+    const CONTENT_KEY = "iom-reduction-v7";
+    const CONTENT_VER = 7;
+    const THEME_KEY = "iom-theme";
+    let _ds = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}");
+
+    const state = {
+      operator: localStorage.getItem("iom-op") || "",
+      done: JSON.parse(localStorage.getItem(STORAGE) || "{}"),
+      read: JSON.parse(localStorage.getItem(READ_STORAGE) || "{}"),
+      summaryLanguage: localStorage.getItem("iom-summary-language") || "en",
+      page: "t01",
+      speaking: false,
+      role: "operator",
+      admin: sessionStorage.getItem("iom-admin") === "1",
+      editing: false,
+      compose: false,
+      installBrand: null,
+      ui: { hotspot: {}, checks: {}, sim: {}, reveal: {} },
+      photoTarget: null,
+      logoUrl: _ds.logoUrl !== undefined ? _ds.logoUrl : (localStorage.getItem("iom-logo") || ""),
+      logoPos: _ds.logoPos !== undefined ? _ds.logoPos : (localStorage.getItem("iom-logopos") || "top-right"),
+      accentColor: _ds.accentColor !== undefined ? _ds.accentColor : (localStorage.getItem("iom-accent") || ""),
+      bgColor: _ds.bgColor !== undefined ? _ds.bgColor : (localStorage.getItem("iom-bg") || ""),
+      slideColor: _ds.slideColor !== undefined ? _ds.slideColor : (localStorage.getItem("iom-slide") || ""),
+      textColor: _ds.textColor !== undefined ? _ds.textColor : (localStorage.getItem("iom-text") || ""),
+      drawerColor: _ds.drawerColor !== undefined ? _ds.drawerColor : (localStorage.getItem("iom-drawer") || ""),
+      h1Color: _ds.h1Color !== undefined ? _ds.h1Color : (localStorage.getItem("iom-h1") || ""),
+      h2Color: _ds.h2Color !== undefined ? _ds.h2Color : (localStorage.getItem("iom-h2") || "")
+    };
+
+    const THEME_PRESETS = {
+      default_dark: { mode: "dark", accent: "#c45c26", bg: "#0a0f18", drawer: "#111a2a", slide: "#172235", text: "#eef3f8", h1: "#ffffff", h2: "#f8fafc" },
+      default_light: { mode: "light", accent: "#c45c26", bg: "#f3f4f6", drawer: "#e5e7eb", slide: "#ffffff", text: "#374151", h1: "#111827", h2: "#1f2937" },
+      ocean: { mode: "dark", accent: "#38bdf8", bg: "#0f172a", drawer: "#1e293b", slide: "#1e293b", text: "#cbd5e1", h1: "#f8fafc", h2: "#e2e8f0" },
+      forest: { mode: "dark", accent: "#10b981", bg: "#022c22", drawer: "#064e3b", slide: "#064e3b", text: "#a7f3d0", h1: "#ecfdf5", h2: "#d1fae5" },
+      monochrome: { mode: "light", accent: "#4b5563", bg: "#ffffff", drawer: "#f3f4f6", slide: "#ffffff", text: "#4b5563", h1: "#000000", h2: "#111827" }
+    };
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+
+    function svgPreset(kind, caption) {
+      const label = esc(caption || kind);
+      const presets = {
+        pump: `<svg viewBox="0 0 260 140" width="100%" height="160"><rect width="260" height="140" fill="#cfd8e6"/><rect x="30" y="78" width="200" height="14" fill="#8b96a8"/><rect x="58" y="50" width="70" height="46" rx="4" fill="#2c3d5c"/><circle cx="160" cy="72" r="28" fill="#3d5278"/><circle cx="160" cy="72" r="12" fill="#d9e4f2"/><rect x="186" y="64" width="40" height="16" fill="#c45c26"/><text x="20" y="24" fill="#1b2a4a" font-size="12" font-family="Segoe UI">${label}</text></svg>`,
+        tower: `<svg viewBox="0 0 260 140" width="100%" height="160"><rect width="260" height="140" fill="#c5d4c8"/><path d="M70 120 L90 30 H170 L190 120 Z" fill="#4d6a5a"/><rect x="100" y="18" width="60" height="12" fill="#2c3d5c"/><rect x="40" y="118" width="180" height="10" fill="#6b7c70"/><text x="20" y="24" fill="#1b2a4a" font-size="12" font-family="Segoe UI">${label}</text></svg>`,
+        exchanger: `<svg viewBox="0 0 260 140" width="100%" height="160"><rect width="260" height="140" fill="#d9d3c5"/><rect x="40" y="50" width="180" height="44" rx="22" fill="#5a6e86"/><rect x="55" y="58" width="150" height="28" rx="14" fill="#cfd8e6"/><rect x="20" y="64" width="22" height="16" fill="#c45c26"/><rect x="218" y="64" width="22" height="16" fill="#c45c26"/><text x="20" y="24" fill="#1b2a4a" font-size="12" font-family="Segoe UI">${label}</text></svg>`,
+        hmi: `<svg viewBox="0 0 260 140" width="100%" height="160"><rect width="260" height="140" fill="#1b2436"/><rect x="24" y="36" width="212" height="84" rx="6" fill="#243656"/><rect x="36" y="48" width="70" height="18" rx="3" fill="#1f7a4d"/><rect x="36" y="72" width="70" height="18" rx="3" fill="#1f7a4d"/><rect x="36" y="96" width="70" height="18" rx="3" fill="#9b2c2c"/><text x="116" y="61" fill="#d7e4f7" font-size="11" font-family="Segoe UI">LEVEL OK</text><text x="116" y="85" fill="#d7e4f7" font-size="11" font-family="Segoe UI">VALVES OPEN</text><text x="116" y="109" fill="#d7e4f7" font-size="11" font-family="Segoe UI">TRIP ACTIVE</text><text x="20" y="24" fill="#d7e4f7" font-size="12" font-family="Segoe UI">${label}</text></svg>`
+      };
+      return presets[kind] || presets.pump;
+    }
+
+    const DEFAULT_CONTENT = {
+      ver: CONTENT_VER,
+      pages: (typeof REDUCTION_SLIDES !== "undefined" && REDUCTION_SLIDES) ? REDUCTION_SLIDES : []
+    };
+
+    ["iom-reduction-v1", "iom-reduction-v2", "iom-reduction-v3"].forEach(k => localStorage.removeItem(k));
+    let hasUnsavedChanges = false;
+    let saveStatus = "Los cambios se guardan solos";
+    let remoteSaveTimer = null;
+    let content = structuredClone(DEFAULT_CONTENT);
+
+    async function loadContentAsync() {
+      try {
+        if (VIEWER_EXAMPLE) {
+          const res = await fetch("/api/manuals/public/example");
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.pages?.length) return data;
+          }
+          return structuredClone(DEFAULT_CONTENT);
+        }
+        if (VIEWER_DRAFT_ID) {
+          const res = await fetch(`/api/manuals/${encodeURIComponent(VIEWER_DRAFT_ID)}`, { credentials: "include" });
+          if (res.ok) {
+            const draftParsed = await res.json();
+            if (draftParsed?.pages?.length) return draftParsed;
+          }
+        }
+        const draft = localStorage.getItem("iom-draft-content");
+        if (draft && !VIEWER_DRAFT_ID && !VIEWER_EXAMPLE) {
+          hasUnsavedChanges = true;
+          return JSON.parse(draft);
+        }
+        const raw = localStorage.getItem(CONTENT_KEY);
+        if (!raw) return structuredClone(DEFAULT_CONTENT);
+        const parsed = JSON.parse(raw);
+        if (!parsed.pages || !parsed.pages.length) return structuredClone(DEFAULT_CONTENT);
+        if (parsed.ver !== CONTENT_VER) return structuredClone(DEFAULT_CONTENT);
+        return parsed;
+      } catch {
+        return structuredClone(DEFAULT_CONTENT);
+      }
+    }
+
+    function saveContent() {
+      hasUnsavedChanges = true;
+      localStorage.setItem("iom-draft-content", JSON.stringify(content));
+      document.querySelectorAll("[data-save-changes]").forEach(btn => btn.classList.add("unsaved-alert"));
+      if (!VIEWER_EDIT) return;
+      saveStatus = "Guardando…";
+      const label = document.getElementById("composeSave");
+      if (label) label.textContent = saveStatus;
+      clearTimeout(remoteSaveTimer);
+      remoteSaveTimer = setTimeout(pushDraft, 450);
+    }
+
+    async function pushDraft() {
+      try {
+        const res = await fetch(`/api/manuals/${encodeURIComponent(VIEWER_DRAFT_ID)}`, {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(content)
+        });
+        saveStatus = res.ok ? "Guardado" : "No se pudo guardar";
+        if (res.ok) hasUnsavedChanges = false;
+      } catch {
+        saveStatus = "No se pudo guardar";
+      }
+      const label = document.getElementById("composeSave");
+      if (label) label.textContent = saveStatus;
+    }
+
+    function commitContent() {
+      content.ver = CONTENT_VER;
+      localStorage.setItem(CONTENT_KEY, JSON.stringify(content));
+
+      let ds = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}");
+      if (ds.accentColor !== undefined) localStorage.setItem("iom-accent", ds.accentColor);
+      if (ds.bgColor !== undefined) localStorage.setItem("iom-bg", ds.bgColor);
+      if (ds.slideColor !== undefined) localStorage.setItem("iom-slide", ds.slideColor);
+      if (ds.textColor !== undefined) localStorage.setItem("iom-text", ds.textColor);
+      if (ds.drawerColor !== undefined) localStorage.setItem("iom-drawer", ds.drawerColor);
+      if (ds.h1Color !== undefined) localStorage.setItem("iom-h1", ds.h1Color);
+      if (ds.h2Color !== undefined) localStorage.setItem("iom-h2", ds.h2Color);
+      if (ds.logoUrl !== undefined) localStorage.setItem("iom-logo", ds.logoUrl);
+      if (ds.logoPos !== undefined) localStorage.setItem("iom-logopos", ds.logoPos);
+      if (ds.themeMode !== undefined) localStorage.setItem(THEME_KEY, ds.themeMode);
+
+      localStorage.removeItem("iom-draft-content");
+      localStorage.removeItem("iom-draft-settings");
+
+      hasUnsavedChanges = false;
+      document.querySelectorAll("[data-save-changes]").forEach(btn => {
+        btn.classList.remove("unsaved-alert");
+        const old = btn.textContent;
+        btn.textContent = "Saved!";
+        setTimeout(() => btn.textContent = old, 2000);
+      });
+    }
+
+    function saveProgress() {
+      localStorage.setItem(STORAGE, JSON.stringify(state.done));
+      localStorage.setItem(READ_STORAGE, JSON.stringify(state.read));
+      localStorage.setItem("iom-op", state.operator);
+    }
+
+    function pages() { return content.pages; }
+    function pageById(id) { return pages().find(p => p.id === id) || pages()[0]; }
+
+    function youtubeId(url) {
+      const m = String(url || "").match(/(?:youtu\.be\/|v=)([\w-]{11})/);
+      return m ? m[1] : "";
+    }
+
+    function captionWords(text) {
+      return String(text || "").split(/(\s+)/).map((part, i) => {
+        if (!part.trim()) return part;
+        return `<span class="w" data-w="${i}">${esc(part)}</span>`;
+      }).join("");
+    }
+
+    function coachSvg(talking) {
+      return `<svg class="coach-face" id="flatAvatar" viewBox="0 0 120 120" role="img" aria-label="Control room coach">
+        <defs>
+          <clipPath id="orb"><circle cx="60" cy="60" r="58"/></clipPath>
+        </defs>
+        <circle cx="60" cy="60" r="58" fill="#1a2740"/>
+        <g clip-path="url(#orb)">
+          <rect x="0" y="78" width="120" height="42" fill="#243656"/>
+          <path d="M18 86 H102" stroke="#c45c26" stroke-width="4"/>
+          <circle cx="60" cy="58" r="26" fill="#c9845a"/>
+          <path d="M30 46 C30 18, 90 18, 90 46 Z" fill="#ffffff"/>
+          <rect x="22" y="46" width="76" height="5" rx="2" fill="#f0f0f0"/>
+          <rect x="52" y="20" width="16" height="26" rx="4" fill="#e0e0e0"/>
+          <path d="M28 56 Q22 62 28 74" fill="none" stroke="#8a8f98" stroke-width="3"/>
+          <circle cx="28" cy="56" r="5" fill="#1c1c1c"/>
+          <circle cx="92" cy="56" r="5" fill="#1c1c1c"/>
+          <path d="M92 56 H104 V70" fill="none" stroke="#8a8f98" stroke-width="3"/>
+          <circle cx="104" cy="74" r="4" fill="#3ecf8e"/>
+          <ellipse cx="51" cy="58" rx="3.4" ry="4.2" fill="#1c2333"/>
+          <ellipse cx="69" cy="58" rx="3.4" ry="4.2" fill="#1c2333"/>
+          <path d="M48 70 Q60 74 72 70" fill="none" stroke="#8a4b32" stroke-width="2"/>
+          <ellipse class="mouth" cx="60" cy="78" rx="6.5" ry="4" fill="#7a2e2e"/>
+        </g>
+        <circle cx="60" cy="60" r="58" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+      </svg>
+      <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>`;
+    }
+
+    function narratorCard(page) {
+      const talking = state.speaking ? " talking" : "";
+      const lang = state.summaryLanguage === "es" ? "es" : "en";
+      const preview = page.summary?.[lang] || page.audio || "No summary has been written for this section yet.";
+      const who = lang === "es"
+        ? (state.operator ? `${esc(state.operator)}, escucha este resumen.` : "Escucha este resumen.")
+        : (state.operator ? `${esc(state.operator)}, listen to this recap.` : "Listen to this recap.");
+      return `<section class="coach-dock" aria-label="Section summary coach">
+        <button type="button" class="coach-orb robot-orb${talking}" id="coachOrb" data-speak="${esc(page.id)}" data-lang="${lang}" title="${lang === "es" ? "Narrar resumen" : "Play summary"}">
+          <img class="robot-coach" src="/manual-asset/robot.png" alt="Robot safety coach" />
+        </button>
+        <div class="coach-meta">
+          <span class="tag">${lang === "es" ? "RESUMEN DEL CAPÍTULO" : "CHAPTER RECAP"}</span>
+          <h3>Safety Coach · ${lang === "es" ? "Resumen bilingüe" : "Bilingual summary"}</h3>
+          <div class="summary-language" role="group" aria-label="Summary language">
+            <button type="button" class="${lang === "en" ? "on" : ""}" data-summary-lang="en">English</button>
+            <button type="button" class="${lang === "es" ? "on" : ""}" data-summary-lang="es">Español</button>
+          </div>
+          <p>${who}</p>
+          ${state.compose
+            ? `<p class="coach-script" id="coachScript" contenteditable="true" data-inline-summary="es">${esc(page.summary?.es || page.summary?.en || page.audio || "Escribe el resumen que narrará el avatar.")}</p>`
+            : `<p class="coach-script" id="coachScript">${captionWords(preview)}</p>`}
+          <div class="avatar-btns">
+            <button type="button" class="btn" data-speak="${esc(page.id)}" data-lang="${lang}">${state.speaking ? (lang === "es" ? "Narrando…" : "Playing…") : (lang === "es" ? "Narrar resumen" : "Play summary")}</button>
+            <button type="button" class="btn ghost" data-stop-speak>${lang === "es" ? "Detener" : "Stop"}</button>
+          </div>
+        </div>
+      </section>`;
+    }
+
+    function renderPhoto(item) {
+      const cap = esc(item.caption || "Photo");
+      const src = item.src || item.url;
+      if (src) {
+        return `<figure class="photo"><img src="${esc(src)}" alt="${cap}" /><figcaption>${cap}</figcaption></figure>`;
+      }
+      return `<figure class="photo">${svgPreset(item.kind || "pump", item.caption || "Example photo")}<figcaption>${cap}</figcaption></figure>`;
+    }
+
+    function renderVideo(item, pageId, idx) {
+      const title = esc(item.title || "Example video");
+      const steps = (item.steps || []).map(s => `<li>${esc(s)}</li>`).join("");
+      const yt = youtubeId(item.url);
+      const isFile = /\.(mp4|webm|ogg)(\?|$)/i.test(item.url || "");
+      let body;
+      if (yt) {
+        body = `<iframe src="https://www.youtube.com/embed/${yt}" title="${title}" allowfullscreen height="200"></iframe>`;
+      } else if (isFile) {
+        body = `<video controls src="${esc(item.url)}"></video>`;
+      } else {
+        body = `<div class="video-art"><button class="play" type="button" data-play-steps="${pageId}-${idx}">▶</button><div style="margin-top:8px">${title}</div><ol id="vidsteps-${pageId}-${idx}" style="display:none;font-size:12px;color:#9db0cc;text-align:left;padding-left:18px">${steps}</ol></div>`;
+      }
+      return `<figure class="video">${body}<figcaption>${title}. Replace with plant footage in Admin mode.</figcaption></figure>`;
+    }
+
+    function renderBlock(block, pageId, bi) {
+      const ed = state.admin ? ` contenteditable="true" data-inline-b="${bi}" data-inline-f="text"` : '';
+      if (block.type === "manual-html") {
+        const htmlEdit = state.admin ? ` contenteditable="true" data-inline-html="${bi}"` : "";
+        return `<section class="manual-document${state.admin ? " admin-editable" : ""}"${htmlEdit}>${block.html || ""}</section>`;
+      }
+      if (block.type === "text") return `<p${ed}>${esc(block.text)}</p>`;
+      if (block.type === "heading") {
+        const tag = block.level === 2 ? "h2" : block.level === 4 ? "h4" : "h3";
+        return `<${tag} class="block-heading"${ed}>${esc(block.text)}</${tag}>`;
+      }
+      if (block.type === "columns") {
+        const cols = (block.columns || []).map(c => `
+          <div class="column-card">
+            ${c.title ? `<strong>${esc(c.title)}</strong>` : ""}
+            <p>${esc(c.body || "")}</p>
+          </div>`).join("");
+        return `<div class="column-grid">${cols}</div>`;
+      }
+      if (block.type === "chart") {
+        const labels = block.labels || [];
+        const values = block.values || [];
+        const max = Math.max(1, ...values.map(v => Number(v) || 0));
+        const bars = labels.map((lab, i) => {
+          const v = Number(values[i]) || 0;
+          const h = Math.round((v / max) * 100);
+          return `<div class="chart-bar"><span>${esc(lab)}</span><i style="height:${h}%"></i><em>${v}</em></div>`;
+        }).join("");
+        return `<div class="card chart-block"><strong>${esc(block.title || "Chart")}</strong><div class="chart-bars">${bars}</div></div>`;
+      }
+      if (block.type === "callout") return `<div class="callout"${ed}>${esc(block.text)}</div>`;
+      if (block.type === "warn") return `<div class="warn"${ed}>${esc(block.text)}</div>`;
+      if (block.type === "ok") return `<div class="ok"${ed}>${esc(block.text)}</div>`;
+      if (block.type === "list") {
+        const items = (block.items || []).map((item, n) => state.admin
+          ? `<li contenteditable="true" data-inline-items="${bi}" data-item-i="${n}">${esc(item)}</li>`
+          : `<li>${esc(item)}</li>`).join("");
+        return `<div class="card">${block.title ? `<strong>${esc(block.title)}</strong>` : ""}<ul>${items}</ul></div>`;
+      }
+      if (block.type === "steps") {
+        const items = (block.items || []).map((item, n) => state.admin
+          ? `<li contenteditable="true" data-inline-items="${bi}" data-item-i="${n}">${esc(item)}</li>`
+          : `<li>${esc(item)}</li>`).join("");
+        return `${block.title ? `<h3>${esc(block.title)}</h3>` : ""}<ol class="steps">${items}</ol>`;
+      }
+      if (block.type === "table") {
+        const head = (block.headers || []).map(h => `<th>${esc(h)}</th>`).join("");
+        const rows = (block.rows || []).map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("");
+        return `<div class="card"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+      }
+      if (block.type === "photos") {
+        return `<div class="media-grid">${(block.items || []).map(renderPhoto).join("")}</div>`;
+      }
+      if (block.type === "videos") {
+        return `<div class="media-grid">${(block.items || []).map((it, i) => renderVideo(it, pageId, `${bi}-${i}`)).join("")}</div>`;
+      }
+      if (block.type === "nav-cards") {
+        return `<div class="home-grid">${(block.items || []).map(c => `
+          <article class="home-card">
+            <span class="tag">${esc(c.tag)}</span>
+            <h3>${esc(c.title)}</h3>
+            <p>${esc(c.text)}</p>
+            <button data-go="${esc(c.go)}">Open chapter</button>
+          </article>`).join("")}</div>`;
+      }
+      if (block.type === "flow") {
+        const selected = state.ui.hotspot[pageId] ?? 0;
+        const nodes = block.nodes || [];
+        const detail = nodes[selected]?.detail || "Click a block to see how the flow works.";
+        return `<div class="flow-board">
+          <div style="font-size:12px;color:#9db0cc">Interactive flow · click a block</div>
+          <div class="flow-row">
+            ${nodes.map((n, i) => `${i ? '<span class="arrow">→</span>' : ""}<button type="button" class="flow-node ${i === selected ? "on" : ""}" data-hotspot="${pageId}" data-i="${i}"><strong>${esc(n.label)}</strong><small>${esc(n.sub || "")}</small></button>`).join("")}
+          </div>
+          <div class="flow-detail">${esc(detail)}</div>
+        </div>`;
+      }
+      if (block.type === "checklist") {
+        const checks = state.ui.checks[pageId + ":" + bi] || {};
+        const items = block.items || [];
+        const done = items.filter((_, i) => checks[i]).length;
+        return `<div class="card">
+          <strong>${esc(block.title || "Checklist")}</strong>
+          <p style="font-size:13px;color:var(--muted)">${done} / ${items.length} ticked</p>
+          ${items.map((it, i) => `<div class="check-item ${checks[i] ? "on" : ""}" data-check="${pageId}:${bi}" data-i="${i}"><input type="checkbox" ${checks[i] ? "checked" : ""} /> <span>${esc(it)}</span></div>`).join("")}
+        </div>`;
+      }
+      if (block.type === "reveal") {
+        const open = state.ui.reveal[pageId + ":" + bi] ?? -1;
+        return `<div class="card"><strong>${esc(block.title || "Click to reveal")}</strong>${(block.items || []).map((it, i) => `
+          <div class="reveal-card ${open === i ? "open" : ""}" data-reveal="${pageId}:${bi}" data-i="${i}">
+            <strong>${esc(it.label)}</strong>
+            <div class="detail">${esc(it.detail)}</div>
+          </div>`).join("")}</div>`;
+      }
+      if (block.type === "simulator") {
+        const key = pageId + ":" + bi;
+        const sim = state.ui.sim[key] || { on: {}, tried: false, ok: false };
+        const items = block.items || [];
+        return `<div class="card">
+          <strong>${esc(block.title || "Start simulator")}</strong>
+          <p>Turn each permissive ON, then press Start. This is practice, not the real plant.</p>
+          ${items.map((it, i) => `<div class="sim-row ${sim.on[i] ? "on" : ""}" data-sim="${key}" data-i="${i}"><input type="checkbox" ${sim.on[i] ? "checked" : ""} /> <span>${esc(it)} — ${sim.on[i] ? "healthy" : "not ready"}</span></div>`).join("")}
+          <div class="actions"><button type="button" data-sim-start="${key}">Start equipment</button></div>
+          <div class="sim-result">${sim.tried ? (sim.ok ? `<span style="color:var(--ok)">${esc(block.success)}</span>` : `<span style="color:var(--bad)">${esc(block.fail)}</span>`) : ""}</div>
+        </div>`;
+      }
+      return "";
+    }
+
+    function quizBlock(page) {
+      const qs = page.quiz || [];
+      if (!qs.length) return "";
+      const lang = state.summaryLanguage === "es" ? "es" : "en";
+      const items = qs.map((item, i) => `
+        <div class="q" data-qid="${esc(page.id)}-${i}">
+          <p><strong>${i + 1}.</strong> ${esc(lang === "es" ? (item.qEs || item.q) : item.q)}</p>
+          ${(lang === "es" ? (item.optionsEs || item.options) : item.options || []).map((opt, j) => `<button class="opt" type="button" data-choice="${j}">${optionLetter(j)}. ${esc(opt)}</button>`).join("")}
+          <div class="feedback" data-fb></div>
+        </div>`).join("");
+      return `<section class="quiz card">
+        <h3>${lang === "es" ? "Evaluación" : "Knowledge check"} · ${qs.length} ${lang === "es" ? "preguntas" : "questions"} · 70%</h3>
+        <p>${lang === "es" ? "Selecciona una respuesta. Al finalizar recibirás feedback para cada pregunta." : "Select one answer. You will receive feedback for every question when finished."}</p>
+        ${items}
+        <div class="actions">
+          <button type="button" data-submit="${esc(page.id)}">${lang === "es" ? "Revisar respuestas" : "Check answers"}</button>
+          <button class="ghost" type="button" data-retry="${esc(page.id)}">${lang === "es" ? "Reintentar" : "Try again"}</button>
+        </div>
+        <div class="score" data-score></div>
+      </section>`;
+    }
+
+    function isCloser(page) {
+      return (page.quiz || []).length > 0 || page.slideKind === "quiz" || page.slideKind === "summary";
+    }
+
+    function optionLetter(index) {
+      return String.fromCharCode(65 + index);
+    }
+
+    function blankQuestion() {
+      return {
+        q: "¿Nueva pregunta?",
+        qEs: "¿Nueva pregunta?",
+        options: ["Respuesta A", "Respuesta B"],
+        optionsEs: ["Respuesta A", "Respuesta B"],
+        a: 0,
+        why: "",
+        whyEs: ""
+      };
+    }
+
+    function closers() {
+      return pages().filter(isCloser);
+    }
+
+    function pageIndex() {
+      const i = pages().findIndex(p => p.id === state.page);
+      return i < 0 ? 0 : i;
+    }
+
+    function goRel(delta) {
+      const next = pageIndex() + delta;
+      if (next < 0 || next >= pages().length) return;
+      state.page = pages()[next].id;
+      stopSpeak();
+      render();
+      window.scrollTo(0, 0);
+    }
+
+    function slideChrome() {
+      const i = pageIndex();
+      const n = pages().length;
+      const current = pageById(state.page);
+      const groupSlides = pages().filter(p => p.group === current.group);
+      const gi = groupSlides.findIndex(p => p.id === current.id);
+      const dots = groupSlides.map((_, d) => `<i class="${d === gi ? "on" : ""}"></i>`).join("");
+      const hasRead = !!state.read[current.id];
+      let logoInline = "";
+      if (state.logoUrl && state.logoPos === 'bottom') {
+        logoInline = `<img src="${esc(state.logoUrl)}" style="max-height: 24px; object-fit: contain; margin-right: 8px;" alt="Logo" />`;
+      }
+      return `<div class="slide-chrome">
+        <button type="button" class="btn ghost" data-slide="-1" ${i === 0 ? "disabled" : ""}>← Back</button>
+        <div style="display: flex; align-items: center;">
+          ${logoInline}
+          <div style="display:flex; flex-direction:column; align-items:center;">
+            <div class="dots" style="margin-bottom:4px;">${dots}</div>
+            <div class="slide-count">Slide ${i + 1} / ${n}</div>
+            <button type="button" class="read-status ${hasRead ? "is-read" : ""}" data-mark-read="${esc(current.id)}">
+              ${hasRead ? "✓ Read / Leído" : "Mark as read / Marcar leído"}
+            </button>
+          </div>
+        </div>
+        <button type="button" class="btn" data-slide="1" ${i === n - 1 ? "disabled" : ""}>Next →</button>
+      </div>`;
+    }
+
+    function slideLayout(page) {
+      if (page.id === "t01") return "layout-cover";
+      if (isCloser(page)) return "layout-recap";
+      return "layout-content";
+    }
+
+    function composeWrap(html, index) {
+      if (!state.compose) return html;
+      return `<div class="compose-block">
+        <div class="compose-tools">
+          <button type="button" data-move-block="${index}" data-dir="-1" title="Subir">↑</button>
+          <button type="button" data-move-block="${index}" data-dir="1" title="Bajar">↓</button>
+          <button type="button" class="danger" data-del-inline="${index}" title="Quitar">Quitar</button>
+        </div>
+        ${html}
+      </div>`;
+    }
+
+    function composeBar() {
+      if (!state.compose) return "";
+      const kinds = [
+        ["text", "Párrafo"],
+        ["heading", "Subtítulo"],
+        ["callout", "Nota"],
+        ["warn", "Aviso"],
+        ["ok", "OK"],
+        ["list", "Lista"],
+        ["steps", "Pasos"],
+        ["photos", "Foto"],
+        ["videos", "Video"]
+      ];
+      return `<div class="compose-add">
+        <span>Agregar</span>
+        ${kinds.map(([type, label]) => `<button type="button" data-add-inline="${type}">${label}</button>`).join("")}
+        <button type="button" data-del-slide>Quitar slide</button>
+      </div>`;
+    }
+
+    function quizComposer(page) {
+      if (!state.compose) return "";
+      if (page.slideKind !== "quiz" && page.slideKind !== "summary" && !(page.quiz || []).length) return "";
+      const questions = page.quiz || [];
+      const cards = questions.map((q, i) => {
+        const options = q.options || [];
+        return `<article class="quiz-compose-q">
+          <div class="compose-tools">
+            <button type="button" class="danger" data-del-q="${i}">Quitar</button>
+          </div>
+          <p class="q-ask" contenteditable="true" data-inline-q="${i}" data-q-f="q">${esc(q.q || "")}</p>
+          ${options.map((opt, j) => `<div class="q-opt">
+            <button type="button" class="${Number(q.a) === j ? "on" : ""}" data-set-correct="${i}" data-choice-i="${j}">${Number(q.a) === j ? "Correcta" : "Marcar"}</button>
+            <span contenteditable="true" data-inline-opt="${i}" data-opt-i="${j}">${esc(opt)}</span>
+            <button type="button" class="danger" data-del-opt="${i}:${j}">✕</button>
+          </div>`).join("")}
+          <button type="button" data-add-opt="${i}">Agregar respuesta</button>
+        </article>`;
+      }).join("");
+      return `<section class="quiz-compose">
+        <h3>Preguntas y respuestas</h3>
+        ${cards || "<p class=\"hint\">Todavía no hay preguntas.</p>"}
+        <button type="button" class="btn" data-add-q>Agregar pregunta</button>
+      </section>`;
+    }
+
+    function renderPage(noAnim = false) {
+      const page = pageById(state.page);
+      applyPageColors(page);
+      state.page = page.id;
+      const closer = isCloser(page);
+      const layout = slideLayout(page);
+      const name = state.operator.trim();
+      const hello = name
+        ? (closer ? `Ready, ${esc(name)}? Recap this chapter.` : `Hi, ${esc(name)}. Keep going.`)
+        : (closer ? "Recap this chapter, then check yourself." : "Type your name on the left to personalize this deck.");
+      const alertCls = hasUnsavedChanges ? " unsaved-alert" : "";
+      const adminBar = state.compose
+        ? `<div class="admin-banner">Editando en el visor <span class="compose-save" id="composeSave">${esc(saveStatus)}</span></div>`
+        : (state.admin ? `<div class="admin-banner">Administrator mode
+        <span>
+          <button class="btn${alertCls}" type="button" data-save-changes>Save changes</button>
+          <button class="btn ghost" type="button" data-toggle-editor>${state.editing ? "Hide editor" : "Edit this slide"}</button>
+        </span></div>` : "");
+      let logoHtmlTop = "";
+      let logoHtmlContent = "";
+      if (state.logoUrl) {
+        const img = `<img src="${esc(state.logoUrl)}" class="corp-logo ${esc(state.logoPos || 'top-right')}" alt="Logo" />`;
+        if (state.logoPos === 'top-right') logoHtmlTop = img;
+        else if (state.logoPos === 'content-bottom') logoHtmlContent = img;
+      }
+      document.getElementById("main").innerHTML = `
+        ${adminBar}
+        <article class="slide-board ${layout}${noAnim ? ' no-anim' : ''}">
+          ${logoHtmlTop}
+          <div class="slide-content-wrapper" style="margin: auto 0;">
+            <p class="hello">${hello}</p>
+            <p class="kicker" ${state.compose ? 'contenteditable="true" data-inline-p="kicker"' : ''}>${esc(page.kicker)}</p>
+            <h2 ${state.admin ? 'contenteditable="true" data-inline-p="title"' : ''}>${esc(page.title)}</h2>
+            <p class="lead" ${state.admin ? 'contenteditable="true" data-inline-p="lead"' : ''}>${esc(page.lead)}</p>
+            ${(page.blocks || []).map((b, i) => composeWrap(renderBlock(b, page.id, i), i)).join("")}
+            ${composeBar()}
+            ${closer ? narratorCard(page) : ""}
+            ${closer ? quizBlock(page) : ""}
+            ${quizComposer(page)}
+            ${logoHtmlContent}
+          </div>
+          ${slideChrome()}
+        </article>`;
+    }
+
+    function pageKindLabel(page) {
+      if (page.id === "t01" || page.slideKind === "cover") return "Carátula";
+      if (page.id === "toc" || page.slideKind === "toc") return "Índice";
+      if (page.slideKind === "summary") return "Resumen";
+      if (page.slideKind === "quiz") return "Cuestionario";
+      if (page.slideKind === "chapter" || page.sectionLevel === "chapter") return "Módulo";
+      if (page.slideKind === "subchapter" || page.sectionLevel === "subchapter") return "Submódulo";
+      return "Slide";
+    }
+
+    function renderNav() {
+      const nav = document.getElementById("nav");
+      const current = pageById(state.page);
+      const chapters = [];
+      pages().forEach(p => {
+        const chapter = p.chapter || p.group;
+        if (!chapters.includes(chapter)) chapters.push(chapter);
+      });
+
+      nav.innerHTML = chapters.map(chapter => {
+        const chapterPages = pages().filter(p => (p.chapter || p.group) === chapter);
+        const chapterOpen = (current.chapter || current.group) === chapter;
+        const chapterRead = chapterPages.filter(p => state.read[p.id]).length;
+        const review = chapterPages.find(isCloser);
+        const passed = review && state.done[review.id]?.pass;
+        const groups = [];
+        chapterPages.forEach(p => { if (!groups.includes(p.group)) groups.push(p.group); });
+        const chapterHead = `
+          <button class="chapter-nav ${chapterOpen ? "open" : ""} ${passed ? "done" : ""}" data-go="${esc(chapterPages[0].id)}">
+            <span><b>${esc(chapter)}</b><small>${chapterRead}/${chapterPages.length} read${passed ? " · quiz passed" : ""}</small></span>
+            <i>${chapterOpen ? "−" : "+"}</i>
+          </button>`;
+        if (!chapterOpen) return chapterHead;
+
+        const groupHtml = groups.map(group => {
+          const items = chapterPages.filter(p => p.group === group);
+          const groupOpen = current.group === group;
+          const groupRead = items.filter(p => state.read[p.id]).length;
+          const groupHead = `
+            <button class="subchapter-nav ${groupOpen ? "open" : ""}" data-go="${esc(items[0].id)}">
+              <span>${esc(group)}<small>${groupRead}/${items.length}</small></span>
+              <i>${groupOpen ? "−" : "+"}</i>
+            </button>`;
+          if (!groupOpen || (items.length === 1 && !state.compose)) return groupHead;
+          return groupHead + `<div class="nav-pages">${items.map(p => {
+            const read = !!state.read[p.id];
+            const done = isCloser(p) && state.done[p.id]?.pass;
+            const kind = state.compose ? `<small>${esc(pageKindLabel(p))}</small> ` : "";
+            return `<button class="${p.id === state.page ? "active" : ""} ${read ? "read" : ""} ${done ? "done" : ""}" data-go="${esc(p.id)}">${kind}<span class="dot"></span>${esc(p.title)}</button>`;
+          }).join("")}</div>`;
+        }).join("");
+        return `<section class="nav-chapter">${chapterHead}<div class="nav-subchapters">${groupHtml}</div></section>`;
+      }).join("");
+
+      const create = document.getElementById("navCreate");
+      if (create) {
+        create.innerHTML = state.compose ? `<div class="nav-create">
+          <p>Estructura</p>
+          <div class="nav-create-row">
+            <button type="button" data-preset="module">Módulo</button>
+            <button type="button" data-preset="submodule">Submódulo</button>
+            <button type="button" data-preset="slide">Slide</button>
+          </div>
+          <p>Preformato</p>
+          <div class="nav-create-row">
+            <button type="button" data-preset="cover">Carátula</button>
+            <button type="button" data-preset="toc">Índice</button>
+            <button type="button" data-preset="info">Información</button>
+            <button type="button" data-preset="summary">Resumen</button>
+            <button type="button" data-preset="quiz">Cuestionario</button>
+          </div>
+        </div>` : "";
+      }
+
+      const readCount = pages().filter(p => state.read[p.id]).length;
+      const quizCount = closers().filter(p => state.done[p.id]?.pass).length;
+      document.querySelector(".progress-box")?.classList.remove("hidden");
+      document.getElementById("bar").style.width = `${Math.round(readCount / Math.max(1, pages().length) * 100)}%`;
+      document.getElementById("progressText").textContent = `${readCount}/${pages().length} read · ${quizCount}/${closers().length} quizzes passed`;
+    }
+
+    function field(label, attrs, value, tag = "input") {
+      const extra = Object.entries(attrs).map(([k, v]) => `${k}="${esc(v)}"`).join(" ");
+      if (tag === "textarea") return `<div class="field"><label>${esc(label)}</label><textarea ${extra}>${esc(value)}</textarea></div>`;
+      if (tag === "select") return `<div class="field"><label>${esc(label)}</label><select ${extra}>${value}</select></div>`;
+      return `<div class="field"><label>${esc(label)}</label><input ${extra} value="${esc(value)}" /></div>`;
+    }
+
+    function blockEditor(block, i) {
+      const head = `<header>${esc(block.type)}
+        <span class="row-btns">
+          <button class="btn ghost" data-move="${i}" data-dir="-1">Up</button>
+          <button class="btn ghost" data-move="${i}" data-dir="1">Down</button>
+          <button class="btn danger" data-del-block="${i}">Delete</button>
+        </span></header>`;
+      const lines = (block.items || []).join("\n");
+      if (block.type === "manual-html") {
+        return `<div class="editor-block">${head}${field("Complete slide content (HTML)", { "data-b": i, "data-f": "html", class: "html-source" }, block.html || "", "textarea")}</div>`;
+      }
+      if (["text", "callout", "warn", "ok"].includes(block.type)) {
+        return `<div class="editor-block">${head}${field("Text", { "data-b": i, "data-f": "text" }, block.text || "", "textarea")}</div>`;
+      }
+      if (["list", "steps", "checklist"].includes(block.type)) {
+        return `<div class="editor-block">${head}${field("Title", { "data-b": i, "data-f": "title" }, block.title || "")}${field("Items (one per line)", { "data-b": i, "data-f": "items" }, lines, "textarea")}</div>`;
+      }
+      if (block.type === "table") {
+        const headers = (block.headers || []).join(" | ");
+        const rows = (block.rows || []).map(r => r.join(" | ")).join("\n");
+        return `<div class="editor-block">${head}${field("Headers ( | )", { "data-b": i, "data-f": "headers" }, headers)}${field("Rows (one per line, cells with | )", { "data-b": i, "data-f": "rows" }, rows, "textarea")}</div>`;
+      }
+      if (block.type === "photos") {
+        const items = (block.items || []).map((it, n) => `
+          <div class="card" style="margin:8px 0">
+            ${field("Caption", { "data-b": i, "data-item": n, "data-f": "caption" }, it.caption || "")}
+            ${field("Preset", { "data-b": i, "data-item": n, "data-f": "kind" }, ["pump", "tower", "exchanger", "hmi"].map(k => `<option ${it.kind === k ? "selected" : ""} value="${k}">${k}</option>`).join(""), "select")}
+            ${field("Or image URL", { "data-b": i, "data-item": n, "data-f": "src" }, it.src || "")}
+            <button class="btn ghost" type="button" data-upload="${i}:${n}">Upload photo</button>
+            <button class="btn danger" type="button" data-del-item="${i}:${n}">Remove photo</button>
+          </div>`).join("");
+        return `<div class="editor-block">${head}${items}<button class="btn ghost" data-add-item="${i}" data-kind="photo">Add photo</button></div>`;
+      }
+      if (block.type === "videos") {
+        const items = (block.items || []).map((it, n) => `
+          <div class="card" style="margin:8px 0">
+            ${field("Title", { "data-b": i, "data-item": n, "data-f": "title" }, it.title || "")}
+            ${field("Video URL (YouTube or mp4)", { "data-b": i, "data-item": n, "data-f": "url" }, it.url || "")}
+            ${field("Tutorial steps (one per line)", { "data-b": i, "data-item": n, "data-f": "steps" }, (it.steps || []).join("\n"), "textarea")}
+            <button class="btn danger" type="button" data-del-item="${i}:${n}">Remove video</button>
+          </div>`).join("");
+        return `<div class="editor-block">${head}${items}<button class="btn ghost" data-add-item="${i}" data-kind="video">Add video</button></div>`;
+      }
+      if (block.type === "flow" || block.type === "reveal") {
+        const items = (block.nodes || block.items || []).map((it, n) => `
+          <div class="card" style="margin:8px 0">
+            ${field("Label", { "data-b": i, "data-item": n, "data-f": "label" }, it.label || "")}
+            ${block.type === "flow" ? field("Sub label", { "data-b": i, "data-item": n, "data-f": "sub" }, it.sub || "") : ""}
+            ${field("Detail shown on click", { "data-b": i, "data-item": n, "data-f": "detail" }, it.detail || "", "textarea")}
+            <button class="btn danger" type="button" data-del-item="${i}:${n}">Remove</button>
+          </div>`).join("");
+        return `<div class="editor-block">${head}${field("Title", { "data-b": i, "data-f": "title" }, block.title || "")}${items}<button class="btn ghost" data-add-item="${i}" data-kind="${block.type}">Add clickable item</button></div>`;
+      }
+      if (block.type === "simulator") {
+        return `<div class="editor-block">${head}
+          ${field("Title", { "data-b": i, "data-f": "title" }, block.title || "")}
+          ${field("Permissives (one per line)", { "data-b": i, "data-f": "items" }, lines, "textarea")}
+          ${field("Message if start OK", { "data-b": i, "data-f": "success" }, block.success || "", "textarea")}
+          ${field("Message if start blocked", { "data-b": i, "data-f": "fail" }, block.fail || "", "textarea")}
+        </div>`;
+      }
+      if (block.type === "nav-cards") {
+        const items = (block.items || []).map((it, n) => `
+          <div class="card" style="margin:8px 0">
+            ${field("Tag", { "data-b": i, "data-item": n, "data-f": "tag" }, it.tag || "")}
+            ${field("Title", { "data-b": i, "data-item": n, "data-f": "title" }, it.title || "")}
+            ${field("Text", { "data-b": i, "data-item": n, "data-f": "text" }, it.text || "", "textarea")}
+            ${field("Goes to section id", { "data-b": i, "data-item": n, "data-f": "go" }, it.go || "")}
+          </div>`).join("");
+        return `<div class="editor-block">${head}${items}</div>`;
+      }
+      return `<div class="editor-block">${head}</div>`;
+    }
+
+    function quizEditor(page) {
+      return (page.quiz || []).map((q, i) => `
+        <div class="editor-block">
+          <header>Question ${i + 1} · Bilingual
+            <button class="btn danger" data-del-q="${i}">Delete</button>
+          </header>
+          ${field("Question · English", { "data-q": i, "data-f": "q" }, q.q || "", "textarea")}
+          ${field("Pregunta · Español", { "data-q": i, "data-f": "qEs" }, q.qEs || "", "textarea")}
+          ${[0, 1, 2].map(n => field("English option " + ["A", "B", "C"][n], { "data-q": i, "data-opt": n, "data-array": "options" }, (q.options || [])[n] || "")).join("")}
+          ${[0, 1, 2].map(n => field("Opción español " + ["A", "B", "C"][n], { "data-q": i, "data-opt": n, "data-array": "optionsEs" }, (q.optionsEs || [])[n] || "")).join("")}
+          ${field("Correct option (0=A, 1=B, 2=C)", { "data-q": i, "data-f": "a", type: "number", min: "0", max: "2" }, q.a ?? 0)}
+          ${field("Feedback · English", { "data-q": i, "data-f": "why" }, q.why || "", "textarea")}
+          ${field("Feedback · Español", { "data-q": i, "data-f": "whyEs" }, q.whyEs || "", "textarea")}
+        </div>`).join("");
+    }
+
+    function renderEditor() {
+      const drawer = document.getElementById("editor");
+      const show = state.admin && state.editing;
+      drawer.classList.toggle("hidden", !show);
+      document.getElementById("app").classList.toggle("editing", show);
+      if (!show) { drawer.innerHTML = ""; return; }
+      const page = pageById(state.page);
+      const types = ["manual-html", "text", "callout", "warn", "ok", "list", "steps", "table", "photos", "videos", "flow", "checklist", "reveal", "simulator"];
+      drawer.innerHTML = `
+        <h3>Edit section</h3>
+        <p style="font-size:12px;color:var(--muted)">Click Save before leaving. Export JSON to keep a copy.</p>
+        <button class="btn${hasUnsavedChanges ? " unsaved-alert" : ""}" data-save-changes style="width:100%;margin-bottom:12px">Save changes</button>
+        ${field("Navbar chapter", { "data-p": "chapter" }, page.chapter || "")}
+        ${field("Navbar tab / subchapter", { "data-p": "group" }, page.group || "")}
+        ${field("Anchor", { "data-p": "anchor" }, page.anchor || "")}
+        ${field("Section id", { "data-p": "id" }, page.id || "")}
+        ${field("Title", { "data-p": "title" }, page.title || "")}
+        ${field("Kicker", { "data-p": "kicker" }, page.kicker || "")}
+        ${field("Lead text", { "data-p": "lead" }, page.lead || "", "textarea")}
+        ${field("Audio summary (spoken)", { "data-p": "audio" }, page.audio || "", "textarea")}
+        ${field("Chapter summary · English", { "data-summary": "en" }, page.summary?.en || "", "textarea")}
+        ${field("Resumen del capítulo · Español", { "data-summary": "es" }, page.summary?.es || "", "textarea")}
+        <div class="field">
+          <label style="font-weight:bold; margin-top:12px;">Slide Colors (Overrides global)</label>
+          <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer;">
+            <input type="checkbox" id="enableSlideColors" ${page.useColors ? 'checked' : ''} />
+            Enable custom colors for this slide
+          </label>
+          <div id="slideColorPickers" style="display:${page.useColors ? 'grid' : 'none'}; grid-template-columns: 1fr 1fr; gap:12px; margin-top:8px;">
+             <div class="field" style="margin:0"><label style="font-size:11px">Background</label><input type="color" data-p="bgColor" value="${page.bgColor || state.bgColor || '#0a0f18'}" style="padding:0;height:36px;cursor:pointer;width:100%" /></div>
+             <div class="field" style="margin:0"><label style="font-size:11px">Slide</label><input type="color" data-p="slideColor" value="${page.slideColor || state.slideColor || '#172235'}" style="padding:0;height:36px;cursor:pointer;width:100%" /></div>
+             <div class="field" style="margin:0"><label style="font-size:11px">Text</label><input type="color" data-p="textColor" value="${page.textColor || state.textColor || '#eef3f8'}" style="padding:0;height:36px;cursor:pointer;width:100%" /></div>
+             <div class="field" style="margin:0"><label style="font-size:11px">Heading 1</label><input type="color" data-p="h1Color" value="${page.h1Color || state.h1Color || '#ffffff'}" style="padding:0;height:36px;cursor:pointer;width:100%" /></div>
+             <div class="field" style="margin:0"><label style="font-size:11px">Heading 2</label><input type="color" data-p="h2Color" value="${page.h2Color || state.h2Color || '#f8fafc'}" style="padding:0;height:36px;cursor:pointer;width:100%" /></div>
+          </div>
+        </div>
+        <h3>Interactive blocks</h3>
+        ${(page.blocks || []).map(blockEditor).join("")}
+        <div class="field">
+          <label>Add block</label>
+          <select id="newBlockType">${types.map(t => `<option value="${t}">${t}</option>`).join("")}</select>
+        </div>
+        <button class="btn" data-add-block>Add block</button>
+        <h3>Quiz</h3>
+        ${quizEditor(page)}
+        <div class="actions"><button class="btn ghost" data-add-q>Add question</button></div>
+        <h3>App settings (Global Colors)</h3>
+        <div style="display:flex; gap:8px; margin-bottom: 16px; flex-wrap:wrap;">
+          <button type="button" class="btn ghost" style="padding: 4px 8px; font-size:12px;" data-template="default_dark">Navy (Default)</button>
+          <button type="button" class="btn ghost" style="padding: 4px 8px; font-size:12px;" data-template="default_light">Light</button>
+          <button type="button" class="btn ghost" style="padding: 4px 8px; font-size:12px;" data-template="ocean">Ocean</button>
+          <button type="button" class="btn ghost" style="padding: 4px 8px; font-size:12px;" data-template="forest">Forest</button>
+          <button type="button" class="btn ghost" style="padding: 4px 8px; font-size:12px;" data-template="monochrome">Mono</button>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div class="field">
+            <label>Brand accent color</label>
+            <input type="color" data-setting="accentColor" value="${state.accentColor || '#c45c26'}" style="padding:0;height:36px;cursor:pointer;width:100%" />
+          </div>
+          <div class="field">
+            <label>Text color</label>
+            <input type="color" data-setting="textColor" value="${state.textColor || '#eef3f8'}" style="padding:0;height:36px;cursor:pointer;width:100%" />
+          </div>
+          <div class="field">
+            <label>Heading 1</label>
+            <input type="color" data-setting="h1Color" value="${state.h1Color || '#ffffff'}" style="padding:0;height:36px;cursor:pointer;width:100%" />
+          </div>
+          <div class="field">
+            <label>Heading 2</label>
+            <input type="color" data-setting="h2Color" value="${state.h2Color || '#f8fafc'}" style="padding:0;height:36px;cursor:pointer;width:100%" />
+          </div>
+          <div class="field">
+            <label>Main background</label>
+            <input type="color" data-setting="bgColor" value="${state.bgColor || '#0a0f18'}" style="padding:0;height:36px;cursor:pointer;width:100%" />
+          </div>
+          <div class="field">
+            <label>Slide background</label>
+            <input type="color" data-setting="slideColor" value="${state.slideColor || '#172235'}" style="padding:0;height:36px;cursor:pointer;width:100%" />
+          </div>
+          <div class="field" style="grid-column: span 2">
+            <label>Sidebar background</label>
+            <input type="color" data-setting="drawerColor" value="${state.drawerColor || '#111a2a'}" style="padding:0;height:36px;cursor:pointer;width:100%" />
+          </div>
+        </div>
+        ${field("Logo URL", { "data-setting": "logoUrl" }, state.logoUrl)}
+        <div class="field">
+          <label>Logo position</label>
+          <select data-setting="logoPos">
+            <option value="top-right" ${state.logoPos === 'top-right' ? 'selected' : ''}>Top right</option>
+            <option value="bottom" ${state.logoPos === 'bottom' ? 'selected' : ''}>Footer (Next to slide count)</option>
+            <option value="content-bottom" ${state.logoPos === 'content-bottom' ? 'selected' : ''}>Below content (Before footer)</option>
+          </select>
+        </div>
+        <h3>Manual</h3>
+        <div class="actions">
+          <button class="btn" data-add-page>Add section</button>
+          <button class="btn danger" data-del-page>Delete this section</button>
+          <button class="btn ghost" data-export>Export JSON</button>
+          <button class="btn ghost" data-import>Import JSON</button>
+          <button class="btn ghost" data-reset>Reset example</button>
+        </div>`;
+    }
+
+    function applyPageColors(page) {
+      if (!page) page = pageById(state.page);
+      if (!page) return;
+      document.documentElement.style.setProperty("--bg-main", "#f8fafc");
+      document.documentElement.style.setProperty("--slide", "#ffffff");
+      document.documentElement.style.setProperty("--slide-cover", "#ffffff");
+      document.documentElement.style.setProperty("--drawer-bg", "#ffffff");
+      document.documentElement.style.setProperty("--ink", "#1c2333");
+      document.documentElement.style.setProperty("--drawer-ink", "#1c2333");
+      document.documentElement.style.setProperty("--lead", "#3a4456");
+      document.documentElement.style.setProperty("--h1-color", "#111827");
+      document.documentElement.style.setProperty("--h2-color", "#1f2937");
+    }
+
+    function applyTheme(theme, isDraft = false) {
+      const next = "light";
+      document.documentElement.setAttribute("data-theme", next);
+      if (!isDraft) localStorage.setItem(THEME_KEY, next);
+      document.getElementById("themeDark")?.classList.toggle("on", next === "dark");
+      document.getElementById("themeLight")?.classList.toggle("on", next === "light");
+      if (state.accentColor) {
+        document.documentElement.style.setProperty("--accent", state.accentColor);
+        document.documentElement.style.setProperty("--focus", state.accentColor);
+      } else {
+        document.documentElement.style.removeProperty("--accent");
+        document.documentElement.style.removeProperty("--focus");
+      }
+      applyPageColors();
+    }
+
+    async function loadInstallBrand() {
+      try {
+        const res = await fetch("/api/brand");
+        if (!res.ok) return null;
+        return await res.json();
+      } catch {
+        return null;
+      }
+    }
+
+    function paintInstallBrand() {
+      const brand = state.installBrand;
+      if (!brand) return;
+      const box = document.getElementById("installBrand");
+      const img = document.getElementById("installLogo");
+      const name = document.getElementById("installName");
+      if (name) name.textContent = brand.companyName || "";
+      if (img) {
+        if (brand.logoUrl) {
+          if (img.getAttribute("src") !== brand.logoUrl) img.src = brand.logoUrl;
+          img.hidden = false;
+        } else {
+          img.hidden = true;
+        }
+      }
+      if (box) box.hidden = !(brand.companyName || brand.logoUrl);
+      document.querySelectorAll(".cover-brand").forEach((el) => {
+        let logo = el.querySelector("img.install-cover-logo");
+        if (brand.logoUrl) {
+          if (!logo) {
+            logo = document.createElement("img");
+            logo.className = "install-cover-logo";
+            logo.alt = "";
+            el.prepend(logo);
+          }
+          if (logo.getAttribute("src") !== brand.logoUrl) logo.setAttribute("src", brand.logoUrl);
+        }
+        const span = el.querySelector("span");
+        if (span && brand.companyName) {
+          const text = (span.textContent || "").trim();
+          if (!text || text === "Operational manual · Draft" || text === "Plant operation · Training manual") {
+            span.textContent = brand.companyName;
+          }
+        }
+      });
+    }
+
+    function render() {
+      const sideTitle = document.querySelector("aside.nav h1");
+      const sideSub = document.querySelector("aside.nav .sub");
+      if (VIEWER_DRAFT_ID && sideTitle) {
+        sideTitle.textContent = content.meta?.title || "Manual";
+        if (sideSub) sideSub.textContent = state.compose ? "Edición en el visor" : (VIEWER_PUBLISHED ? "Publicado" : "Borrador");
+      }
+      document.querySelector("aside.nav .role-box")?.classList.toggle("hidden", VIEWER_PUBLISHED);
+      renderPage();
+      renderNav();
+      renderEditor();
+      document.getElementById("operator").value = state.operator;
+      document.getElementById("roleOp").classList.toggle("on", !state.admin);
+      document.getElementById("roleAd").classList.toggle("on", state.admin);
+      applyTheme(localStorage.getItem(THEME_KEY) || "dark");
+      paintInstallBrand();
+    }
+
+    function setTalking(on) {
+      console.log("[TTS] setTalking called with:", on);
+      state.speaking = on;
+      document.getElementById("coachOrb")?.classList.toggle("talking", on);
+      document.getElementById("flatAvatar")?.classList.toggle("talking", on);
+      const play = document.querySelector(".avatar-btns [data-speak]");
+      if (play) play.textContent = on
+        ? (state.summaryLanguage === "es" ? "Narrando…" : "Playing…")
+        : (state.summaryLanguage === "es" ? "Narrar resumen" : "Play summary");
+      else console.warn("[TTS] Play button not found in DOM.");
+      if (!on) document.querySelectorAll("#coachScript .w").forEach(w => w.classList.remove("on"));
+    }
+
+    function stopSpeak() {
+      console.log("[TTS] stopSpeak called");
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      if (window._fallbackAudio) {
+        window._fallbackAudio.pause();
+        window._fallbackAudio = null;
+      }
+      setTalking(false);
+    }
+
+    let synthVoices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+    if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => {
+      synthVoices = window.speechSynthesis.getVoices();
+      console.log("[TTS] onvoiceschanged fired, loaded voices:", synthVoices.length);
+    };
+
+    function speak(id, requestedLanguage = "en") {
+      console.log("[TTS] speak() triggered for id:", id);
+      const language = requestedLanguage === "es" ? "es" : "en";
+      const page = pageById(id);
+      const text = page.summary?.[language] || page.audio;
+      console.log("[TTS] Text to speak:", text);
+
+      if (!text) {
+        console.warn("[TTS] Aborting: No audio text found for this section.");
+        return;
+      }
+
+      console.log("[TTS] Cancelling previous speech...");
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      if (window._fallbackAudio) {
+        window._fallbackAudio.pause();
+        window._fallbackAudio = null;
+      }
+
+      setTimeout(() => {
+        const voices = synthVoices.length ? synthVoices : (window.speechSynthesis ? window.speechSynthesis.getVoices() : []);
+        console.log("[TTS] Available voices count:", voices.length);
+
+        if (voices.length === 0) {
+          console.warn("[TTS] Critical: No local voices loaded. The OS TTS engine is missing or broken.");
+          setTalking(false);
+          return;
+        }
+
+        console.log("[TTS] Preparing utterance...");
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = language === "es" ? "es-MX" : "en-US";
+        u.rate = 0.95;
+        u.pitch = 0.9;
+
+        if (voices.length > 0) {
+          console.log("[TTS] First 3 voices:", voices.slice(0, 3).map(v => v.name + " (" + v.lang + ")"));
+        } else {
+          console.warn("[TTS] No voices loaded yet.");
+        }
+
+        const languagePattern = language === "es" ? /^es/i : /^en/i;
+        const selectedVoice = voices.find(v => languagePattern.test(v.lang) && /google|microsoft|premium|enhanced/i.test(v.name))
+          || voices.find(v => languagePattern.test(v.lang))
+          || (voices.length ? voices[0] : null);
+
+        if (selectedVoice) {
+          console.log("[TTS] Selected voice:", selectedVoice.name);
+          u.voice = selectedVoice;
+        } else {
+          console.warn("[TTS] No specific voice matched, using browser default.");
+        }
+
+        window._speechU = u;
+
+        let wi = 0;
+        u.onboundary = (ev) => {
+          if (ev.name !== "word") return;
+          const words = document.querySelectorAll("#coachScript .w");
+          words.forEach(w => w.classList.remove("on"));
+          if (words[wi]) words[wi].classList.add("on");
+          wi += 1;
+        };
+        u.onstart = () => { console.log("[TTS] Event: onstart"); setTalking(true); };
+        u.onend = () => { console.log("[TTS] Event: onend"); setTalking(false); };
+        u.onerror = (e) => { console.error("[TTS] Event: onerror", e); setTalking(false); };
+
+        console.log("[TTS] Calling setTalking(true) and speechSynthesis.speak()...");
+        setTalking(true);
+        window.speechSynthesis.speak(u);
+      }, 50);
+    }
+
+    function currentPage() { return pageById(state.page); }
+
+    function applyEditorInput(el) {
+      const page = currentPage();
+      if (el.dataset.summary) {
+        page.summary ||= { en: "", es: "" };
+        page.summary[el.dataset.summary] = el.value;
+        saveContent();
+        renderPage(true);
+        return;
+      }
+      if (el.dataset.p) {
+        page[el.dataset.p] = el.type === "number" ? Number(el.value) : el.value;
+        if (el.dataset.p === "id") state.page = page.id;
+        saveContent();
+        renderPage(true);
+        renderNav();
+        return;
+      }
+      if (el.dataset.q != null && el.dataset.opt != null) {
+        const key = el.dataset.array || "options";
+        page.quiz[el.dataset.q][key] ||= [];
+        page.quiz[el.dataset.q][key][el.dataset.opt] = el.value;
+        saveContent(); renderPage(true); return;
+      }
+      if (el.dataset.q != null) {
+        const q = page.quiz[el.dataset.q];
+        q[el.dataset.f] = el.dataset.f === "a" ? Number(el.value) : el.value;
+        saveContent(); renderPage(true); return;
+      }
+      if (el.dataset.b == null) return;
+      const block = page.blocks[Number(el.dataset.b)];
+      const f = el.dataset.f;
+      if (el.dataset.item != null) {
+        const item = (block.nodes || block.items)[Number(el.dataset.item)];
+        if (f === "steps") item.steps = el.value.split("\n").map(s => s.trim()).filter(Boolean);
+        else item[f] = el.value;
+      } else if (f === "items") {
+        block.items = el.value.split("\n").map(s => s.trim()).filter(Boolean);
+      } else if (f === "headers") {
+        block.headers = el.value.split("|").map(s => s.trim()).filter(Boolean);
+      } else if (f === "rows") {
+        block.rows = el.value.split("\n").map(line => line.split("|").map(s => s.trim()));
+      } else {
+        block[f] = el.value;
+      }
+      saveContent();
+      renderPage(true);
+    }
+
+    function emptyBlock(type) {
+      const map = {
+        "manual-html": { type, html: "<p>Write or paste the slide content here.</p>" },
+        text: { type, text: "New text" },
+        callout: { type, text: "Note for the operator." },
+        warn: { type, text: "Warning." },
+        ok: { type, text: "Healthy condition." },
+        list: { type, title: "List", items: ["Item 1"] },
+        steps: { type, title: "Steps", items: ["Step 1"] },
+        table: { type, headers: ["Col A", "Col B"], rows: [["Value", "Meaning"]] },
+        photos: { type, items: [{ kind: "pump", caption: "Example photo", src: "" }] },
+        videos: { type, items: [{ title: "Example video", url: "", steps: ["Step 1"] }] },
+        flow: { type, nodes: [{ label: "NODE", sub: "tag", detail: "Click this block." }] },
+        checklist: { type, title: "Checklist", items: ["Check 1"] },
+        reveal: { type, title: "Click to reveal", items: [{ label: "Topic", detail: "Explanation." }] },
+        simulator: { type, title: "Start simulator", items: ["Permissive 1"], success: "Started.", fail: "Blocked." },
+        "nav-cards": { type, items: [{ tag: "NEW", title: "Card", text: "Text", go: "home" }] },
+        heading: { type, level: 3, text: "Section subtitle" },
+        columns: { type, columns: [{ title: "Column A", body: "Text" }, { title: "Column B", body: "Text" }] },
+        chart: { type, title: "Trend", chartKind: "bar", labels: ["A", "B"], values: [40, 70] }
+      };
+      return map[type] || map.text;
+    }
+
+    document.getElementById("operator").addEventListener("input", e => {
+      state.operator = e.target.value;
+      saveProgress();
+      renderPage();
+      renderNav();
+    });
+
+    document.getElementById("roleOp").addEventListener("click", () => {
+      if (hasUnsavedChanges) {
+        if (confirm("You have unsaved changes. Do you want to discard them?")) {
+          localStorage.removeItem("iom-draft-content");
+          localStorage.removeItem("iom-draft-settings");
+          location.reload();
+        }
+        return;
+      }
+      state.admin = false;
+      state.role = "operator";
+      state.editing = false;
+      state.compose = false;
+      sessionStorage.removeItem("iom-admin");
+      render();
+    });
+    document.getElementById("roleAd").addEventListener("click", () => {
+      if (VIEWER_PUBLISHED) return;
+      state.admin = true;
+      state.role = "administrator";
+      state.compose = VIEWER_EDIT;
+      state.editing = !VIEWER_EDIT;
+      sessionStorage.setItem("iom-admin", "1");
+      render();
+    });
+    document.getElementById("themeDark").addEventListener("click", () => applyTheme("dark"));
+    document.getElementById("themeLight").addEventListener("click", () => applyTheme("light"));
+
+    document.getElementById("editor").addEventListener("input", e => {
+      if (e.target.dataset.setting) {
+        state[e.target.dataset.setting] = e.target.value;
+        let ds = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}");
+        ds[e.target.dataset.setting] = e.target.value;
+        localStorage.setItem("iom-draft-settings", JSON.stringify(ds));
+        saveContent();
+
+        if (e.target.dataset.setting === 'logoUrl' || e.target.dataset.setting === 'logoPos') {
+          renderPage(true);
+        }
+        applyTheme(localStorage.getItem(THEME_KEY) || "dark", true);
+        return;
+      }
+      if (e.target.id === "enableSlideColors") {
+        currentPage().useColors = e.target.checked;
+        document.getElementById("slideColorPickers").style.display = e.target.checked ? "flex" : "none";
+        applyTheme(localStorage.getItem(THEME_KEY) || "dark");
+        saveContent();
+        return;
+      }
+      if (e.target.matches("input, textarea, select")) applyEditorInput(e.target);
+    });
+
+    document.getElementById("editor").addEventListener("click", e => {
+      if (e.target.dataset.template) {
+        const t = THEME_PRESETS[e.target.dataset.template];
+        if (t) {
+          state.accentColor = t.accent;
+          state.bgColor = t.bg;
+          state.drawerColor = t.drawer;
+          state.slideColor = t.slide;
+          state.textColor = t.text;
+          state.h1Color = t.h1;
+          state.h2Color = t.h2;
+
+          let ds = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}");
+          ds.accentColor = t.accent;
+          ds.bgColor = t.bg;
+          ds.drawerColor = t.drawer;
+          ds.slideColor = t.slide;
+          ds.textColor = t.text;
+          ds.h1Color = t.h1;
+          ds.h2Color = t.h2;
+          if (t.mode) ds.themeMode = t.mode;
+          localStorage.setItem("iom-draft-settings", JSON.stringify(ds));
+          saveContent();
+
+          renderEditor();
+          applyTheme(t.mode || "dark", true);
+        }
+        return;
+      }
+    });
+    document.getElementById("editor").addEventListener("change", e => {
+      if (e.target.dataset.setting) {
+        state[e.target.dataset.setting] = e.target.value;
+        if (e.target.dataset.setting === 'logoPos') {
+          localStorage.setItem("iom-logopos", e.target.value);
+          renderPage(true);
+        }
+        return;
+      }
+      if (e.target.id === "enableSlideColors") {
+        currentPage().useColors = e.target.checked;
+        document.getElementById("slideColorPickers").style.display = e.target.checked ? "flex" : "none";
+        applyTheme(localStorage.getItem(THEME_KEY) || "dark");
+        saveContent();
+        return;
+      }
+      if (e.target.matches("select")) applyEditorInput(e.target);
+    });
+
+    document.getElementById("main").addEventListener("input", e => {
+      if (!state.admin) return;
+      if (e.target.matches("[data-inline-p]")) {
+        const page = currentPage();
+        const field = e.target.dataset.inlineP;
+        const previous = page[field];
+        page[field] = e.target.innerText;
+        if (field === "title" && (page.slideKind === "chapter" || page.sectionLevel === "chapter")) {
+          pages().forEach(item => {
+            if (item.chapter === previous) item.chapter = page.title;
+          });
+          if (page.group === previous) page.group = page.title;
+          page.chapter = page.title;
+          renderNav();
+        }
+        saveContent();
+      } else if (e.target.matches("[data-inline-q]")) {
+        const question = (currentPage().quiz || [])[Number(e.target.dataset.inlineQ)];
+        if (question) {
+          question.q = e.target.innerText;
+          question.qEs = e.target.innerText;
+          saveContent();
+        }
+      } else if (e.target.matches("[data-inline-opt]")) {
+        const question = (currentPage().quiz || [])[Number(e.target.dataset.inlineOpt)];
+        const index = Number(e.target.dataset.optI);
+        if (question && question.options) {
+          question.options[index] = e.target.innerText;
+          question.optionsEs = question.options.slice();
+          saveContent();
+        }
+      } else if (e.target.matches("[data-inline-summary]")) {
+        const page = currentPage();
+        page.summary = page.summary || { en: "", es: "" };
+        page.summary.es = e.target.innerText;
+        if (!page.summary.en) page.summary.en = e.target.innerText;
+        saveContent();
+      } else if (e.target.matches("[data-inline-html]")) {
+        const block = currentPage().blocks[Number(e.target.dataset.inlineHtml)];
+        if (block) {
+          block.html = e.target.innerHTML;
+          saveContent();
+        }
+      } else if (e.target.matches("[data-inline-b]")) {
+        const page = currentPage();
+        const block = page.blocks[Number(e.target.dataset.inlineB)];
+        if (block) {
+          block[e.target.dataset.inlineF] = e.target.innerText;
+          saveContent();
+        }
+      } else if (e.target.matches("[data-inline-items]")) {
+        const block = currentPage().blocks[Number(e.target.dataset.inlineItems)];
+        const index = Number(e.target.dataset.itemI);
+        if (block && Array.isArray(block.items)) {
+          block.items[index] = e.target.innerText;
+          saveContent();
+        }
+      }
+    });
+
+    function insertSlideAfterCurrent() {
+      const id = "sec-" + Date.now();
+      content.pages.splice(pages().findIndex(p => p.id === state.page) + 1, 0, {
+        id,
+        chapter: currentPage().chapter || "Manual",
+        group: currentPage().group || "Contenido",
+        anchor: "",
+        title: "Nueva slide",
+        kicker: "Contenido",
+        lead: "Escribe la idea principal.",
+        audio: "",
+        summary: { en: "", es: "" },
+        blocks: [{ type: "text", text: "Nuevo párrafo" }],
+        quiz: []
+      });
+      state.page = id;
+      saveContent();
+      render();
+    }
+
+    function moduleName() {
+      const cur = currentPage();
+      if (cur && cur.chapter && cur.chapter !== "Start" && cur.chapter !== "Inicio") return cur.chapter;
+      const found = [...pages()].reverse().find(p =>
+        p.chapter && p.chapter !== "Start" && p.chapter !== "Inicio" && p.id !== "t01" && p.id !== "toc"
+      );
+      return found ? found.chapter : "Módulo";
+    }
+
+    function placePage(page, where) {
+      if (where === "start") {
+        content.pages.unshift(page);
+      } else if (where === "after-chapter") {
+        let last = -1;
+        pages().forEach((item, index) => {
+          if ((item.chapter || item.group) === page.chapter) last = index;
+        });
+        content.pages.splice(last < 0 ? content.pages.length : last + 1, 0, page);
+      } else if (where === "after") {
+        const index = pages().findIndex(item => item.id === state.page);
+        content.pages.splice(index < 0 ? content.pages.length : index + 1, 0, page);
+      } else {
+        content.pages.push(page);
+      }
+      state.page = page.id;
+      saveContent();
+      render();
+    }
+
+    function openOrCreate(match, page, where) {
+      const existing = pages().find(match);
+      if (existing) {
+        state.page = existing.id;
+        render();
+        return;
+      }
+      placePage(page, where);
+    }
+
+    function addPreset(kind) {
+      const chapter = moduleName();
+      const id = "p-" + Date.now().toString(36);
+      if (kind === "module") {
+        const title = "Nuevo módulo";
+        placePage({
+          id, chapter: title, group: title, title,
+          kicker: "Módulo", lead: "Idea principal de este módulo.",
+          slideKind: "chapter", sectionLevel: "chapter",
+          blocks: [{ type: "text", text: "Contenido del módulo." }],
+          quiz: []
+        }, "end");
+        return;
+      }
+      if (kind === "submodule") {
+        const title = "Nuevo submódulo";
+        placePage({
+          id, chapter, group: title, title,
+          kicker: "Submódulo", lead: "Contenido de este submódulo.",
+          slideKind: "subchapter", sectionLevel: "subchapter",
+          blocks: [{ type: "text", text: "Contenido del submódulo." }],
+          quiz: []
+        }, "after-chapter");
+        return;
+      }
+      if (kind === "cover") {
+        openOrCreate(
+          p => p.id === "t01" || p.slideKind === "cover",
+          {
+            id: "t01", chapter: "Inicio", group: "Carátula", title: content.meta?.title || "Carátula",
+            kicker: "Inicio", lead: "Portada del manual.",
+            slideKind: "cover",
+            blocks: [{ type: "text", text: "Título, equipo y aviso de la carátula." }],
+            quiz: []
+          },
+          "start"
+        );
+        return;
+      }
+      if (kind === "toc") {
+        openOrCreate(
+          p => p.id === "toc" || p.slideKind === "toc",
+          {
+            id: "toc", chapter: "Inicio", group: "Índice", title: "Índice",
+            kicker: "Contenido", lead: "Los módulos están en el menú de la izquierda.",
+            slideKind: "toc",
+            blocks: [{ type: "text", text: "Desde aquí se entra a cada módulo." }],
+            quiz: []
+          },
+          "start"
+        );
+        return;
+      }
+      if (kind === "summary") {
+        placePage({
+          id, chapter, group: chapter + " · Resumen", title: "Resumen",
+          kicker: "Resumen", lead: "Escucha al avatar y repasa la idea.",
+          slideKind: "summary",
+          summary: { es: "Escribe aquí el resumen que narrará el avatar.", en: "" },
+          blocks: [],
+          quiz: []
+        }, "after-chapter");
+        return;
+      }
+      if (kind === "quiz") {
+        placePage({
+          id, chapter, group: chapter + " · Cuestionario", title: "Cuestionario",
+          kicker: "Evaluación", lead: "Responde y revisa el resultado.",
+          slideKind: "quiz",
+          summary: { es: "Antes de responder, escucha este resumen.", en: "" },
+          blocks: [],
+          quiz: [blankQuestion()]
+        }, "after-chapter");
+        return;
+      }
+      const cur = currentPage();
+      placePage({
+        id,
+        chapter,
+        group: cur && cur.group && cur.id !== "t01" && cur.id !== "toc" ? cur.group : "Información",
+        title: kind === "info" ? "Información" : "Nueva slide",
+        kicker: kind === "info" ? "Información" : "Slide",
+        lead: "Explica este punto en pocas líneas.",
+        slideKind: "content",
+        sectionLevel: "content",
+        blocks: [{ type: "text", text: "Nuevo párrafo" }],
+        quiz: []
+      }, "after");
+    }
+
+    document.body.addEventListener("click", e => {
+      if (state.compose) {
+        const preset = e.target.closest("[data-preset]");
+        if (preset) {
+          e.preventDefault();
+          addPreset(preset.getAttribute("data-preset"));
+          return;
+        }
+        const addInline = e.target.closest("[data-add-inline]");
+        if (addInline) {
+          e.preventDefault();
+          const page = currentPage();
+          page.blocks = page.blocks || [];
+          const type = addInline.getAttribute("data-add-inline");
+          const seeded = {
+            text: { type, text: "Nuevo párrafo" },
+            heading: { type, level: 3, text: "Subtítulo" },
+            callout: { type, text: "Nota para el operador." },
+            warn: { type, text: "Advertencia." },
+            ok: { type, text: "Condición correcta." },
+            list: { type, title: "Lista", items: ["Elemento 1"] },
+            steps: { type, title: "Pasos", items: ["Paso 1"] }
+          };
+          page.blocks.push(seeded[type] || emptyBlock(type));
+          saveContent();
+          render();
+          return;
+        }
+        const delInline = e.target.closest("[data-del-inline]");
+        if (delInline) {
+          e.preventDefault();
+          currentPage().blocks.splice(Number(delInline.getAttribute("data-del-inline")), 1);
+          saveContent();
+          render();
+          return;
+        }
+        const moveInline = e.target.closest("[data-move-block]");
+        if (moveInline) {
+          e.preventDefault();
+          const i = Number(moveInline.getAttribute("data-move-block"));
+          const j = i + Number(moveInline.dataset.dir);
+          const arr = currentPage().blocks || [];
+          if (j >= 0 && j < arr.length) {
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+            saveContent();
+            render();
+          }
+          return;
+        }
+        if (e.target.closest("[data-add-slide]")) {
+          e.preventDefault();
+          insertSlideAfterCurrent();
+          return;
+        }
+        if (e.target.closest("[data-del-slide]")) {
+          e.preventDefault();
+          if (pages().length < 2) return;
+          content.pages = pages().filter(p => p.id !== state.page);
+          state.page = pages()[0].id;
+          saveContent();
+          render();
+          return;
+        }
+        if (e.target.closest("[data-add-q]")) {
+          e.preventDefault();
+          const page = currentPage();
+          page.quiz = page.quiz || [];
+          page.slideKind = page.slideKind === "summary" ? "summary" : "quiz";
+          page.quiz.push(blankQuestion());
+          saveContent();
+          render();
+          return;
+        }
+        const setCorrect = e.target.closest("[data-set-correct]");
+        if (setCorrect) {
+          e.preventDefault();
+          const question = (currentPage().quiz || [])[Number(setCorrect.getAttribute("data-set-correct"))];
+          if (question) question.a = Number(setCorrect.dataset.choiceI);
+          saveContent();
+          render();
+          return;
+        }
+        const addOpt = e.target.closest("[data-add-opt]");
+        if (addOpt) {
+          e.preventDefault();
+          const question = (currentPage().quiz || [])[Number(addOpt.getAttribute("data-add-opt"))];
+          if (question) {
+            question.options = question.options || [];
+            question.options.push("Nueva respuesta");
+            question.optionsEs = question.options.slice();
+          }
+          saveContent();
+          render();
+          return;
+        }
+        const delOpt = e.target.closest("[data-del-opt]");
+        if (delOpt) {
+          e.preventDefault();
+          const [qi, oi] = delOpt.getAttribute("data-del-opt").split(":").map(Number);
+          const question = (currentPage().quiz || [])[qi];
+          if (question && (question.options || []).length > 2) {
+            question.options.splice(oi, 1);
+            question.optionsEs = question.options.slice();
+            if (question.a >= question.options.length) question.a = 0;
+            saveContent();
+            render();
+          }
+          return;
+        }
+        const delQ = e.target.closest("[data-del-q]");
+        if (delQ) {
+          e.preventDefault();
+          currentPage().quiz.splice(Number(delQ.getAttribute("data-del-q")), 1);
+          saveContent();
+          render();
+          return;
+        }
+      }
+      const language = e.target.closest("[data-summary-lang]");
+      if (language) {
+        state.summaryLanguage = language.getAttribute("data-summary-lang") === "es" ? "es" : "en";
+        localStorage.setItem("iom-summary-language", state.summaryLanguage);
+        stopSpeak();
+        renderPage(true);
+        return;
+      }
+      const readButton = e.target.closest("[data-mark-read]");
+      if (readButton) {
+        state.read[readButton.getAttribute("data-mark-read")] = true;
+        saveProgress();
+        renderPage(true);
+        renderNav();
+        return;
+      }
+      const manualLink = e.target.closest('.manual-document a[href^="#"]');
+      if (manualLink) {
+        e.preventDefault();
+        const anchor = manualLink.getAttribute("href").slice(1);
+        const target = pages().find(page => page.anchor === anchor);
+        if (target) {
+          state.page = target.id;
+          render();
+          window.scrollTo(0, 0);
+        }
+        return;
+      }
+      if (e.target.closest("[data-save-changes]")) {
+        commitContent();
+        return;
+      }
+      const sl = e.target.closest("[data-slide]");
+      if (sl && !sl.disabled) {
+        goRel(Number(sl.getAttribute("data-slide")));
+        return;
+      }
+      const go = e.target.closest("[data-go]");
+      if (go) {
+        state.page = go.getAttribute("data-go");
+        stopSpeak();
+        render();
+        window.scrollTo(0, 0);
+        return;
+      }
+      if (e.target.closest("[data-toggle-editor]")) {
+        if (state.editing && hasUnsavedChanges) {
+          if (confirm("You have unsaved changes. Do you want to discard them?")) {
+            localStorage.removeItem("iom-draft-content");
+            localStorage.removeItem("iom-draft-settings");
+            location.reload();
+          }
+          return;
+        }
+        state.editing = !state.editing;
+        render();
+        return;
+      }
+      if (e.target.closest("[data-stop-speak]")) { stopSpeak(); return; }
+      const sp = e.target.closest("[data-speak]");
+      if (sp) { speak(sp.getAttribute("data-speak"), sp.dataset.lang || state.summaryLanguage); return; }
+      const play = e.target.closest("[data-play-steps]");
+      if (play) {
+        const el = document.getElementById("vidsteps-" + play.getAttribute("data-play-steps"));
+        if (el) el.style.display = el.style.display === "none" ? "block" : "none";
+        return;
+      }
+      const hs = e.target.closest("[data-hotspot]");
+      if (hs) {
+        state.ui.hotspot[hs.getAttribute("data-hotspot")] = Number(hs.dataset.i);
+        renderPage();
+        return;
+      }
+      const ck = e.target.closest("[data-check]");
+      if (ck) {
+        const key = ck.getAttribute("data-check");
+        state.ui.checks[key] = state.ui.checks[key] || {};
+        state.ui.checks[key][ck.dataset.i] = !state.ui.checks[key][ck.dataset.i];
+        renderPage();
+        return;
+      }
+      const rv = e.target.closest("[data-reveal]");
+      if (rv) {
+        const key = rv.getAttribute("data-reveal");
+        const i = Number(rv.dataset.i);
+        state.ui.reveal[key] = state.ui.reveal[key] === i ? -1 : i;
+        renderPage();
+        return;
+      }
+      const sm = e.target.closest("[data-sim]");
+      if (sm && !e.target.closest("[data-sim-start]")) {
+        const key = sm.getAttribute("data-sim");
+        state.ui.sim[key] = state.ui.sim[key] || { on: {}, tried: false, ok: false };
+        state.ui.sim[key].on[sm.dataset.i] = !state.ui.sim[key].on[sm.dataset.i];
+        state.ui.sim[key].tried = false;
+        renderPage();
+        return;
+      }
+      const start = e.target.closest("[data-sim-start]");
+      if (start) {
+        const key = start.getAttribute("data-sim-start");
+        const [pid, bi] = key.split(":");
+        const block = pageById(pid).blocks[Number(bi)];
+        const sim = state.ui.sim[key] || { on: {} };
+        const ok = (block.items || []).every((_, i) => sim.on[i]);
+        state.ui.sim[key] = { on: sim.on, tried: true, ok };
+        renderPage();
+        return;
+      }
+
+      const opt = e.target.closest(".opt");
+      if (opt && !opt.closest(".q").classList.contains("locked")) {
+        opt.parentElement.querySelectorAll(".opt").forEach(x => x.classList.remove("picked"));
+        opt.classList.add("picked");
+        return;
+      }
+      const sub = e.target.closest("[data-submit]");
+      if (sub) { grade(sub.getAttribute("data-submit")); return; }
+      const retry = e.target.closest("[data-retry]");
+      if (retry) {
+        delete state.done[retry.getAttribute("data-retry")];
+        saveProgress();
+        render();
+        return;
+      }
+
+      if (!state.admin) return;
+      if (e.target.closest("[data-add-block]")) {
+        const type = document.getElementById("newBlockType").value;
+        currentPage().blocks.push(emptyBlock(type));
+        saveContent(); render(); return;
+      }
+      const delB = e.target.closest("[data-del-block]");
+      if (delB) {
+        currentPage().blocks.splice(Number(delB.getAttribute("data-del-block")), 1);
+        saveContent(); render(); return;
+      }
+      const mv = e.target.closest("[data-move]");
+      if (mv) {
+        const i = Number(mv.getAttribute("data-move"));
+        const j = i + Number(mv.dataset.dir);
+        const arr = currentPage().blocks;
+        if (j >= 0 && j < arr.length) {
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+          saveContent(); render();
+        }
+        return;
+      }
+      const addI = e.target.closest("[data-add-item]");
+      if (addI) {
+        const block = currentPage().blocks[Number(addI.getAttribute("data-add-item"))];
+        const kind = addI.dataset.kind;
+        if (kind === "photo") block.items.push({ kind: "pump", caption: "New photo", src: "" });
+        else if (kind === "video") block.items.push({ title: "New video", url: "", steps: ["Step 1"] });
+        else if (kind === "flow") block.nodes.push({ label: "NODE", sub: "", detail: "Detail" });
+        else block.items.push({ label: "Item", detail: "Detail" });
+        saveContent(); render(); return;
+      }
+      const delI = e.target.closest("[data-del-item]");
+      if (delI) {
+        const [bi, n] = delI.getAttribute("data-del-item").split(":").map(Number);
+        const block = currentPage().blocks[bi];
+        (block.nodes || block.items).splice(n, 1);
+        saveContent(); render(); return;
+      }
+      const up = e.target.closest("[data-upload]");
+      if (up) {
+        state.photoTarget = up.getAttribute("data-upload");
+        document.getElementById("photoFile").click();
+        return;
+      }
+      if (e.target.closest("[data-add-q]")) {
+        currentPage().quiz ||= [];
+        currentPage().quiz.push({
+          q: "New question?",
+          qEs: "¿Nueva pregunta?",
+          options: ["A", "B", "C"],
+          optionsEs: ["A", "B", "C"],
+          a: 0,
+          why: "Explanation of the correct answer.",
+          whyEs: "Explicación de la respuesta correcta."
+        });
+        saveContent(); render(); return;
+      }
+      const delQ = e.target.closest("[data-del-q]");
+      if (delQ) {
+        currentPage().quiz.splice(Number(delQ.getAttribute("data-del-q")), 1);
+        saveContent(); render(); return;
+      }
+      if (e.target.closest("[data-add-page]")) {
+        const id = "sec-" + Date.now();
+        content.pages.splice(pages().findIndex(p => p.id === state.page) + 1, 0, {
+          id,
+          chapter: currentPage().chapter,
+          group: currentPage().group,
+          anchor: "",
+          title: "New slide",
+          kicker: currentPage().group,
+          lead: "Write the key idea in simple English.",
+          audio: "",
+          summary: { en: "", es: "" },
+          blocks: [{ type: "text", text: "Replace this with operating content." }],
+          quiz: []
+        });
+        state.page = id;
+        saveContent(); render(); return;
+      }
+      if (e.target.closest("[data-del-page]")) {
+        if (pages().length < 2) return;
+        content.pages = pages().filter(p => p.id !== state.page);
+        state.page = pages()[0].id;
+        saveContent(); render(); return;
+      }
+      if (e.target.closest("[data-export]")) {
+        const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "operating-manual.json";
+        a.click();
+        return;
+      }
+      if (e.target.closest("[data-import]")) {
+        document.getElementById("importFile").click();
+        return;
+      }
+      if (e.target.closest("[data-reset]")) {
+        if (confirm("Reset all slides to the Reduction Circuit manual?")) {
+          content = structuredClone(DEFAULT_CONTENT);
+          saveContent();
+          state.page = pages()[0].id;
+          render();
+        }
+      }
+    });
+
+    document.getElementById("importFile").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (!parsed.pages) throw new Error("no pages");
+          content = parsed;
+          saveContent();
+          state.page = content.pages[0].id;
+          render();
+        } catch {
+          alert("That file is not a valid manual JSON.");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    });
+
+    document.getElementById("photoFile").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file || !state.photoTarget) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const [bi, n] = state.photoTarget.split(":").map(Number);
+        currentPage().blocks[bi].items[n].src = reader.result;
+        saveContent();
+        render();
+      };
+      reader.readAsDataURL(file);
+      e.target.value = "";
+    });
+
+    function grade(id) {
+      const qs = pageById(id).quiz || [];
+      const lang = state.summaryLanguage === "es" ? "es" : "en";
+      let right = 0;
+      qs.forEach((item, i) => {
+        const box = document.querySelector(`[data-qid="${id}-${i}"]`);
+        const picked = box.querySelector(".opt.picked");
+        const choice = picked ? Number(picked.dataset.choice) : -1;
+        const fb = box.querySelector("[data-fb]");
+        box.classList.add("locked");
+        box.querySelectorAll(".opt").forEach((btn, j) => {
+          if (j === item.a) btn.classList.add("right");
+          if (choice === j && j !== item.a) btn.classList.add("wrong");
+        });
+        if (choice === item.a) {
+          right += 1;
+          fb.className = "feedback show good";
+          fb.textContent = lang === "es"
+            ? `Correcto. ${item.whyEs || ""}`
+            : `Correct. ${item.why || ""}`;
+        } else {
+          fb.className = "feedback show bad";
+          fb.textContent = lang === "es"
+            ? `Incorrecto. La opción correcta es ${optionLetter(item.a)}. ${item.whyEs || ""}`
+            : `Incorrect. The correct option is ${optionLetter(item.a)}. ${item.why || ""}`;
+        }
+      });
+      const pct = Math.round(right / qs.length * 100);
+      const pass = pct >= PASS;
+      document.querySelector("[data-score]").textContent = lang === "es"
+        ? (pass
+          ? `Resultado ${pct}%. Capítulo completado.`
+          : `Resultado ${pct}%. Revisa el resumen e inténtalo nuevamente.`)
+        : (pass
+          ? `Score ${pct}%. Chapter complete.`
+          : `Score ${pct}%. Review the summary and try again.`);
+      state.done[id] = { pass, pct, at: new Date().toISOString(), operator: state.operator || "unknown" };
+      if (pass) state.read[id] = true;
+      saveProgress();
+      renderNav();
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.target.matches("input, textarea, select") || e.target.isContentEditable) return;
+      if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); goRel(1); }
+      if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); goRel(-1); }
+    });
+
+    if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => { };
+    let _tm = JSON.parse(localStorage.getItem("iom-draft-settings") || "{}").themeMode;
+    applyTheme("light");
+    (async function initViewer() {
+      content = await loadContentAsync();
+      state.installBrand = await loadInstallBrand();
+      if (VIEWER_EDIT) {
+        state.admin = true;
+        state.role = "administrator";
+        state.editing = false;
+        state.compose = true;
+        sessionStorage.setItem("iom-admin", "1");
+      }
+      if (VIEWER_PUBLISHED) {
+        state.admin = false;
+        state.compose = false;
+        state.editing = false;
+      }
+      if (!pages().length) {
+        document.getElementById("main").innerHTML = `<section class="card"><h2>No se pudo cargar el manual</h2><p>Verifica Supabase (seed del ejemplo) o la API <code>/api/manuals/…</code>. Fallback: <code>content.js</code> embebido.</p></section>`;
+        document.getElementById("progressText").textContent = "0 / 0 sections";
+      } else {
+        render();
+      }
+    })();
+  </script>
+</body>
+
+</html>
