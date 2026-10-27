@@ -15,9 +15,19 @@ async function parseJsonResponse<T>(res: Response): Promise<T | null> {
   }
 }
 
-export async function loadDraftIndex(): Promise<ManualIndexEntry[]> {
+export async function loadManualIndex(): Promise<{ manuals: ManualIndexEntry[]; warning: string }> {
   const res = await fetch("/api/manuals", { credentials: "include" });
-  return (await parseJsonResponse<ManualIndexEntry[]>(res)) ?? [];
+  const data = await parseJsonResponse<{ manuals?: ManualIndexEntry[]; warning?: string } | ManualIndexEntry[]>(res);
+  if (Array.isArray(data)) return { manuals: data, warning: "" };
+  return {
+    manuals: data?.manuals ?? [],
+    warning: data?.warning || (res.ok ? "" : "No se pudieron cargar los manuales."),
+  };
+}
+
+export async function loadDraftIndex(): Promise<ManualIndexEntry[]> {
+  const { manuals } = await loadManualIndex();
+  return manuals;
 }
 
 export async function loadDraft(id: string): Promise<ManualContent | null> {
@@ -27,12 +37,16 @@ export async function loadDraft(id: string): Promise<ManualContent | null> {
   return await parseJsonResponse<ManualContent>(res);
 }
 
-export async function saveDraft(id: string, content: ManualContent): Promise<boolean> {
+export async function saveDraft(
+  id: string,
+  content: ManualContent,
+): Promise<{ ok: true } | { ok: false; error: string }> {
   const updated: ManualContent = {
     ...content,
     meta: {
       title: content.meta?.title ?? "Untitled",
       subtitle: content.meta?.subtitle,
+      cover: content.meta?.cover,
       createdAt: content.meta?.createdAt ?? new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -44,7 +58,9 @@ export async function saveDraft(id: string, content: ManualContent): Promise<boo
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(updated),
   });
-  return res.ok;
+  if (res.ok) return { ok: true };
+  const data = (await res.json().catch(() => ({}))) as { error?: string };
+  return { ok: false, error: data.error || "No hay conexión con la base de manuales." };
 }
 
 export async function deleteDraft(id: string): Promise<boolean> {

@@ -4,7 +4,8 @@ create table if not exists public.manuals (
   title text not null default 'Untitled',
   subtitle text,
   kind text not null default 'draft' check (kind in ('example', 'draft')),
-  owner_id uuid references auth.users (id) on delete set null,
+  -- Id local de data/workspace.json. Sin FK a auth.users: esos UUID no existen ahí.
+  owner_id uuid,
   content jsonb not null default '{"ver": 7, "pages": []}'::jsonb,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())

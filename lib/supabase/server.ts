@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { getSession } from "@/lib/auth/session";
 import { supabaseConfig } from "@/lib/supabase/config";
 
 export async function createSupabaseServerClient() {
@@ -10,7 +11,7 @@ export async function createSupabaseServerClient() {
       getAll() {
         return cookieStore.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: { name: string; value: string; options?: Parameters<typeof cookieStore.set>[2] }[]) {
         try {
           cookiesToSet.forEach(({ name, value, options }) => {
             cookieStore.set(name, value, options);
@@ -24,9 +25,5 @@ export async function createSupabaseServerClient() {
 }
 
 export async function getSessionUserId(): Promise<string | null> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user?.id ?? null;
+  return (await getSession())?.id ?? null;
 }

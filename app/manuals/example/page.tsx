@@ -1,6 +1,13 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth/session";
 
-export default function ExampleManualPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ExampleManualPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  if (session.role !== "admin") redirect("/manuals");
   const src = "/ejemplos/manual-interactivo/index.html?example=1";
 
   return (
@@ -12,8 +19,8 @@ export default function ExampleManualPage() {
             REDUCTION CIRCUIT · visor con sidebar glassmorphism
           </span>
         </div>
-        <Link className="btn ghost" href="/manuals">
-          Volver al hub
+        <Link className="desk-btn quiet" href="/manuals">
+          Manuales
         </Link>
       </div>
       <iframe

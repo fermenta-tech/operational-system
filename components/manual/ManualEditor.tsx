@@ -96,9 +96,9 @@ export function ManualEditor({ manualId, initial }: Props) {
     (next: ManualContent) => {
       const normalized = syncCoverPage(refreshTocPage(next));
       setContent(normalized);
-      void saveDraft(manualId, normalized).then((ok) => {
+      void saveDraft(manualId, normalized).then((saved) => {
         setPreviewRev((v) => v + 1);
-        setSavedHint(ok ? "Guardado en Supabase" : "Error al guardar");
+        setSavedHint(saved.ok ? "Guardado en Supabase" : "Error al guardar");
         window.setTimeout(() => setSavedHint(""), 2000);
       });
     },
@@ -264,8 +264,8 @@ export function ManualEditor({ manualId, initial }: Props) {
   }
 
   async function exportToServer() {
-    const ok = await saveDraft(manualId, content);
-    setSavedHint(ok ? "JSON sincronizado con Supabase" : "Error al exportar");
+    const saved = await saveDraft(manualId, content);
+    setSavedHint(saved.ok ? "JSON sincronizado con Supabase" : "Error al exportar");
     window.setTimeout(() => setSavedHint(""), 2000);
   }
 

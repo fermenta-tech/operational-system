@@ -19,6 +19,8 @@ function rowToIndex(row: Pick<ManualRow, "id" | "title" | "updated_at">): Manual
     id: row.id,
     title: row.title,
     updatedAt: row.updated_at,
+    status: "draft",
+    inviteeIds: [],
   };
 }
 
@@ -37,6 +39,26 @@ export async function getExampleManual(): Promise<ManualRow | null> {
   return getManualById(EXAMPLE_MANUAL_ID);
 }
 
+export async function listManualRows(): Promise<
+  { rows: Pick<ManualRow, "id" | "title" | "updated_at" | "kind" | "owner_id">[]; error: string | null }
+> {
+  try {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from("manuals")
+      .select("id, title, updated_at, kind, owner_id")
+      .eq("kind", "draft")
+      .order("updated_at", { ascending: false });
+    if (error) return { rows: [], error: error.message };
+    return {
+      rows: (data ?? []) as Pick<ManualRow, "id" | "title" | "updated_at" | "kind" | "owner_id">[],
+      error: null,
+    };
+  } catch (error) {
+    return { rows: [], error: error instanceof Error ? error.message : "fetch failed" };
+  }
+}
+
 export async function listDraftsForUser(userId: string): Promise<ManualIndexEntry[]> {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
@@ -46,13 +68,17 @@ export async function listDraftsForUser(userId: string): Promise<ManualIndexEntr
     .eq("owner_id", userId)
     .order("updated_at", { ascending: false });
   if (error || !data) return [];
-  return data.map((row) => rowToIndex(row as Pick<ManualRow, "id" | "title" | "updated_at">));
+  return data.map((row) => ({
+    ...rowToIndex(row as Pick<ManualRow, "id" | "title" | "updated_at">),
+    status: "draft" as const,
+    inviteeIds: [],
+  }));
 }
 
 export async function upsertDraft(
   id: string,
   content: ManualContent,
-  ownerId: string,
+  ownerId: string | null,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const supabase = createSupabaseAdminClient();
   const now = new Date().toISOString();
@@ -92,6 +118,15 @@ export async function upsertExampleManual(content: ManualContent): Promise<{ ok:
     },
     { onConflict: "id" },
   );
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function deleteDraft(
+  id: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.from("manuals").delete().eq("id", id).eq("kind", "draft");
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
