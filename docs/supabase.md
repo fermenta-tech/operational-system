@@ -6,10 +6,10 @@
 | --- | --- |
 | URL | `https://xyuhembqovjwivtzxaqm.supabase.co` |
 | Project ref | `xyuhembqovjwivtzxaqm` |
-| Publishable (anon) | `sb_publishable_VlXEXCZxIT4ZuoNr8NvLOg_AybHWPoM` |
-| Secret (service role) | `sb_secret_bnKbwBIbtuGX1HsrSTxRwg_mW_QOlS6` |
+| Publishable (anon) | JWT `anon` en `lib/supabase/config.ts` |
+| Secret (service role) | JWT `service_role` en `lib/supabase/config.ts` |
 
-Las claves están hardcodeadas en `lib/supabase/config.ts` (solo servidor / scripts). No se usa `.env` en este MVP.
+Las claves viven en `lib/supabase/config.ts` (solo servidor / scripts). `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` las pisan si están definidas; no hay un `.env` en el repo.
 
 ## Auth (demo)
 

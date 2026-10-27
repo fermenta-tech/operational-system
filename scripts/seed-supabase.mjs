@@ -13,8 +13,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
 
 const supabaseConfig = {
-  url: "https://xyuhembqovjwivtzxaqm.supabase.co",
-  secretKey: "sb_secret_bnKbwBIbtuGX1HsrSTxRwg_mW_QOlS6",
+  url: process.env.SUPABASE_URL || "https://xyuhembqovjwivtzxaqm.supabase.co",
+  secretKey:
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5dWhlbWJxb3Zqd2l2dHp4YXFtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MTQ2OTM4MCwiZXhwIjoyMTA3MDQ1MzgwfQ.VqrmDyK-inQaa441e4Knslut4hFX_y1TQEL_REOJoUY",
 };
 
 const demoAuth = {
