@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { confirmAction, notify, openForm, openInvite, tellError } from "@/components/dialogs";
 import { brand, onPrimary } from "@/lib/brand";
 import { loadManualIndex, saveDraft } from "@/lib/manual/client-storage";
+import { manualDownloadFilename } from "@/lib/manual/download-name";
 import { createEmptyManual, newManualId } from "@/lib/manual/template";
 import type { ManualIndexEntry } from "@/lib/manual/types";
 import type { SessionUser } from "@/lib/workspace/types";
@@ -99,6 +100,25 @@ export function ManualsScreen({ session }: { session: SessionUser }) {
     await reload();
   }
 
+  async function downloadManual(manual: ManualIndexEntry) {
+    const res = await fetch(`/api/manuals/${manual.id}/export`, { credentials: "include" });
+    if (!res.ok) {
+      await tellError("No se pudo descargar");
+      return;
+    }
+    const header = res.headers.get("Content-Disposition") || "";
+    const quoted = /filename="([^"]+)"/i.exec(header);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = quoted?.[1] || manualDownloadFilename(manual.title);
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }
+
   function inviteeNames(ids: string[]): string {
     return ids
       .map((id) => users.find((user) => user.id === id)?.name || "")
@@ -151,6 +171,9 @@ export function ManualsScreen({ session }: { session: SessionUser }) {
               <Link className="desk-btn quiet" href={`/manuals/view/${manual.id}`}>
                 Abrir
               </Link>
+              <button type="button" className="desk-btn quiet" onClick={() => void downloadManual(manual)}>
+                Descargar
+              </button>
               {session.role === "admin" ? (
                 <button type="button" className="desk-btn quiet" onClick={() => void publish(manual)}>
                   {manual.status === "published" ? "Invitados" : "Publicar"}
