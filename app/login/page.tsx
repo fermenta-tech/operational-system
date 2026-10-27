@@ -79,7 +79,11 @@ function LoginForm() {
       });
       const data = (await res.json().catch(() => ({}))) as { role?: string };
       if (!res.ok) {
-        setError("Contraseña incorrecta. Vuelve a intentarlo.");
+        setError(
+          res.status === 401
+            ? "Contraseña incorrecta. Vuelve a intentarlo."
+            : "No se pudo iniciar sesión. Inténtalo de nuevo.",
+        );
         passwordRef.current?.focus();
         return;
       }

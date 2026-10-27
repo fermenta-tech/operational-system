@@ -12,11 +12,16 @@ import { createClient } from "@supabase/supabase-js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
 
+function fallbackFromConfig(name) {
+  const src = fs.readFileSync(path.join(root, "lib/supabase/config.ts"), "utf8");
+  const match = src.match(new RegExp(`const ${name} =\\s*\\n\\s*"([^"]+)"`));
+  if (!match) throw new Error(`No está ${name} en lib/supabase/config.ts`);
+  return match[1];
+}
+
 const supabaseConfig = {
   url: process.env.SUPABASE_URL || "https://xyuhembqovjwivtzxaqm.supabase.co",
-  secretKey:
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5dWhlbWJxb3Zqd2l2dHp4YXFtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MTQ2OTM4MCwiZXhwIjoyMTA3MDQ1MzgwfQ.VqrmDyK-inQaa441e4Knslut4hFX_y1TQEL_REOJoUY",
+  secretKey: process.env.SUPABASE_SERVICE_ROLE_KEY || fallbackFromConfig("serviceRoleKey"),
 };
 
 const demoAuth = {
