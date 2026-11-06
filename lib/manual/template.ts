@@ -69,12 +69,11 @@ export function buildCoverHtml(input: {
   const cover = input.cover ?? {};
   const eyebrow = cover.eyebrow ?? input.subtitle ?? "New training manual";
   const brandLine = cover.brandLine ?? "Plant operation · Training manual";
-  const equipment = cover.equipment?.length
-    ? cover.equipment
-    : [
-        { code: "EQ-001", label: "Main equipment" },
-        { code: "EQ-002", label: "Auxiliary system" },
-      ];
+  const equipment =
+    cover.equipment ?? [
+      { code: "EQ-001", label: "Main equipment" },
+      { code: "EQ-002", label: "Auxiliary system" },
+    ];
   const equipmentHtml = equipment
     .filter((e) => e.code.trim() || e.label.trim())
     .map(
@@ -292,6 +291,163 @@ export function listChapters(pages: ManualPage[]): string[] {
     if (inferSectionLevel(p) === "chapter") chapters.push(p.chapter);
   }
   return chapters;
+}
+
+export type ManualTemplateKind = "libre" | "adiestramiento" | "operacion";
+
+function guidedPage(input: {
+  title: string;
+  lead: string;
+  index: number;
+  level?: ManualSectionLevel;
+  chapter?: string;
+  blocks: ManualPage["blocks"];
+}): ManualPage {
+  const level = input.level ?? "chapter";
+  const chapter = level === "chapter" ? input.title : input.chapter || input.title;
+  return {
+    id: `g-${input.index}-${slug(input.title, input.index)}`,
+    chapter,
+    group: input.title,
+    title: input.title,
+    slideKind: level === "chapter" ? "chapter" : level === "subchapter" ? "subchapter" : "content",
+    sectionLevel: level,
+    kicker: level === "chapter" ? "Módulo" : "Información",
+    lead: input.lead,
+    blocks: input.blocks,
+  };
+}
+
+function trainingPages(): ManualPage[] {
+  const sections: { title: string; lead: string; text: string }[] = [
+    {
+      title: "Introducción",
+      lead: "Para qué sirve este manual y a quién va dirigido.",
+      text: "Escribe aquí el propósito del manual y qué va a aprender quien lo lee.",
+    },
+    {
+      title: "Datos de la planta",
+      lead: "Nombre, ubicación y datos generales.",
+      text: "Describe la planta: qué produce, su capacidad y cómo está organizada.",
+    },
+    {
+      title: "Áreas",
+      lead: "Cómo se divide el proceso.",
+      text: "Nombra cada área y explica, en pocas líneas, qué ocurre en ella.",
+    },
+    {
+      title: "Equipos",
+      lead: "Qué hace cada equipo y cuál es su capacidad.",
+      text: "Describe los equipos principales: función, capacidad y cómo se relacionan.",
+    },
+    {
+      title: "Instrumentación y lazos",
+      lead: "Qué se mide y cómo se controla.",
+      text: "Indica los instrumentos principales y cómo trabaja cada lazo de control.",
+    },
+    {
+      title: "Interlocks",
+      lead: "Qué impide un arranque o qué detiene el equipo.",
+      text: "Lista las condiciones que bloquean el equipo y qué debe cumplirse para seguir.",
+    },
+  ];
+  return sections.map((section, index) =>
+    guidedPage({
+      title: section.title,
+      lead: section.lead,
+      index,
+      blocks: [{ type: "text", text: section.text }],
+    }),
+  );
+}
+
+function operationPages(): ManualPage[] {
+  return [
+    guidedPage({
+      title: "Antes de arrancar",
+      lead: "Condiciones y equipo de protección antes de entrar al área.",
+      index: 0,
+      blocks: [
+        {
+          type: "list",
+          title: "Equipo de protección",
+          items: ["Casco", "Lentes", "Guantes", "Protección auditiva", "Calzado de seguridad"],
+        },
+      ],
+    }),
+    guidedPage({
+      title: "Bloqueo y etiquetado",
+      lead: "Si hay una persona dentro de la guarda, el equipo no arranca.",
+      index: 1,
+      level: "subchapter",
+      chapter: "Antes de arrancar",
+      blocks: [
+        {
+          type: "steps",
+          title: "Orden del bloqueo",
+          items: ["Avisa que el equipo queda en bloqueo.", "Para el equipo y espera velocidad cero.", "Coloca tu candado y tu etiqueta.", "Prueba el arranque: no debe responder."],
+        },
+      ],
+    }),
+    guidedPage({
+      title: "Parámetros",
+      lead: "Valores con los que el equipo puede arrancar.",
+      index: 2,
+      blocks: [
+        {
+          type: "table",
+          headers: ["Punto", "Mínimo", "Normal", "Máximo"],
+          rows: [["", "", "", ""]],
+        },
+      ],
+    }),
+    guidedPage({
+      title: "Arranque",
+      lead: "Secuencia concreta para poner el equipo en marcha.",
+      index: 3,
+      blocks: [
+        {
+          type: "steps",
+          title: "Secuencia de arranque",
+          items: ["Confirma los permisivos.", "Arranca los servicios auxiliares.", "Arranca el equipo principal.", "Verifica que los valores quedan en normal."],
+        },
+      ],
+    }),
+    guidedPage({
+      title: "Paro",
+      lead: "Secuencia concreta para detener el equipo.",
+      index: 4,
+      blocks: [
+        {
+          type: "steps",
+          title: "Secuencia de paro",
+          items: ["Avisa el paro.", "Detén la alimentación.", "Para el equipo y espera velocidad cero.", "Deja el área en condición segura."],
+        },
+      ],
+    }),
+  ];
+}
+
+export function createManualFromTemplate(input: {
+  id: string;
+  title: string;
+  subtitle?: string;
+  template?: ManualTemplateKind;
+}): ManualContent {
+  const manual = createEmptyManual(input);
+  const kind = input.template ?? "libre";
+  if (kind === "libre" || !manual.meta) return manual;
+  manual.meta = {
+    ...manual.meta,
+    subtitle: input.subtitle,
+    cover: {
+      eyebrow: input.subtitle || (kind === "operacion" ? "Arranque y paro" : "Adiestramiento"),
+      brandLine: kind === "operacion" ? "Manual de operación" : "Manual descriptivo",
+      equipment: [],
+    },
+  };
+  manual.pages = [...manual.pages, ...(kind === "operacion" ? operationPages() : trainingPages())];
+  return refreshTocPage(syncCoverPage(manual));
 }
 
 export function newManualId(): string {
