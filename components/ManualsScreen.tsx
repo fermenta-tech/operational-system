@@ -7,7 +7,7 @@ import { confirmAction, notify, openForm, openInvite, tellError } from "@/compon
 import { brand, onPrimary } from "@/lib/brand";
 import { loadManualIndex, saveDraft } from "@/lib/manual/client-storage";
 import { manualDownloadFilename } from "@/lib/manual/download-name";
-import { createEmptyManual, newManualId } from "@/lib/manual/template";
+import { createManualFromTemplate, newManualId, type ManualTemplateKind } from "@/lib/manual/template";
 import type { ManualIndexEntry } from "@/lib/manual/types";
 import type { SessionUser } from "@/lib/workspace/types";
 
@@ -41,16 +41,29 @@ export function ManualsScreen({ session }: { session: SessionUser }) {
       fields: [
         { name: "title", label: "Título", required: true, placeholder: "Procedimiento de arranque" },
         { name: "subtitle", label: "Subtítulo", required: false, placeholder: "Operación" },
+        {
+          name: "template",
+          label: "Tipo",
+          type: "select",
+          options: [
+            { value: "libre", label: "Libre" },
+            { value: "adiestramiento", label: "Adiestramiento" },
+            { value: "operacion", label: "Operación" },
+          ],
+        },
       ],
     });
     if (!values) return;
+    const template: ManualTemplateKind =
+      values.template === "adiestramiento" || values.template === "operacion" ? values.template : "libre";
     const id = newManualId();
     const saved = await saveDraft(
       id,
-      createEmptyManual({
+      createManualFromTemplate({
         id,
         title: values.title,
         subtitle: values.subtitle,
+        template,
       }),
     );
     if (!saved.ok) {
@@ -98,6 +111,23 @@ export function ManualsScreen({ session }: { session: SessionUser }) {
       return;
     }
     await reload();
+  }
+
+  async function removeManual(manual: ManualIndexEntry) {
+    const ok = await confirmAction(
+      `¿Borrar «${manual.title}»?`,
+      "Se quitará de la lista. Los demás manuales siguen igual.",
+      "Borrar",
+    );
+    if (!ok) return;
+    const res = await fetch(`/api/manuals/${manual.id}`, { method: "DELETE", credentials: "include" });
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      await tellError("No se borró el manual", data.error);
+      return;
+    }
+    setManuals((current) => current.filter((item) => item.id !== manual.id));
+    await notify("Manual borrado");
   }
 
   async function downloadManual(manual: ManualIndexEntry) {
@@ -183,6 +213,16 @@ export function ManualsScreen({ session }: { session: SessionUser }) {
                 <button type="button" className="desk-btn quiet" onClick={() => void unpublish(manual)}>
                   Borrador
                 </button>
+              ) : null}
+              {session.role === "admin" ? (
+                <details className="desk-menu">
+                  <summary aria-label={`Opciones de ${manual.title}`}>⋯</summary>
+                  <div className="desk-menu-pop">
+                    <button type="button" onClick={() => void removeManual(manual)}>
+                      Borrar
+                    </button>
+                  </div>
+                </details>
               ) : null}
             </div>
           </li>

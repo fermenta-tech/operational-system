@@ -122,6 +122,58 @@ export async function upsertExampleManual(content: ManualContent): Promise<{ ok:
   return { ok: true };
 }
 
+const MAX_MANUAL_VERSIONS = 5;
+
+export type ManualVersionEntry = {
+  id: string;
+  createdAt: string;
+  content: ManualContent;
+};
+
+export async function listManualVersions(
+  manualId: string,
+): Promise<{ ok: true; versions: ManualVersionEntry[] } | { ok: false; error: string }> {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("manual_versions")
+    .select("id, created_at, content")
+    .eq("manual_id", manualId)
+    .order("created_at", { ascending: false })
+    .limit(MAX_MANUAL_VERSIONS);
+  if (error) return { ok: false, error: error.message };
+  return {
+    ok: true,
+    versions: (data ?? []).map((row) => ({
+      id: String(row.id),
+      createdAt: String(row.created_at),
+      content: row.content as ManualContent,
+    })),
+  };
+}
+
+export async function pushManualVersion(
+  manualId: string,
+  content: ManualContent,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.from("manual_versions").insert({
+    manual_id: manualId,
+    content,
+  });
+  if (error) return { ok: false, error: error.message };
+
+  const { data } = await supabase
+    .from("manual_versions")
+    .select("id")
+    .eq("manual_id", manualId)
+    .order("created_at", { ascending: false });
+  const extra = (data ?? []).slice(MAX_MANUAL_VERSIONS).map((row) => String(row.id));
+  if (extra.length) {
+    await supabase.from("manual_versions").delete().in("id", extra);
+  }
+  return { ok: true };
+}
+
 export async function deleteDraft(
   id: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {

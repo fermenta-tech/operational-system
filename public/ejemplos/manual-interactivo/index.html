@@ -1256,6 +1256,43 @@
       align-items: center;
     }
 
+    .version-tools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .version-panel {
+      margin: -6px 0 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .version-panel button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin-top: 6px;
+    }
+
+    .equip-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .equip-tools button {
+      border: 1px solid #dadce0;
+      background: #fff;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
     .flow-board {
       background: #0f1c33;
       color: #d7e4f7;
@@ -2492,6 +2529,67 @@
       }
     }
 
+    const undoStack = [];
+    let versionCache = {};
+    let editOrigin = null;
+
+    function rememberFrom(snapshot) {
+      if (!VIEWER_EDIT || !snapshot) return;
+      undoStack.push(snapshot);
+      if (undoStack.length > 5) undoStack.shift();
+      fetch(`/api/manuals/${encodeURIComponent(VIEWER_DRAFT_ID)}/versions`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(snapshot)
+      }).catch(() => {});
+    }
+
+    function remember() {
+      rememberFrom(JSON.parse(JSON.stringify(content)));
+    }
+
+    function restoreContent(snapshot) {
+      content = JSON.parse(JSON.stringify(snapshot));
+      if (!pages().some(page => page.id === state.page)) state.page = pages()[0]?.id;
+      saveContent();
+      render();
+    }
+
+    function undoLast() {
+      const snapshot = undoStack.pop();
+      if (!snapshot) return;
+      restoreContent(snapshot);
+    }
+
+    function cleanManualHtml(root) {
+      const clone = root.cloneNode(true);
+      clone.querySelectorAll(".equip-tools").forEach(node => node.remove());
+      return clone.innerHTML;
+    }
+
+    function decorateCoverCards() {
+      if (!state.compose) return;
+      document.querySelectorAll(".cover-equipment > div").forEach(card => {
+        if (card.querySelector(".equip-tools")) return;
+        const tools = document.createElement("div");
+        tools.className = "equip-tools";
+        tools.contentEditable = "false";
+        tools.innerHTML = `<button type="button" data-equip-remove>Quitar</button><button type="button" data-equip-slide>Llevar a lámina</button>`;
+        card.appendChild(tools);
+      });
+    }
+
+    function coverHtmlBlock() {
+      const page = pages().find(item => item.id === "t01" || item.slideKind === "cover") || currentPage();
+      return (page.blocks || []).find(block => block.type === "manual-html") || null;
+    }
+
+    function writeCoverHtml(html) {
+      const block = coverHtmlBlock();
+      if (block) block.html = html;
+    }
+
     function saveContent() {
       hasUnsavedChanges = true;
       localStorage.setItem("iom-draft-content", JSON.stringify(content));
@@ -2927,7 +3025,7 @@
         : (closer ? "Recap this chapter, then check yourself." : "Type your name on the left to personalize this deck.");
       const alertCls = hasUnsavedChanges ? " unsaved-alert" : "";
       const adminBar = state.compose
-        ? `<div class="admin-banner">Editando en el visor <span class="compose-save" id="composeSave">${esc(saveStatus)}</span></div>`
+        ? `<div class="admin-banner">Editando en el visor <span class="version-tools"><button type="button" class="btn ghost" data-undo>Deshacer</button><button type="button" class="btn ghost" data-versions>Versiones</button><span class="compose-save" id="composeSave">${esc(saveStatus)}</span></span></div><div class="version-panel" id="versionPanel" hidden></div>`
         : (state.admin ? `<div class="admin-banner">Administrator mode
         <span>
           <button class="btn${alertCls}" type="button" data-save-changes>Save changes</button>
@@ -2958,6 +3056,7 @@
           </div>
           ${slideChrome()}
         </article>`;
+      decorateCoverCards();
     }
 
     function pageKindLabel(page) {
@@ -3660,7 +3759,7 @@
       } else if (e.target.matches("[data-inline-html]")) {
         const block = currentPage().blocks[Number(e.target.dataset.inlineHtml)];
         if (block) {
-          block.html = e.target.innerHTML;
+          block.html = cleanManualHtml(e.target);
           saveContent();
         }
       } else if (e.target.matches("[data-inline-b]")) {
@@ -3829,8 +3928,128 @@
       }, "after");
     }
 
+    document.getElementById("main").addEventListener("focusin", e => {
+      if (!VIEWER_EDIT || editOrigin) return;
+      if (e.target.closest && e.target.closest("[contenteditable='true']")) {
+        editOrigin = JSON.parse(JSON.stringify(content));
+      }
+    });
+
+    document.getElementById("main").addEventListener("focusout", e => {
+      if (!editOrigin) return;
+      const before = editOrigin;
+      editOrigin = null;
+      setTimeout(() => {
+        if (JSON.stringify(content) !== JSON.stringify(before)) rememberFrom(before);
+      }, 0);
+    });
+
+    document.addEventListener("keydown", e => {
+      if (!VIEWER_EDIT) return;
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== "z" || e.shiftKey) return;
+      if (document.activeElement && document.activeElement.isContentEditable) return;
+      if (!undoStack.length) return;
+      e.preventDefault();
+      undoLast();
+    });
+
     document.body.addEventListener("click", e => {
       if (state.compose) {
+        const mutates = e.target.closest("[data-preset], [data-add-inline], [data-del-inline], [data-move-block], [data-add-slide], [data-del-slide], [data-add-q], [data-set-correct], [data-add-opt], [data-del-opt], [data-del-q], [data-equip-remove], [data-equip-slide]");
+        if (mutates) remember();
+        const equipRemove = e.target.closest("[data-equip-remove]");
+        if (equipRemove) {
+          e.preventDefault();
+          const card = equipRemove.closest(".cover-equipment > div");
+          const grid = card && card.parentElement;
+          if (card) card.remove();
+          const section = document.querySelector("[data-inline-html]");
+          if (section && grid) writeCoverHtml(cleanManualHtml(section));
+          saveContent();
+          render();
+          return;
+        }
+        const equipSlide = e.target.closest("[data-equip-slide]");
+        if (equipSlide) {
+          e.preventDefault();
+          const card = equipSlide.closest(".cover-equipment > div");
+          if (!card) return;
+          const code = (card.querySelector("strong")?.innerText || "Equipo").trim();
+          const label = (card.querySelector("span")?.innerText || "Descripción del equipo").trim();
+          const id = "eq-" + Date.now().toString(36);
+          const page = {
+            id,
+            chapter: code,
+            group: code,
+            title: code + " · " + label,
+            kicker: "Equipo",
+            lead: "Información de " + code + ".",
+            slideKind: "chapter",
+            sectionLevel: "chapter",
+            blocks: [{ type: "text", text: "Describe aquí " + label + "." }],
+            quiz: []
+          };
+          content.pages.push(page);
+          const toc = pages().find(item => item.id === "toc" || item.slideKind === "toc");
+          const tocBlock = toc && (toc.blocks || []).find(block => block.type === "manual-html" && String(block.html || "").includes("toc-grid"));
+          if (tocBlock && !tocBlock.html.includes(`data-go="${id}"`)) {
+            const cardHtml = `<a class="toc-card" data-go="${id}"><span>MÓDULO</span><strong>${esc(code)}</strong><i>Abrir →</i></a>`;
+            tocBlock.html = tocBlock.html.replace(/<\/div>\s*$/, cardHtml + "</div>");
+          }
+          let link = card.querySelector("[data-go]");
+          if (!link) {
+            link = document.createElement("button");
+            link.type = "button";
+            link.textContent = "Abrir";
+            card.insertBefore(link, card.querySelector(".equip-tools"));
+          }
+          link.setAttribute("data-go", id);
+          const section = document.querySelector("[data-inline-html]");
+          if (section) writeCoverHtml(cleanManualHtml(section));
+          state.page = id;
+          saveContent();
+          render();
+          return;
+        }
+        if (e.target.closest("[data-undo]")) {
+          e.preventDefault();
+          undoLast();
+          return;
+        }
+        if (e.target.closest("[data-versions]")) {
+          e.preventDefault();
+          const panel = document.getElementById("versionPanel");
+          if (!panel) return;
+          if (!panel.hidden) {
+            panel.hidden = true;
+            return;
+          }
+          fetch(`/api/manuals/${encodeURIComponent(VIEWER_DRAFT_ID)}/versions`, { credentials: "include" })
+            .then(res => res.ok ? res.json() : Promise.reject())
+            .then(data => {
+              const versions = data.versions || [];
+              versionCache = {};
+              versions.forEach(item => { versionCache[item.id] = item.content; });
+              panel.hidden = false;
+              panel.innerHTML = versions.length
+                ? versions.map(item => `<button type="button" class="btn ghost" data-restore-version="${item.id}">${esc(new Date(item.createdAt).toLocaleString("es"))}</button>`).join("")
+                : "<p>Todavía no hay versiones anteriores. Deshacer sigue disponible en esta sesión.</p>";
+            })
+            .catch(() => {
+              panel.hidden = false;
+              panel.innerHTML = "<p>Las versiones guardadas aparecen cuando la tabla está creada. Deshacer sigue disponible en esta sesión.</p>";
+            });
+          return;
+        }
+        const restore = e.target.closest("[data-restore-version]");
+        if (restore) {
+          e.preventDefault();
+          const snapshot = versionCache[restore.getAttribute("data-restore-version")];
+          if (!snapshot) return;
+          remember();
+          restoreContent(snapshot);
+          return;
+        }
         const preset = e.target.closest("[data-preset]");
         if (preset) {
           e.preventDefault();
