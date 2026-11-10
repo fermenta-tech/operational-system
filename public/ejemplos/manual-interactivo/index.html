@@ -2094,6 +2094,134 @@
       min-height: 1.2em;
     }
 
+    .quiz-compose-q .q-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .quiz-compose-q .q-head strong {
+      font-size: 13px;
+      color: var(--muted, #64748b);
+    }
+
+    .q-lang-row {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 8px;
+      align-items: start;
+      margin: 0 0 8px;
+    }
+
+    .q-lang-tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      padding-top: 4px;
+    }
+
+    .quiz-compose-q .q-opt-grid {
+      display: grid;
+      gap: 8px;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid #e8edf4;
+    }
+
+    .quiz-compose-q .q-opt-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .quiz-compose-q .q-opt-lang {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 6px;
+      align-items: start;
+    }
+
+    .quiz-compose-q .q-feedback-row textarea {
+      width: 100%;
+      min-height: 52px;
+      font-size: 12px;
+      border: 1px solid #d7dde8;
+      border-radius: 8px;
+      padding: 6px 8px;
+      resize: vertical;
+    }
+
+    .coach-scripts-compose label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      margin: 8px 0 4px;
+    }
+
+    .coach-scripts-compose .coach-script {
+      min-height: 3em;
+    }
+
+  .toc-card-row {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .toc-card-row .toc-card {
+      flex: 1;
+    }
+
+    .toc-card-row .btn.danger {
+      align-self: center;
+      flex: none;
+      font-size: 11px;
+      padding: 6px 10px;
+    }
+
+    .compose-media-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .compose-media-tools {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px dashed #d7dde8;
+      border-radius: 10px;
+      background: #f8fafc;
+      font-size: 12px;
+    }
+
+    .compose-media-tools label {
+      display: grid;
+      gap: 4px;
+    }
+
+    .compose-media-tools input,
+    .compose-media-tools select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #d7dde8;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .compose-media-tools .compose-media-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
     html[data-theme="light"] nav .nav-pages button {
       min-height: 34px;
       padding: 7px 9px;
@@ -2590,7 +2718,74 @@
       if (block) block.html = html;
     }
 
+    function isStructuralPageId(id) {
+      return id === "t01" || id === "cover" || id === "toc";
+    }
+
+    function inferSectionLevel(page) {
+      if (page.sectionLevel) return page.sectionLevel;
+      if (page.kicker?.startsWith("Subchapter") || page.kicker?.startsWith("Submódulo")) return "subchapter";
+      if (page.kicker === "Content" || page.kicker === "Contenido") return "content";
+      if (page.slideKind === "subchapter") return "subchapter";
+      if (page.slideKind === "content") return "content";
+      return "chapter";
+    }
+
+    function tocLabel(level) {
+      if (level === "subchapter") return "Subchapter";
+      if (level === "content") return "Content";
+      return "Chapter";
+    }
+
+    /** Mantener en sync con lib/manual/template.ts buildTocHtml */
+    function buildTocHtml(pageList) {
+      const links = pageList
+        .filter(p => !isStructuralPageId(p.id) && !String(p.id).startsWith("review-"))
+        .map(p => {
+          const level = inferSectionLevel(p);
+          if (level === "content") return "";
+          const label = tocLabel(level);
+          const card = `<a class="toc-card" href="#${esc(p.anchor || p.id)}" data-go="${esc(p.id)}">
+            <span>${label}</span>
+            <strong>${esc(p.title)}</strong>
+            <i>Open →</i>
+          </a>`;
+          if (!state.compose) return card;
+          return `<div class="toc-card-row">${card}<button type="button" class="btn danger" data-del-toc-entry="${esc(p.id)}">Quitar</button></div>`;
+        })
+        .join("");
+      return `<div class="toc-grid">${links}</div>`;
+    }
+
+    function syncTocPage() {
+      const tocIndex = content.pages.findIndex(p => p.id === "toc");
+      if (tocIndex < 0) return;
+      const html = buildTocHtml(content.pages);
+      content.pages[tocIndex] = {
+        ...content.pages[tocIndex],
+        blocks: [{ type: "manual-html", html }]
+      };
+    }
+
+    function focusPendingListItem() {
+      if (!state._focusListItem) return;
+      const { bi, i } = state._focusListItem;
+      delete state._focusListItem;
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-inline-items="${bi}"][data-item-i="${i}"]`);
+        if (!el) return;
+        el.focus();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      });
+    }
+
     function saveContent() {
+      syncTocPage();
       hasUnsavedChanges = true;
       localStorage.setItem("iom-draft-content", JSON.stringify(content));
       document.querySelectorAll("[data-save-changes]").forEach(btn => btn.classList.add("unsaved-alert"));
@@ -2716,7 +2911,12 @@
           </div>
           <p>${who}</p>
           ${state.compose
-            ? `<p class="coach-script" id="coachScript" contenteditable="true" data-inline-summary="es">${esc(page.summary?.es || page.summary?.en || page.audio || "Escribe el resumen que narrará el avatar.")}</p>`
+            ? `<div class="coach-scripts-compose">
+              <label>English</label>
+              <p class="coach-script" contenteditable="true" data-inline-summary="en">${esc(page.summary?.en || "")}</p>
+              <label>Español</label>
+              <p class="coach-script" contenteditable="true" data-inline-summary="es">${esc(page.summary?.es || "")}</p>
+            </div>`
             : `<p class="coach-script" id="coachScript">${captionWords(preview)}</p>`}
           <div class="avatar-btns">
             <button type="button" class="btn" data-speak="${esc(page.id)}" data-lang="${lang}">${state.speaking ? (lang === "es" ? "Narrando…" : "Playing…") : (lang === "es" ? "Narrar resumen" : "Play summary")}</button>
@@ -2802,10 +3002,50 @@
         return `<div class="card"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
       }
       if (block.type === "photos") {
-        return `<div class="media-grid">${(block.items || []).map(renderPhoto).join("")}</div>`;
+        const items = (block.items || []).map((item, n) => {
+          const fig = renderPhoto(item);
+          if (!state.compose) return fig;
+          const kinds = ["pump", "tower", "exchanger", "hmi"];
+          const kindOpts = kinds.map(k => `<option value="${k}" ${(item.kind || "pump") === k ? "selected" : ""}>${k}</option>`).join("");
+          const url = item.src || item.url || "";
+          return `<div class="compose-media-item">
+            ${fig}
+            <div class="compose-media-tools" contenteditable="false">
+              <label>URL de imagen
+                <input type="url" value="${esc(url)}" data-inline-photo-url="${bi}:${n}" placeholder="Pega URL o sube archivo" />
+              </label>
+              <label>Preset (si no hay URL)
+                <select data-inline-photo-kind="${bi}:${n}">${kindOpts}</select>
+              </label>
+              <label>Leyenda
+                <input type="text" value="${esc(item.caption || "")}" data-inline-photo-caption="${bi}:${n}" />
+              </label>
+              <div class="compose-media-actions">
+                <button type="button" class="btn ghost" data-upload="${bi}:${n}">Subir</button>
+                <button type="button" class="btn ghost" data-clear-photo="${bi}:${n}">Quitar imagen</button>
+              </div>
+            </div>
+          </div>`;
+        }).join("");
+        return `<div class="media-grid">${items}</div>`;
       }
       if (block.type === "videos") {
-        return `<div class="media-grid">${(block.items || []).map((it, i) => renderVideo(it, pageId, `${bi}-${i}`)).join("")}</div>`;
+        const items = (block.items || []).map((it, i) => {
+          const vid = renderVideo(it, pageId, `${bi}-${i}`);
+          if (!state.compose) return vid;
+          return `<div class="compose-media-item">
+            ${vid}
+            <div class="compose-media-tools" contenteditable="false">
+              <label>Título
+                <input type="text" value="${esc(it.title || "")}" data-inline-video-title="${bi}:${i}" />
+              </label>
+              <label>URL (YouTube o mp4)
+                <input type="url" value="${esc(it.url || "")}" data-inline-video-url="${bi}:${i}" placeholder="https://..." />
+              </label>
+            </div>
+          </div>`;
+        }).join("");
+        return `<div class="media-grid">${items}</div>`;
       }
       if (block.type === "nav-cards") {
         return `<div class="home-grid">${(block.items || []).map(c => `
@@ -2893,13 +3133,13 @@
 
     function blankQuestion() {
       return {
-        q: "¿Nueva pregunta?",
+        q: "New question?",
         qEs: "¿Nueva pregunta?",
-        options: ["Respuesta A", "Respuesta B"],
-        optionsEs: ["Respuesta A", "Respuesta B"],
+        options: ["Option A", "Option B", "Option C"],
+        optionsEs: ["Opción A", "Opción B", "Opción C"],
         a: 0,
-        why: "",
-        whyEs: ""
+        why: "Correct because…",
+        whyEs: "Correcto porque…"
       };
     }
 
@@ -2993,17 +3233,50 @@
       const questions = page.quiz || [];
       const cards = questions.map((q, i) => {
         const options = q.options || [];
+        const optionsEs = q.optionsEs || options;
+        const optRows = options.map((opt, j) => {
+          const optEs = optionsEs[j] ?? "";
+          return `<div class="q-opt-grid">
+            <div class="q-opt-head">
+              <span>Opción ${optionLetter(j)}</span>
+              <button type="button" class="${Number(q.a) === j ? "on" : ""}" data-set-correct="${i}" data-choice-i="${j}">${Number(q.a) === j ? "✓ Correcta" : "Marcar correcta"}</button>
+              <button type="button" class="danger" data-del-opt="${i}:${j}">Quitar</button>
+            </div>
+            <div class="q-opt-lang">
+              <span class="q-lang-tag">EN</span>
+              <span contenteditable="true" data-inline-opt="${i}" data-opt-i="${j}" data-opt-lang="en">${esc(opt)}</span>
+            </div>
+            <div class="q-opt-lang">
+              <span class="q-lang-tag">ES</span>
+              <span contenteditable="true" data-inline-opt="${i}" data-opt-i="${j}" data-opt-lang="es">${esc(optEs)}</span>
+            </div>
+          </div>`;
+        }).join("");
         return `<article class="quiz-compose-q">
-          <div class="compose-tools">
-            <button type="button" class="danger" data-del-q="${i}">Quitar</button>
+          <div class="q-head">
+            <strong>Pregunta ${i + 1}</strong>
+            <button type="button" class="danger" data-del-q="${i}">Quitar pregunta</button>
           </div>
-          <p class="q-ask" contenteditable="true" data-inline-q="${i}" data-q-f="q">${esc(q.q || "")}</p>
-          ${options.map((opt, j) => `<div class="q-opt">
-            <button type="button" class="${Number(q.a) === j ? "on" : ""}" data-set-correct="${i}" data-choice-i="${j}">${Number(q.a) === j ? "Correcta" : "Marcar"}</button>
-            <span contenteditable="true" data-inline-opt="${i}" data-opt-i="${j}">${esc(opt)}</span>
-            <button type="button" class="danger" data-del-opt="${i}:${j}">✕</button>
-          </div>`).join("")}
+          <div class="q-lang-row">
+            <span class="q-lang-tag">EN</span>
+            <p class="q-ask" contenteditable="true" data-inline-q="${i}" data-q-field="q">${esc(q.q || "")}</p>
+          </div>
+          <div class="q-lang-row">
+            <span class="q-lang-tag">ES</span>
+            <p class="q-ask" contenteditable="true" data-inline-q="${i}" data-q-field="qEs">${esc(q.qEs || "")}</p>
+          </div>
+          ${optRows}
           <button type="button" data-add-opt="${i}">Agregar respuesta</button>
+          <div class="q-feedback-row">
+            <div class="q-lang-row">
+              <span class="q-lang-tag">EN</span>
+              <textarea data-inline-why="${i}" data-why-field="why" placeholder="Feedback si aciertan (inglés)">${esc(q.why || "")}</textarea>
+            </div>
+            <div class="q-lang-row">
+              <span class="q-lang-tag">ES</span>
+              <textarea data-inline-why="${i}" data-why-field="whyEs" placeholder="Feedback si aciertan (español)">${esc(q.whyEs || "")}</textarea>
+            </div>
+          </div>
         </article>`;
       }).join("");
       return `<section class="quiz-compose">
@@ -3057,6 +3330,7 @@
           ${slideChrome()}
         </article>`;
       decorateCoverCards();
+      focusPendingListItem();
     }
 
     function pageKindLabel(page) {
@@ -3594,11 +3868,11 @@
         callout: { type, text: "Note for the operator." },
         warn: { type, text: "Warning." },
         ok: { type, text: "Healthy condition." },
-        list: { type, title: "List", items: ["Item 1"] },
-        steps: { type, title: "Steps", items: ["Step 1"] },
+        list: { type, title: "List", items: ["Item 1", "Item 2"] },
+        steps: { type, title: "Steps", items: ["Step 1", "Step 2"] },
         table: { type, headers: ["Col A", "Col B"], rows: [["Value", "Meaning"]] },
-        photos: { type, items: [{ kind: "pump", caption: "Example photo", src: "" }] },
-        videos: { type, items: [{ title: "Example video", url: "", steps: ["Step 1"] }] },
+        photos: { type, items: [{ kind: "pump", caption: "Nueva foto", src: "", url: "" }] },
+        videos: { type, items: [{ title: "Nuevo video", url: "", steps: ["Step 1"] }] },
         flow: { type, nodes: [{ label: "NODE", sub: "tag", detail: "Click this block." }] },
         checklist: { type, title: "Checklist", items: ["Check 1"] },
         reveal: { type, title: "Click to reveal", items: [{ label: "Topic", detail: "Explanation." }] },
@@ -3737,24 +4011,67 @@
         saveContent();
       } else if (e.target.matches("[data-inline-q]")) {
         const question = (currentPage().quiz || [])[Number(e.target.dataset.inlineQ)];
+        const field = e.target.dataset.qField || "q";
         if (question) {
-          question.q = e.target.innerText;
-          question.qEs = e.target.innerText;
+          question[field] = e.target.innerText;
           saveContent();
         }
       } else if (e.target.matches("[data-inline-opt]")) {
         const question = (currentPage().quiz || [])[Number(e.target.dataset.inlineOpt)];
         const index = Number(e.target.dataset.optI);
+        const lang = e.target.dataset.optLang === "es" ? "es" : "en";
         if (question && question.options) {
-          question.options[index] = e.target.innerText;
-          question.optionsEs = question.options.slice();
+          if (lang === "es") {
+            question.optionsEs = question.optionsEs || question.options.slice();
+            question.optionsEs[index] = e.target.innerText;
+          } else {
+            question.options[index] = e.target.innerText;
+          }
+          saveContent();
+        }
+      } else if (e.target.matches("[data-inline-why]")) {
+        const question = (currentPage().quiz || [])[Number(e.target.dataset.inlineWhy)];
+        const field = e.target.dataset.whyField || "why";
+        if (question) {
+          question[field] = e.target.value;
+          saveContent();
+        }
+      } else if (e.target.matches("[data-inline-photo-url]")) {
+        const [bi, n] = e.target.dataset.inlinePhotoUrl.split(":").map(Number);
+        const item = currentPage().blocks?.[bi]?.items?.[n];
+        if (item) {
+          item.src = e.target.value;
+          item.url = e.target.value;
+          saveContent();
+          render();
+        }
+      } else if (e.target.matches("[data-inline-photo-caption]")) {
+        const [bi, n] = e.target.dataset.inlinePhotoCaption.split(":").map(Number);
+        const item = currentPage().blocks?.[bi]?.items?.[n];
+        if (item) {
+          item.caption = e.target.value;
+          saveContent();
+        }
+      } else if (e.target.matches("[data-inline-video-url]")) {
+        const [bi, n] = e.target.dataset.inlineVideoUrl.split(":").map(Number);
+        const item = currentPage().blocks?.[bi]?.items?.[n];
+        if (item) {
+          item.url = e.target.value;
+          saveContent();
+          render();
+        }
+      } else if (e.target.matches("[data-inline-video-title]")) {
+        const [bi, n] = e.target.dataset.inlineVideoTitle.split(":").map(Number);
+        const item = currentPage().blocks?.[bi]?.items?.[n];
+        if (item) {
+          item.title = e.target.value;
           saveContent();
         }
       } else if (e.target.matches("[data-inline-summary]")) {
         const page = currentPage();
         page.summary = page.summary || { en: "", es: "" };
-        page.summary.es = e.target.innerText;
-        if (!page.summary.en) page.summary.en = e.target.innerText;
+        const langKey = e.target.dataset.inlineSummary;
+        if (langKey === "en" || langKey === "es") page.summary[langKey] = e.target.innerText;
         saveContent();
       } else if (e.target.matches("[data-inline-html]")) {
         const block = currentPage().blocks[Number(e.target.dataset.inlineHtml)];
@@ -3776,6 +4093,45 @@
           block.items[index] = e.target.innerText;
           saveContent();
         }
+      }
+    });
+
+    document.getElementById("main").addEventListener("change", e => {
+      if (!state.admin) return;
+      if (e.target.matches("[data-inline-photo-kind]")) {
+        const [bi, n] = e.target.dataset.inlinePhotoKind.split(":").map(Number);
+        const item = currentPage().blocks?.[bi]?.items?.[n];
+        if (item) {
+          item.kind = e.target.value;
+          saveContent();
+          render();
+        }
+      }
+    });
+
+    document.getElementById("main").addEventListener("keydown", e => {
+      if (!state.compose && !state.admin) return;
+      if (!e.target.matches("[data-inline-items]")) return;
+      const blockIndex = Number(e.target.dataset.inlineItems);
+      const itemIndex = Number(e.target.dataset.itemI);
+      const block = currentPage().blocks?.[blockIndex];
+      if (!block || !Array.isArray(block.items)) return;
+      if (block.type !== "list" && block.type !== "steps") return;
+      if (e.key === "Enter") {
+        e.preventDefault();
+        block.items[itemIndex] = e.target.innerText.trim();
+        block.items.splice(itemIndex + 1, 0, "");
+        state._focusListItem = { bi: blockIndex, i: itemIndex + 1 };
+        saveContent();
+        render();
+        return;
+      }
+      if (e.key === "Backspace" && !e.target.innerText.trim() && block.items.length > 1) {
+        e.preventDefault();
+        block.items.splice(itemIndex, 1);
+        state._focusListItem = { bi: blockIndex, i: Math.max(0, itemIndex - 1) };
+        saveContent();
+        render();
       }
     });
 
@@ -3955,7 +4311,7 @@
 
     document.body.addEventListener("click", e => {
       if (state.compose) {
-        const mutates = e.target.closest("[data-preset], [data-add-inline], [data-del-inline], [data-move-block], [data-add-slide], [data-del-slide], [data-add-q], [data-set-correct], [data-add-opt], [data-del-opt], [data-del-q], [data-equip-remove], [data-equip-slide]");
+        const mutates = e.target.closest("[data-preset], [data-add-inline], [data-del-inline], [data-move-block], [data-add-slide], [data-del-slide], [data-add-q], [data-set-correct], [data-add-opt], [data-del-opt], [data-del-q], [data-equip-remove], [data-equip-slide], [data-del-toc-entry], [data-clear-photo]");
         if (mutates) remember();
         const equipRemove = e.target.closest("[data-equip-remove]");
         if (equipRemove) {
@@ -4050,6 +4406,32 @@
           restoreContent(snapshot);
           return;
         }
+        const delToc = e.target.closest("[data-del-toc-entry]");
+        if (delToc) {
+          e.preventDefault();
+          const targetId = delToc.getAttribute("data-del-toc-entry");
+          const target = pages().find(p => p.id === targetId);
+          if (!target) return;
+          if (!window.confirm(`¿Eliminar la slide «${target.title}» del manual?`)) return;
+          content.pages = pages().filter(p => p.id !== targetId);
+          if (state.page === targetId) state.page = pages()[0]?.id || state.page;
+          saveContent();
+          render();
+          return;
+        }
+        const clearPhoto = e.target.closest("[data-clear-photo]");
+        if (clearPhoto) {
+          e.preventDefault();
+          const [bi, n] = clearPhoto.getAttribute("data-clear-photo").split(":").map(Number);
+          const item = currentPage().blocks?.[bi]?.items?.[n];
+          if (item) {
+            item.src = "";
+            item.url = "";
+            saveContent();
+            render();
+          }
+          return;
+        }
         const preset = e.target.closest("[data-preset]");
         if (preset) {
           e.preventDefault();
@@ -4068,8 +4450,8 @@
             callout: { type, text: "Nota para el operador." },
             warn: { type, text: "Advertencia." },
             ok: { type, text: "Condición correcta." },
-            list: { type, title: "Lista", items: ["Elemento 1"] },
-            steps: { type, title: "Pasos", items: ["Paso 1"] }
+            list: { type, title: "Lista", items: ["Elemento 1", "Elemento 2"] },
+            steps: { type, title: "Pasos", items: ["Paso 1", "Paso 2"] }
           };
           page.blocks.push(seeded[type] || emptyBlock(type));
           saveContent();
@@ -4136,8 +4518,9 @@
           const question = (currentPage().quiz || [])[Number(addOpt.getAttribute("data-add-opt"))];
           if (question) {
             question.options = question.options || [];
-            question.options.push("Nueva respuesta");
-            question.optionsEs = question.options.slice();
+            question.optionsEs = question.optionsEs || question.options.slice();
+            question.options.push("New option");
+            question.optionsEs.push("Nueva opción");
           }
           saveContent();
           render();
@@ -4150,7 +4533,8 @@
           const question = (currentPage().quiz || [])[qi];
           if (question && (question.options || []).length > 2) {
             question.options.splice(oi, 1);
-            question.optionsEs = question.options.slice();
+            question.optionsEs = question.optionsEs || question.options.slice();
+            if (question.optionsEs.length > oi) question.optionsEs.splice(oi, 1);
             if (question.a >= question.options.length) question.a = 0;
             saveContent();
             render();
@@ -4427,7 +4811,9 @@
       const reader = new FileReader();
       reader.onload = () => {
         const [bi, n] = state.photoTarget.split(":").map(Number);
-        currentPage().blocks[bi].items[n].src = reader.result;
+        const item = currentPage().blocks[bi].items[n];
+        item.src = reader.result;
+        item.url = reader.result;
         saveContent();
         render();
       };
