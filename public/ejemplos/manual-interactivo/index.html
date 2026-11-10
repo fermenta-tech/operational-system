@@ -2884,7 +2884,11 @@
     function saveContent() {
       syncTocPage();
       hasUnsavedChanges = true;
-      localStorage.setItem("iom-draft-content", JSON.stringify(content));
+      try {
+        localStorage.setItem("iom-draft-content", JSON.stringify(content));
+      } catch (err) {
+        console.warn("iom-draft-content omitido (tamaño)", err);
+      }
       document.querySelectorAll("[data-save-changes]").forEach(btn => btn.classList.add("unsaved-alert"));
       if (!VIEWER_EDIT) return;
       saveStatus = "Guardando…";
@@ -3038,18 +3042,52 @@
       return /^file:/i.test(v) || /^[a-zA-Z]:\\/.test(v) || v.startsWith("/Users/") || v.startsWith("/home/");
     }
 
+    const VIDEO_EXT_RE = /\.(mp4|webm|ogg|ogv|mov|qt|m4v|mkv|avi|wmv|3gp|3g2|mts|m2ts|flv|mpg|mpeg)(\?.*)?$/i;
+    const IMAGE_EXT_RE = /\.(jpe?g|png|gif|webp|svg|heic|heif|bmp|avif)(\?.*)?$/i;
+
+    function inferMediaKindFromFile(file) {
+      const name = String(file?.name || "").toLowerCase();
+      const type = String(file?.type || "").toLowerCase();
+      if (type.startsWith("video/")) return "video";
+      if (type.startsWith("image/")) return "image";
+      if (VIDEO_EXT_RE.test(name)) return "video";
+      if (IMAGE_EXT_RE.test(name)) return "image";
+      return "image";
+    }
+
+    function normalizeMediaKind(kind, file) {
+      const k = String(kind || "").toLowerCase();
+      if (k === "video" || k === "image") return k;
+      return inferMediaKindFromFile(file);
+    }
+
     function isAllowedMediaFile(file, kind) {
       const name = String(file?.name || "").toLowerCase();
       const type = String(file?.type || "").toLowerCase();
-      if (kind === "video") {
-        return type.startsWith("video/") || /\.(mp4|webm|ogg|mov|m4v|mkv)(\?.*)?$/i.test(name);
+      const mediaKind = normalizeMediaKind(kind, file);
+      if (mediaKind === "video") {
+        if (type.startsWith("video/")) return true;
+        if (VIDEO_EXT_RE.test(name)) return true;
+        if (!type || type === "application/octet-stream") return VIDEO_EXT_RE.test(name);
+        return false;
       }
       if (type.startsWith("image/")) return true;
-      if (/\.(jpe?g|png|gif|webp|svg|heic|heif|bmp|avif)(\?.*)?$/i.test(name)) return true;
-      if (!type || type === "application/octet-stream") {
-        return /\.(jpe?g|png|gif|webp|heic|heif)(\?.*)?$/i.test(name);
-      }
+      if (IMAGE_EXT_RE.test(name)) return true;
+      if (!type || type === "application/octet-stream") return IMAGE_EXT_RE.test(name);
       return false;
+    }
+
+    function mediaCommitErrorMessage(kind, err) {
+      const isVideo = kind === "video";
+      const msg = String(err?.message || err || "");
+      if (err?.name === "QuotaExceededError" || /quota|exceeded/i.test(msg)) {
+        return isVideo
+          ? "El video es demasiado grande para guardarlo en el navegador. Usa un MP4 más corto/ligero o un enlace de YouTube."
+          : "La imagen es demasiado grande para el navegador. Prueba un archivo más pequeño.";
+      }
+      return isVideo
+        ? "No se pudo guardar el video. Prueba MP4, MOV u otro formato habitual, o un archivo más pequeño."
+        : "No se pudo procesar la imagen. Prueba JPG o PNG, o un archivo más pequeño.";
     }
 
     function resolveMediaBlockItem(target, pageId) {
@@ -3089,11 +3127,11 @@
     function mediaUploadZoneHtml(target, kind) {
       const isVideo = kind === "video";
       const accept = isVideo
-        ? "video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.mov,.webm,.ogg"
+        ? "video/*,.mp4,.mov,.m4v,.webm,.ogg,.ogv,.mkv,.avi,.wmv,.3gp,.mts,.m2ts,.mpeg,.mpg"
         : "image/*,.jpg,.jpeg,.png,.webp,.gif,.svg,.heic,.heif,.bmp,.avif";
       const title = isVideo ? "Subir video desde el equipo" : "Subir imagen desde el equipo";
       const hint = isVideo
-        ? "MP4, MOV o WebM. Revisa la vista previa antes de confirmar."
+        ? "Cualquier vídeo habitual (MP4, MOV, WebM, MKV…). Revisa la vista previa antes de confirmar."
         : "Foto de cámara, captura o dibujo (PNG, JPG, WebP…). Revisa la vista previa antes de confirmar.";
       const pending = state.mediaPreview?.[target];
       return `<div class="media-upload-wrap" data-media-wrap="${esc(target)}">
@@ -3115,6 +3153,7 @@
 
     function queueMediaPreview(target, kind, file) {
       if (!file || !target) return false;
+      kind = normalizeMediaKind(kind, file);
       if (!isAllowedMediaFile(file, kind)) {
         alert(kind === "video"
           ? "Formato no reconocido. Usa MP4, MOV o WebM, o un enlace de YouTube."
@@ -3208,15 +3247,17 @@
         alert("No se encontró el bloque de medios. Vuelve a intentar.");
         return;
       }
-      const { item } = resolved;
+      const { item, block } = resolved;
       const confirmBtn = document.querySelector(`[data-media-confirm="${target}"]`);
       if (confirmBtn) {
         confirmBtn.disabled = true;
         confirmBtn.textContent = "Guardando…";
       }
+      const blockKind = block?.type === "videos" ? "video" : block?.type === "photos" ? "image" : null;
+      const mediaKind = normalizeMediaKind(pending.kind || blockKind, pending.file);
       try {
         let dataUrl;
-        if (pending.kind === "video") {
+        if (mediaKind === "video") {
           dataUrl = await readFileAsDataUrl(pending.file);
         } else {
           dataUrl = await compressImageFile(pending.file);
@@ -3225,14 +3266,15 @@
           throw new Error("invalid data url");
         }
         item.url = dataUrl;
-        item.src = dataUrl;
+        if (mediaKind === "image") item.src = dataUrl;
+        else delete item.src;
         item.mediaMaxHeight = pending.previewMaxHeight || item.mediaMaxHeight || 320;
         clearMediaPreview(target);
         saveContent();
         render();
       } catch (err) {
         console.error(err);
-        alert("No se pudo procesar el archivo. Prueba JPG o PNG, o un archivo más pequeño.");
+        alert(mediaCommitErrorMessage(mediaKind, err));
         if (confirmBtn) {
           confirmBtn.disabled = false;
           confirmBtn.textContent = "Usar este archivo";
@@ -3263,7 +3305,7 @@
       }
       const yt = youtubeId(rawUrl);
       const isFile = /^data:video\//i.test(rawUrl) || /^blob:/i.test(rawUrl)
-        || /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(rawUrl);
+        || VIDEO_EXT_RE.test(rawUrl);
       let body;
       if (yt) {
         body = `<iframe src="https://www.youtube.com/embed/${yt}" title="${title}" allowfullscreen height="200"></iframe>`;
