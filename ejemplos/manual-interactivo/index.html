@@ -2222,6 +2222,64 @@
       gap: 8px;
     }
 
+    .media-upload-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 20px 16px;
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      background: #fff;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .media-upload-zone:hover,
+    .media-upload-zone.drag-over {
+      border-color: var(--accent, #c45c26);
+      background: #fff8f3;
+    }
+
+    .media-upload-zone strong {
+      font-size: 13px;
+      color: #1e293b;
+    }
+
+    .media-upload-zone small {
+      font-size: 11px;
+      color: #64748b;
+      max-width: 280px;
+      line-height: 1.35;
+    }
+
+    .media-upload-zone .media-upload-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: #e8edf4;
+      color: #475569;
+    }
+
+    .media-url-optional {
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px solid #e8edf4;
+    }
+
+    .media-url-optional summary {
+      cursor: pointer;
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
     html[data-theme="light"] nav .nav-pages button {
       min-height: 34px;
       padding: 7px 9px;
@@ -2547,7 +2605,6 @@
     <aside class="drawer hidden" id="editor"></aside>
   </div>
   <input type="file" id="importFile" accept="application/json" hidden />
-  <input type="file" id="photoFile" accept="image/*" hidden />
   <script src="/ejemplos/manual-interactivo/content.js"></script>
   <script>
     const PASS = 70;
@@ -2926,9 +2983,76 @@
       </section>`;
     }
 
+    const MEDIA_MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+    const MEDIA_MAX_VIDEO_BYTES = 48 * 1024 * 1024;
+
+    function isBlockedLocalPath(value) {
+      const v = String(value || "").trim();
+      return /^file:/i.test(v) || /^[a-zA-Z]:\\/.test(v) || v.startsWith("/Users/") || v.startsWith("/home/");
+    }
+
+    function mediaUploadZoneHtml(target, kind) {
+      const isVideo = kind === "video";
+      const accept = isVideo ? "video/mp4,video/webm,video/ogg" : "image/*";
+      const title = isVideo ? "Subir video desde el equipo" : "Subir imagen desde el equipo";
+      const hint = isVideo
+        ? "MP4, WebM u OGG. No pegues rutas del disco (file://…)."
+        : "JPG, PNG, WebP… No pegues rutas del disco (file://…).";
+      return `<label class="media-upload-zone" data-upload-zone="${esc(target)}" data-upload-kind="${kind}">
+        <input type="file" accept="${accept}" class="media-upload-input" data-upload-input="${esc(target)}" data-upload-kind="${kind}" hidden />
+        <span class="media-upload-badge">${isVideo ? "Video" : "Imagen"}</span>
+        <strong>${title}</strong>
+        <small>${hint}<br/>También puedes arrastrar el archivo aquí.</small>
+      </label>`;
+    }
+
+    function applyMediaFile(target, kind, file) {
+      if (!file || !target) return false;
+      const expectVideo = kind === "video";
+      if (expectVideo && !file.type.startsWith("video/")) {
+        alert("Elige un archivo de video (MP4, WebM u OGG).");
+        return false;
+      }
+      if (!expectVideo && !file.type.startsWith("image/")) {
+        alert("Elige un archivo de imagen.");
+        return false;
+      }
+      const max = kind === "video" ? MEDIA_MAX_VIDEO_BYTES : MEDIA_MAX_IMAGE_BYTES;
+      if (file.size > max) {
+        alert(kind === "video"
+          ? "El video es demasiado grande. Prueba un archivo más pequeño (máx. ~48 MB) o usa enlace de YouTube."
+          : "La imagen es demasiado grande (máx. ~8 MB).");
+        return false;
+      }
+      const [bi, n] = target.split(":").map(Number);
+      const block = currentPage().blocks?.[bi];
+      if (!block) return false;
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (kind === "video") {
+          const item = block.items[n];
+          if (!item) return;
+          item.url = reader.result;
+          item.src = reader.result;
+        } else {
+          const item = block.items[n];
+          if (!item) return;
+          item.src = reader.result;
+          item.url = reader.result;
+        }
+        saveContent();
+        render();
+      };
+      reader.readAsDataURL(file);
+      return true;
+    }
+
     function renderPhoto(item) {
       const cap = esc(item.caption || "Photo");
       const src = item.src || item.url;
+      if (src && isBlockedLocalPath(src)) {
+        return `<figure class="photo"><div class="callout warn">Ruta local no válida. Usa el cuadro de subida.</div><figcaption>${cap}</figcaption></figure>`;
+      }
       if (src) {
         return `<figure class="photo"><img src="${esc(src)}" alt="${cap}" /><figcaption>${cap}</figcaption></figure>`;
       }
@@ -2938,8 +3062,12 @@
     function renderVideo(item, pageId, idx) {
       const title = esc(item.title || "Example video");
       const steps = (item.steps || []).map(s => `<li>${esc(s)}</li>`).join("");
-      const yt = youtubeId(item.url);
-      const isFile = /\.(mp4|webm|ogg)(\?|$)/i.test(item.url || "");
+      const rawUrl = item.url || "";
+      if (isBlockedLocalPath(rawUrl)) {
+        return `<figure class="video"><div class="callout warn">Ruta local no válida. Usa el cuadro de subida.</div><figcaption>${title}</figcaption></figure>`;
+      }
+      const yt = youtubeId(rawUrl);
+      const isFile = /^data:video\//i.test(rawUrl) || /\.(mp4|webm|ogg)(\?|$)/i.test(rawUrl);
       let body;
       if (yt) {
         body = `<iframe src="https://www.youtube.com/embed/${yt}" title="${title}" allowfullscreen height="200"></iframe>`;
@@ -3007,21 +3135,18 @@
           if (!state.compose) return fig;
           const kinds = ["pump", "tower", "exchanger", "hmi"];
           const kindOpts = kinds.map(k => `<option value="${k}" ${(item.kind || "pump") === k ? "selected" : ""}>${k}</option>`).join("");
-          const url = item.src || item.url || "";
+          const hasFile = !!(item.src || item.url) && !isBlockedLocalPath(item.src || item.url);
           return `<div class="compose-media-item">
             ${fig}
             <div class="compose-media-tools" contenteditable="false">
-              <label>URL de imagen
-                <input type="url" value="${esc(url)}" data-inline-photo-url="${bi}:${n}" placeholder="Pega URL o sube archivo" />
-              </label>
-              <label>Preset (si no hay URL)
+              ${mediaUploadZoneHtml(`${bi}:${n}`, "image")}
+              ${hasFile ? "" : `<label>Preset (mientras no subes archivo)
                 <select data-inline-photo-kind="${bi}:${n}">${kindOpts}</select>
-              </label>
+              </label>`}
               <label>Leyenda
                 <input type="text" value="${esc(item.caption || "")}" data-inline-photo-caption="${bi}:${n}" />
               </label>
               <div class="compose-media-actions">
-                <button type="button" class="btn ghost" data-upload="${bi}:${n}">Subir</button>
                 <button type="button" class="btn ghost" data-clear-photo="${bi}:${n}">Quitar imagen</button>
               </div>
             </div>
@@ -3033,15 +3158,21 @@
         const items = (block.items || []).map((it, i) => {
           const vid = renderVideo(it, pageId, `${bi}-${i}`);
           if (!state.compose) return vid;
+          const ytOnly = it.url && !String(it.url).startsWith("data:") && youtubeId(it.url);
           return `<div class="compose-media-item">
             ${vid}
             <div class="compose-media-tools" contenteditable="false">
+              ${mediaUploadZoneHtml(`${bi}:${i}`, "video")}
               <label>Título
                 <input type="text" value="${esc(it.title || "")}" data-inline-video-title="${bi}:${i}" />
               </label>
-              <label>URL (YouTube o mp4)
-                <input type="url" value="${esc(it.url || "")}" data-inline-video-url="${bi}:${i}" placeholder="https://..." />
-              </label>
+              <details class="media-url-optional">
+                <summary>O usar enlace de YouTube (opcional)</summary>
+                <label style="margin-top:8px;display:grid;gap:4px;">
+                  Enlace web
+                  <input type="url" value="${ytOnly ? esc(it.url) : ""}" data-inline-video-url="${bi}:${i}" placeholder="https://www.youtube.com/..." />
+                </label>
+              </details>
             </div>
           </div>`;
         }).join("");
@@ -3446,10 +3577,9 @@
       if (block.type === "photos") {
         const items = (block.items || []).map((it, n) => `
           <div class="card" style="margin:8px 0">
+            ${mediaUploadZoneHtml(`${i}:${n}`, "image")}
             ${field("Caption", { "data-b": i, "data-item": n, "data-f": "caption" }, it.caption || "")}
-            ${field("Preset", { "data-b": i, "data-item": n, "data-f": "kind" }, ["pump", "tower", "exchanger", "hmi"].map(k => `<option ${it.kind === k ? "selected" : ""} value="${k}">${k}</option>`).join(""), "select")}
-            ${field("Or image URL", { "data-b": i, "data-item": n, "data-f": "src" }, it.src || "")}
-            <button class="btn ghost" type="button" data-upload="${i}:${n}">Upload photo</button>
+            ${field("Preset (if no file uploaded)", { "data-b": i, "data-item": n, "data-f": "kind" }, ["pump", "tower", "exchanger", "hmi"].map(k => `<option ${it.kind === k ? "selected" : ""} value="${k}">${k}</option>`).join(""), "select")}
             <button class="btn danger" type="button" data-del-item="${i}:${n}">Remove photo</button>
           </div>`).join("");
         return `<div class="editor-block">${head}${items}<button class="btn ghost" data-add-item="${i}" data-kind="photo">Add photo</button></div>`;
@@ -3457,8 +3587,9 @@
       if (block.type === "videos") {
         const items = (block.items || []).map((it, n) => `
           <div class="card" style="margin:8px 0">
+            ${mediaUploadZoneHtml(`${i}:${n}`, "video")}
             ${field("Title", { "data-b": i, "data-item": n, "data-f": "title" }, it.title || "")}
-            ${field("Video URL (YouTube or mp4)", { "data-b": i, "data-item": n, "data-f": "url" }, it.url || "")}
+            ${field("YouTube link (optional)", { "data-b": i, "data-item": n, "data-f": "url" }, (it.url && !String(it.url).startsWith("data:")) ? it.url : "")}
             ${field("Tutorial steps (one per line)", { "data-b": i, "data-item": n, "data-f": "steps" }, (it.steps || []).join("\n"), "textarea")}
             <button class="btn danger" type="button" data-del-item="${i}:${n}">Remove video</button>
           </div>`).join("");
@@ -3847,7 +3978,10 @@
       if (el.dataset.item != null) {
         const item = (block.nodes || block.items)[Number(el.dataset.item)];
         if (f === "steps") item.steps = el.value.split("\n").map(s => s.trim()).filter(Boolean);
-        else item[f] = el.value;
+        else if ((f === "url" || f === "src") && isBlockedLocalPath(el.value)) {
+          alert("No uses rutas del disco. Usa el cuadro de subida o un enlace https.");
+          el.value = "";
+        } else item[f] = el.value;
       } else if (f === "items") {
         block.items = el.value.split("\n").map(s => s.trim()).filter(Boolean);
       } else if (f === "headers") {
@@ -4036,15 +4170,6 @@
           question[field] = e.target.value;
           saveContent();
         }
-      } else if (e.target.matches("[data-inline-photo-url]")) {
-        const [bi, n] = e.target.dataset.inlinePhotoUrl.split(":").map(Number);
-        const item = currentPage().blocks?.[bi]?.items?.[n];
-        if (item) {
-          item.src = e.target.value;
-          item.url = e.target.value;
-          saveContent();
-          render();
-        }
       } else if (e.target.matches("[data-inline-photo-caption]")) {
         const [bi, n] = e.target.dataset.inlinePhotoCaption.split(":").map(Number);
         const item = currentPage().blocks?.[bi]?.items?.[n];
@@ -4053,10 +4178,16 @@
           saveContent();
         }
       } else if (e.target.matches("[data-inline-video-url]")) {
+        const value = e.target.value.trim();
+        if (isBlockedLocalPath(value)) {
+          alert("No uses rutas del disco. Sube el archivo con el cuadro de arriba o pega un enlace https (por ejemplo YouTube).");
+          e.target.value = "";
+          return;
+        }
         const [bi, n] = e.target.dataset.inlineVideoUrl.split(":").map(Number);
         const item = currentPage().blocks?.[bi]?.items?.[n];
         if (item) {
-          item.url = e.target.value;
+          item.url = value;
           saveContent();
           render();
         }
@@ -4715,12 +4846,6 @@
         (block.nodes || block.items).splice(n, 1);
         saveContent(); render(); return;
       }
-      const up = e.target.closest("[data-upload]");
-      if (up) {
-        state.photoTarget = up.getAttribute("data-upload");
-        document.getElementById("photoFile").click();
-        return;
-      }
       if (e.target.closest("[data-add-q]")) {
         currentPage().quiz ||= [];
         currentPage().quiz.push({
@@ -4805,20 +4930,56 @@
       e.target.value = "";
     });
 
-    document.getElementById("photoFile").addEventListener("change", e => {
-      const file = e.target.files[0];
-      if (!file || !state.photoTarget) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const [bi, n] = state.photoTarget.split(":").map(Number);
-        const item = currentPage().blocks[bi].items[n];
-        item.src = reader.result;
-        item.url = reader.result;
-        saveContent();
-        render();
-      };
-      reader.readAsDataURL(file);
-      e.target.value = "";
+    document.body.addEventListener("change", e => {
+      const input = e.target.closest("[data-upload-input]");
+      if (!input) return;
+      const file = input.files?.[0];
+      if (!file) return;
+      applyMediaFile(input.dataset.uploadInput, input.dataset.uploadKind, file);
+      input.value = "";
+    });
+
+    document.getElementById("main").addEventListener("dragenter", e => {
+      if (e.target.closest?.("[data-upload-zone]")) e.preventDefault();
+    });
+    document.getElementById("main").addEventListener("dragover", e => {
+      const zone = e.target.closest?.("[data-upload-zone]");
+      if (!zone) return;
+      e.preventDefault();
+      zone.classList.add("drag-over");
+    });
+    document.getElementById("main").addEventListener("dragleave", e => {
+      const zone = e.target.closest?.("[data-upload-zone]");
+      if (zone && !zone.contains(e.relatedTarget)) zone.classList.remove("drag-over");
+    });
+    document.getElementById("main").addEventListener("drop", e => {
+      const zone = e.target.closest?.("[data-upload-zone]");
+      if (!zone) return;
+      e.preventDefault();
+      zone.classList.remove("drag-over");
+      const file = e.dataTransfer?.files?.[0];
+      if (!file) return;
+      applyMediaFile(zone.getAttribute("data-upload-zone"), zone.getAttribute("data-upload-kind"), file);
+    });
+
+    document.getElementById("editor").addEventListener("dragover", e => {
+      const zone = e.target.closest?.("[data-upload-zone]");
+      if (!zone) return;
+      e.preventDefault();
+      zone.classList.add("drag-over");
+    });
+    document.getElementById("editor").addEventListener("dragleave", e => {
+      const zone = e.target.closest?.("[data-upload-zone]");
+      if (zone && !zone.contains(e.relatedTarget)) zone.classList.remove("drag-over");
+    });
+    document.getElementById("editor").addEventListener("drop", e => {
+      const zone = e.target.closest?.("[data-upload-zone]");
+      if (!zone) return;
+      e.preventDefault();
+      zone.classList.remove("drag-over");
+      const file = e.dataTransfer?.files?.[0];
+      if (!file) return;
+      applyMediaFile(zone.getAttribute("data-upload-zone"), zone.getAttribute("data-upload-kind"), file);
     });
 
     function grade(id) {
