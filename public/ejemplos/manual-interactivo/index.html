@@ -894,8 +894,8 @@
     .video video {
       width: 100%;
       display: block;
-      max-height: 220px;
-      object-fit: cover;
+      max-height: var(--media-max-h, 320px);
+      object-fit: contain;
       background: #121c2e;
     }
 
@@ -2289,10 +2289,21 @@
     .media-upload-preview video {
       display: block;
       width: 100%;
-      max-height: 220px;
+      max-height: var(--preview-max-h, 280px);
       object-fit: contain;
       border-radius: 8px;
       background: #0f172a;
+    }
+
+    .media-size-row {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .media-size-row input[type="range"] {
+      width: 100%;
     }
 
     .media-url-optional {
@@ -3033,18 +3044,41 @@
       if (kind === "video") {
         return type.startsWith("video/") || /\.(mp4|webm|ogg|mov|m4v|mkv)(\?.*)?$/i.test(name);
       }
-      return type.startsWith("image/") || /\.(jpe?g|png|gif|webp|svg|heic|heif|bmp|avif)(\?.*)?$/i.test(name);
+      if (type.startsWith("image/")) return true;
+      if (/\.(jpe?g|png|gif|webp|svg|heic|heif|bmp|avif)(\?.*)?$/i.test(name)) return true;
+      if (!type || type === "application/octet-stream") {
+        return /\.(jpe?g|png|gif|webp|heic|heif)(\?.*)?$/i.test(name);
+      }
+      return false;
+    }
+
+    function resolveMediaBlockItem(target, pageId) {
+      const [bi, n] = String(target).split(":").map(Number);
+      const page = pageById(pageId || state.page);
+      const block = page?.blocks?.[bi];
+      const item = block?.items?.[n];
+      if (!block || !item) return null;
+      return { page, block, item, bi, n };
+    }
+
+    function mediaMaxHeightStyle(px) {
+      const h = Math.min(720, Math.max(120, Number(px) || 320));
+      return `--media-max-h:${h}px`;
     }
 
     function mediaPreviewPanel(target, pending) {
       const isVideo = pending.kind === "video";
       const src = pending.objectUrl || "";
+      const maxH = pending.previewMaxHeight || 280;
       const media = isVideo
-        ? `<video controls src="${src}" playsinline preload="metadata"></video>`
-        : `<img src="${src}" alt="Vista previa" />`;
+        ? `<video controls src="${src}" playsinline preload="metadata" style="--preview-max-h:${maxH}px"></video>`
+        : `<img src="${src}" alt="Vista previa" style="--preview-max-h:${maxH}px" />`;
       return `<div class="media-upload-preview">
         <p><strong>Vista previa</strong> · ${esc(pending.name)} · ${formatBytes(pending.size)}</p>
         ${media}
+        <label class="media-size-row">Alto en la slide: <strong data-media-height-label="${esc(target)}">${maxH}px</strong>
+          <input type="range" min="120" max="720" step="20" value="${maxH}" data-media-height-range="${esc(target)}" />
+        </label>
         <div class="compose-media-actions" style="margin-top:10px">
           <button type="button" class="btn" data-media-confirm="${esc(target)}">Usar este archivo</button>
           <button type="button" class="btn ghost" data-media-cancel="${esc(target)}">Cancelar</button>
@@ -3096,13 +3130,17 @@
       }
       clearMediaPreview(target);
       state.mediaPreview = state.mediaPreview || {};
+      const resolved = resolveMediaBlockItem(target, state.page);
+      const defaultHeight = resolved?.item?.mediaMaxHeight || 320;
       state.mediaPreview[target] = {
         kind,
         file,
         objectUrl: URL.createObjectURL(file),
         name: file.name || (kind === "video" ? "video" : "imagen"),
         size: file.size,
-        type: file.type || ""
+        type: file.type || "",
+        pageId: state.page,
+        previewMaxHeight: defaultHeight
       };
       render();
       return true;
@@ -3119,7 +3157,13 @@
 
     function compressImageFile(file) {
       const name = String(file.name || "").toLowerCase();
-      if (/\.(svg|heic|heif)$/i.test(name)) return readFileAsDataUrl(file);
+      const type = String(file.type || "").toLowerCase();
+      if (/\.(svg|heic|heif)$/i.test(name) || type.includes("heic") || type.includes("heif")) {
+        return readFileAsDataUrl(file);
+      }
+      if (type === "image/png" || type === "image/webp" || /\.(png|webp)$/i.test(name)) {
+        return readFileAsDataUrl(file);
+      }
       return new Promise((resolve, reject) => {
         const blobUrl = URL.createObjectURL(file);
         const img = new Image();
@@ -3159,14 +3203,17 @@
     async function commitMediaPreview(target) {
       const pending = state.mediaPreview?.[target];
       if (!pending) return;
-      const [bi, n] = target.split(":").map(Number);
-      const page = currentPage();
-      const block = page?.blocks?.[bi];
-      if (!block || !block.items?.[n]) {
+      const resolved = resolveMediaBlockItem(target, pending.pageId);
+      if (!resolved) {
         alert("No se encontró el bloque de medios. Vuelve a intentar.");
         return;
       }
-      const item = block.items[n];
+      const { item } = resolved;
+      const confirmBtn = document.querySelector(`[data-media-confirm="${target}"]`);
+      if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Guardando…";
+      }
       try {
         let dataUrl;
         if (pending.kind === "video") {
@@ -3174,25 +3221,35 @@
         } else {
           dataUrl = await compressImageFile(pending.file);
         }
+        if (!String(dataUrl || "").startsWith("data:")) {
+          throw new Error("invalid data url");
+        }
         item.url = dataUrl;
         item.src = dataUrl;
+        item.mediaMaxHeight = pending.previewMaxHeight || item.mediaMaxHeight || 320;
         clearMediaPreview(target);
         saveContent();
         render();
       } catch (err) {
         console.error(err);
-        alert("No se pudo procesar el archivo. Prueba otro formato o un archivo más pequeño.");
+        alert("No se pudo procesar el archivo. Prueba JPG o PNG, o un archivo más pequeño.");
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = "Usar este archivo";
+        }
       }
     }
 
     function renderPhoto(item) {
       const cap = esc(item.caption || "Photo");
       const src = item.src || item.url;
+      const sizeStyle = mediaMaxHeightStyle(item.mediaMaxHeight);
       if (src && isBlockedLocalPath(src)) {
         return `<figure class="photo"><div class="callout warn">Ruta local no válida. Usa el cuadro de subida.</div><figcaption>${cap}</figcaption></figure>`;
       }
       if (src) {
-        return `<figure class="photo"><img src="${esc(src)}" alt="${cap}" /><figcaption>${cap}</figcaption></figure>`;
+        const safeSrc = String(src).replace(/"/g, "&quot;");
+        return `<figure class="photo" style="${sizeStyle}"><img src="${safeSrc}" alt="${cap}" /><figcaption>${cap}</figcaption></figure>`;
       }
       return `<figure class="photo">${svgPreset(item.kind || "pump", item.caption || "Example photo")}<figcaption>${cap}</figcaption></figure>`;
     }
@@ -3211,7 +3268,9 @@
       if (yt) {
         body = `<iframe src="https://www.youtube.com/embed/${yt}" title="${title}" allowfullscreen height="200"></iframe>`;
       } else if (isFile) {
-        body = `<video controls src="${esc(item.url)}"></video>`;
+        const safeSrc = String(item.url).replace(/"/g, "&quot;");
+        const sizeStyle = mediaMaxHeightStyle(item.mediaMaxHeight);
+        body = `<video controls src="${safeSrc}" playsinline style="${sizeStyle}"></video>`;
       } else {
         body = `<div class="video-art"><button class="play" type="button" data-play-steps="${pageId}-${idx}">▶</button><div style="margin-top:8px">${title}</div><ol id="vidsteps-${pageId}-${idx}" style="display:none;font-size:12px;color:#9db0cc;text-align:left;padding-left:18px">${steps}</ol></div>`;
       }
@@ -3285,6 +3344,9 @@
               <label>Leyenda
                 <input type="text" value="${esc(item.caption || "")}" data-inline-photo-caption="${bi}:${n}" />
               </label>
+              ${hasFile ? `<label class="media-size-row">Alto en la slide (${item.mediaMaxHeight || 320}px)
+                <input type="range" min="120" max="720" step="20" value="${item.mediaMaxHeight || 320}" data-inline-media-height="${bi}:${n}" />
+              </label>` : ""}
               <div class="compose-media-actions">
                 <button type="button" class="btn ghost" data-clear-photo="${bi}:${n}">Quitar imagen</button>
               </div>
@@ -3312,6 +3374,9 @@
                   <input type="url" value="${ytOnly ? esc(it.url) : ""}" data-inline-video-url="${bi}:${i}" placeholder="https://www.youtube.com/..." />
                 </label>
               </details>
+              <label class="media-size-row">Alto en la slide (${it.mediaMaxHeight || 320}px)
+                <input type="range" min="120" max="720" step="20" value="${it.mediaMaxHeight || 320}" data-inline-media-height="${bi}:${i}" />
+              </label>
             </div>
           </div>`;
         }).join("");
@@ -5067,6 +5132,39 @@
       };
       reader.readAsText(file);
       e.target.value = "";
+    });
+
+    document.body.addEventListener("input", e => {
+      const previewRange = e.target.closest("[data-media-height-range]");
+      if (previewRange) {
+        const target = previewRange.getAttribute("data-media-height-range");
+        const pending = state.mediaPreview?.[target];
+        if (pending) {
+          pending.previewMaxHeight = Number(previewRange.value);
+          const label = document.querySelector(`[data-media-height-label="${target}"]`);
+          if (label) label.textContent = `${previewRange.value}px`;
+          const media = previewRange.closest(".media-upload-preview")?.querySelector("img, video");
+          if (media) media.style.setProperty("--preview-max-h", `${previewRange.value}px`);
+        }
+        return;
+      }
+      const savedRange = e.target.closest("[data-inline-media-height]");
+      if (savedRange) {
+        const [bi, n] = savedRange.dataset.inlineMediaHeight.split(":").map(Number);
+        const item = currentPage().blocks?.[bi]?.items?.[n];
+        if (item) {
+          item.mediaMaxHeight = Number(savedRange.value);
+          const wrap = savedRange.closest(".compose-media-item");
+          const figure = wrap?.querySelector(".photo, .video");
+          const mediaEl = wrap?.querySelector(".photo img, .video video");
+          const h = Math.min(720, Math.max(120, Number(savedRange.value)));
+          if (figure) figure.style.setProperty("--media-max-h", `${h}px`);
+          if (mediaEl) mediaEl.style.setProperty("--media-max-h", `${h}px`);
+          const label = savedRange.closest("label");
+          if (label) label.firstChild.textContent = `Alto en la slide (${savedRange.value}px) `;
+          saveContent();
+        }
+      }
     });
 
     document.body.addEventListener("change", e => {
