@@ -2267,6 +2267,34 @@
       color: #475569;
     }
 
+    .media-upload-wrap {
+      display: grid;
+      gap: 10px;
+    }
+
+    .media-upload-preview {
+      padding: 12px;
+      border: 1px solid #dbe3ed;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .media-upload-preview p {
+      margin: 0 0 8px;
+      font-size: 12px;
+      color: #475569;
+    }
+
+    .media-upload-preview img,
+    .media-upload-preview video {
+      display: block;
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #0f172a;
+    }
+
     .media-url-optional {
       margin-top: 4px;
       padding-top: 10px;
@@ -2634,6 +2662,7 @@
       installBrand: null,
       ui: { hotspot: {}, checks: {}, sim: {}, reveal: {} },
       photoTarget: null,
+      mediaPreview: {},
       logoUrl: _ds.logoUrl !== undefined ? _ds.logoUrl : (localStorage.getItem("iom-logo") || ""),
       logoPos: _ds.logoPos !== undefined ? _ds.logoPos : (localStorage.getItem("iom-logopos") || "top-right"),
       accentColor: _ds.accentColor !== undefined ? _ds.accentColor : (localStorage.getItem("iom-accent") || ""),
@@ -2983,68 +3012,177 @@
       </section>`;
     }
 
-    const MEDIA_MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-    const MEDIA_MAX_VIDEO_BYTES = 48 * 1024 * 1024;
+    const MEDIA_MAX_IMAGE_BYTES = 24 * 1024 * 1024;
+    const MEDIA_MAX_VIDEO_BYTES = 80 * 1024 * 1024;
+
+    function formatBytes(bytes) {
+      const n = Number(bytes) || 0;
+      if (n < 1024) return `${n} B`;
+      if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+      return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+    }
 
     function isBlockedLocalPath(value) {
       const v = String(value || "").trim();
       return /^file:/i.test(v) || /^[a-zA-Z]:\\/.test(v) || v.startsWith("/Users/") || v.startsWith("/home/");
     }
 
-    function mediaUploadZoneHtml(target, kind) {
-      const isVideo = kind === "video";
-      const accept = isVideo ? "video/mp4,video/webm,video/ogg" : "image/*";
-      const title = isVideo ? "Subir video desde el equipo" : "Subir imagen desde el equipo";
-      const hint = isVideo
-        ? "MP4, WebM u OGG. No pegues rutas del disco (file://…)."
-        : "JPG, PNG, WebP… No pegues rutas del disco (file://…).";
-      return `<label class="media-upload-zone" data-upload-zone="${esc(target)}" data-upload-kind="${kind}">
-        <input type="file" accept="${accept}" class="media-upload-input" data-upload-input="${esc(target)}" data-upload-kind="${kind}" hidden />
-        <span class="media-upload-badge">${isVideo ? "Video" : "Imagen"}</span>
-        <strong>${title}</strong>
-        <small>${hint}<br/>También puedes arrastrar el archivo aquí.</small>
-      </label>`;
+    function isAllowedMediaFile(file, kind) {
+      const name = String(file?.name || "").toLowerCase();
+      const type = String(file?.type || "").toLowerCase();
+      if (kind === "video") {
+        return type.startsWith("video/") || /\.(mp4|webm|ogg|mov|m4v|mkv)(\?.*)?$/i.test(name);
+      }
+      return type.startsWith("image/") || /\.(jpe?g|png|gif|webp|svg|heic|heif|bmp|avif)(\?.*)?$/i.test(name);
     }
 
-    function applyMediaFile(target, kind, file) {
+    function mediaPreviewPanel(target, pending) {
+      const isVideo = pending.kind === "video";
+      const src = pending.objectUrl || "";
+      const media = isVideo
+        ? `<video controls src="${src}" playsinline preload="metadata"></video>`
+        : `<img src="${src}" alt="Vista previa" />`;
+      return `<div class="media-upload-preview">
+        <p><strong>Vista previa</strong> · ${esc(pending.name)} · ${formatBytes(pending.size)}</p>
+        ${media}
+        <div class="compose-media-actions" style="margin-top:10px">
+          <button type="button" class="btn" data-media-confirm="${esc(target)}">Usar este archivo</button>
+          <button type="button" class="btn ghost" data-media-cancel="${esc(target)}">Cancelar</button>
+        </div>
+      </div>`;
+    }
+
+    function mediaUploadZoneHtml(target, kind) {
+      const isVideo = kind === "video";
+      const accept = isVideo
+        ? "video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.mov,.webm,.ogg"
+        : "image/*,.jpg,.jpeg,.png,.webp,.gif,.svg,.heic,.heif,.bmp,.avif";
+      const title = isVideo ? "Subir video desde el equipo" : "Subir imagen desde el equipo";
+      const hint = isVideo
+        ? "MP4, MOV o WebM. Revisa la vista previa antes de confirmar."
+        : "Foto de cámara, captura o dibujo (PNG, JPG, WebP…). Revisa la vista previa antes de confirmar.";
+      const pending = state.mediaPreview?.[target];
+      return `<div class="media-upload-wrap" data-media-wrap="${esc(target)}">
+        <label class="media-upload-zone" data-upload-zone="${esc(target)}" data-upload-kind="${kind}">
+          <input type="file" accept="${accept}" class="media-upload-input" data-upload-input="${esc(target)}" data-upload-kind="${kind}" hidden />
+          <span class="media-upload-badge">${isVideo ? "Video" : "Imagen"}</span>
+          <strong>${title}</strong>
+          <small>${hint}<br/>Clic o arrastra aquí. Luego confirma con «Usar este archivo».</small>
+        </label>
+        ${pending ? mediaPreviewPanel(target, pending) : ""}
+      </div>`;
+    }
+
+    function clearMediaPreview(target) {
+      const pending = state.mediaPreview?.[target];
+      if (pending?.objectUrl) URL.revokeObjectURL(pending.objectUrl);
+      if (state.mediaPreview) delete state.mediaPreview[target];
+    }
+
+    function queueMediaPreview(target, kind, file) {
       if (!file || !target) return false;
-      const expectVideo = kind === "video";
-      if (expectVideo && !file.type.startsWith("video/")) {
-        alert("Elige un archivo de video (MP4, WebM u OGG).");
-        return false;
-      }
-      if (!expectVideo && !file.type.startsWith("image/")) {
-        alert("Elige un archivo de imagen.");
+      if (!isAllowedMediaFile(file, kind)) {
+        alert(kind === "video"
+          ? "Formato no reconocido. Usa MP4, MOV o WebM, o un enlace de YouTube."
+          : "Formato no reconocido. Usa JPG, PNG, WebP u otro formato de imagen.");
         return false;
       }
       const max = kind === "video" ? MEDIA_MAX_VIDEO_BYTES : MEDIA_MAX_IMAGE_BYTES;
       if (file.size > max) {
         alert(kind === "video"
-          ? "El video es demasiado grande. Prueba un archivo más pequeño (máx. ~48 MB) o usa enlace de YouTube."
-          : "La imagen es demasiado grande (máx. ~8 MB).");
+          ? `El video pesa ${formatBytes(file.size)}. El máximo es ${formatBytes(MEDIA_MAX_VIDEO_BYTES)}. Prueba un clip más corto o YouTube.`
+          : `La imagen pesa ${formatBytes(file.size)}. El máximo es ${formatBytes(MEDIA_MAX_IMAGE_BYTES)}.`);
         return false;
       }
+      clearMediaPreview(target);
+      state.mediaPreview = state.mediaPreview || {};
+      state.mediaPreview[target] = {
+        kind,
+        file,
+        objectUrl: URL.createObjectURL(file),
+        name: file.name || (kind === "video" ? "video" : "imagen"),
+        size: file.size,
+        type: file.type || ""
+      };
+      render();
+      return true;
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error("read failed"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function compressImageFile(file) {
+      const name = String(file.name || "").toLowerCase();
+      if (/\.(svg|heic|heif)$/i.test(name)) return readFileAsDataUrl(file);
+      return new Promise((resolve, reject) => {
+        const blobUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+          const maxDim = 2048;
+          let { width, height } = img;
+          const scale = Math.min(1, maxDim / Math.max(width, height, 1));
+          width = Math.max(1, Math.round(width * scale));
+          height = Math.max(1, Math.round(height * scale));
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            readFileAsDataUrl(file).then(resolve, reject);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          let dataUrl;
+          try {
+            dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+          } catch {
+            readFileAsDataUrl(file).then(resolve, reject);
+            return;
+          }
+          resolve(dataUrl);
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(blobUrl);
+          readFileAsDataUrl(file).then(resolve, reject);
+        };
+        img.src = blobUrl;
+      });
+    }
+
+    async function commitMediaPreview(target) {
+      const pending = state.mediaPreview?.[target];
+      if (!pending) return;
       const [bi, n] = target.split(":").map(Number);
-      const block = currentPage().blocks?.[bi];
-      if (!block) return false;
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (kind === "video") {
-          const item = block.items[n];
-          if (!item) return;
-          item.url = reader.result;
-          item.src = reader.result;
+      const page = currentPage();
+      const block = page?.blocks?.[bi];
+      if (!block || !block.items?.[n]) {
+        alert("No se encontró el bloque de medios. Vuelve a intentar.");
+        return;
+      }
+      const item = block.items[n];
+      try {
+        let dataUrl;
+        if (pending.kind === "video") {
+          dataUrl = await readFileAsDataUrl(pending.file);
         } else {
-          const item = block.items[n];
-          if (!item) return;
-          item.src = reader.result;
-          item.url = reader.result;
+          dataUrl = await compressImageFile(pending.file);
         }
+        item.url = dataUrl;
+        item.src = dataUrl;
+        clearMediaPreview(target);
         saveContent();
         render();
-      };
-      reader.readAsDataURL(file);
-      return true;
+      } catch (err) {
+        console.error(err);
+        alert("No se pudo procesar el archivo. Prueba otro formato o un archivo más pequeño.");
+      }
     }
 
     function renderPhoto(item) {
@@ -3067,7 +3205,8 @@
         return `<figure class="video"><div class="callout warn">Ruta local no válida. Usa el cuadro de subida.</div><figcaption>${title}</figcaption></figure>`;
       }
       const yt = youtubeId(rawUrl);
-      const isFile = /^data:video\//i.test(rawUrl) || /\.(mp4|webm|ogg)(\?|$)/i.test(rawUrl);
+      const isFile = /^data:video\//i.test(rawUrl) || /^blob:/i.test(rawUrl)
+        || /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(rawUrl);
       let body;
       if (yt) {
         body = `<iframe src="https://www.youtube.com/embed/${yt}" title="${title}" allowfullscreen height="200"></iframe>`;
@@ -4935,7 +5074,7 @@
       if (!input) return;
       const file = input.files?.[0];
       if (!file) return;
-      applyMediaFile(input.dataset.uploadInput, input.dataset.uploadKind, file);
+      queueMediaPreview(input.dataset.uploadInput, input.dataset.uploadKind, file);
       input.value = "";
     });
 
@@ -4959,7 +5098,22 @@
       zone.classList.remove("drag-over");
       const file = e.dataTransfer?.files?.[0];
       if (!file) return;
-      applyMediaFile(zone.getAttribute("data-upload-zone"), zone.getAttribute("data-upload-kind"), file);
+      queueMediaPreview(zone.getAttribute("data-upload-zone"), zone.getAttribute("data-upload-kind"), file);
+    });
+
+    document.body.addEventListener("click", e => {
+      const confirm = e.target.closest("[data-media-confirm]");
+      if (confirm) {
+        e.preventDefault();
+        void commitMediaPreview(confirm.getAttribute("data-media-confirm"));
+        return;
+      }
+      const cancel = e.target.closest("[data-media-cancel]");
+      if (cancel) {
+        e.preventDefault();
+        clearMediaPreview(cancel.getAttribute("data-media-cancel"));
+        render();
+      }
     });
 
     document.getElementById("editor").addEventListener("dragover", e => {
@@ -4979,7 +5133,7 @@
       zone.classList.remove("drag-over");
       const file = e.dataTransfer?.files?.[0];
       if (!file) return;
-      applyMediaFile(zone.getAttribute("data-upload-zone"), zone.getAttribute("data-upload-kind"), file);
+      queueMediaPreview(zone.getAttribute("data-upload-zone"), zone.getAttribute("data-upload-kind"), file);
     });
 
     function grade(id) {
