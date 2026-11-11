@@ -22,6 +22,7 @@ export type ManualSlideKind =
   | "chapter"
   | "subchapter"
   | "content"
+  | "continuation"
   | "review";
 
 export type ManualBlock =
@@ -93,6 +94,10 @@ export type ManualPage = {
   quiz?: ManualQuizQuestion[];
   /** Alineado con build-content.mjs (H1 vs H2 vs contenido). */
   sectionLevel?: ManualSectionLevel;
+  /** Slide id del tema al que sigue (mismo título/kicker, sin entrada nueva en el índice). */
+  continuationOf?: string;
+  /** Título de sección mostrado (caché del ancla). */
+  sectionTitle?: string;
   blocks: ManualBlock[];
 };
 

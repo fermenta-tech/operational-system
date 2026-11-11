@@ -2558,6 +2558,31 @@
       margin-top: 12px;
     }
 
+    .continuation-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h2.title-continued {
+      margin-top: 0;
+    }
+
+    h2.title-continued::after {
+      content: " · continuación";
+      font-size: 0.42em;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--muted);
+      vertical-align: middle;
+      margin-left: 0.35em;
+    }
+
     .layout-content h2,
     .layout-recap h2 {
       max-width: 18ch;
@@ -2909,7 +2934,45 @@
       return id === "t01" || id === "cover" || id === "toc";
     }
 
+    function isContinuationPage(page) {
+      return page?.slideKind === "continuation" || !!page?.continuationOf;
+    }
+
+    function sectionAnchorPage(page) {
+      if (!page) return null;
+      if (page.continuationOf) {
+        const explicit = pageById(page.continuationOf);
+        if (explicit) return explicit;
+      }
+      const chapter = page.chapter || page.group;
+      const peers = pages().filter(p =>
+        !isPinnedOutlinePage(p) &&
+        (p.chapter || p.group) === chapter &&
+        p.group === page.group
+      );
+      return peers.find(p => !isContinuationPage(p)) || peers[0] || page;
+    }
+
+    function inheritedSectionTitle(page) {
+      const anchor = sectionAnchorPage(page);
+      return page.sectionTitle || anchor?.title || page.title || "";
+    }
+
+    function syncContinuationTitles(anchorId) {
+      const anchor = pageById(anchorId);
+      if (!anchor) return;
+      pages().forEach(p => {
+        if (p.id === anchorId) return;
+        if (p.continuationOf === anchorId || (isContinuationPage(p) && sectionAnchorPage(p)?.id === anchorId)) {
+          p.sectionTitle = anchor.title;
+          p.kicker = anchor.kicker;
+          p.title = anchor.title;
+        }
+      });
+    }
+
     function inferSectionLevel(page) {
+      if (isContinuationPage(page)) return "content";
       if (page.sectionLevel) return page.sectionLevel;
       if (page.kicker?.startsWith("Subchapter") || page.kicker?.startsWith("Submódulo")) return "subchapter";
       if (page.kicker === "Content" || page.kicker === "Contenido") return "content";
@@ -3801,6 +3864,7 @@
       return `<div class="compose-add">
         <span>Agregar</span>
         ${kinds.map(([type, label]) => `<button type="button" data-add-inline="${type}">${label}</button>`).join("")}
+        <button type="button" data-add-continuation title="Mismo título y subtítulo que esta slide">Continuación</button>
         <button type="button" data-del-slide>Quitar slide</button>
       </div>`;
     }
@@ -3868,6 +3932,10 @@
       const page = pageById(state.page);
       applyPageColors(page);
       state.page = page.id;
+      const isCont = isContinuationPage(page);
+      const anchor = isCont ? sectionAnchorPage(page) : null;
+      const displayTitle = isCont ? inheritedSectionTitle(page) : page.title;
+      const displayKicker = isCont ? (anchor?.kicker || page.kicker) : page.kicker;
       const closer = isCloser(page);
       const layout = slideLayout(page);
       const name = state.operator.trim();
@@ -3895,9 +3963,12 @@
           ${logoHtmlTop}
           <div class="slide-content-wrapper" style="margin: auto 0;">
             <p class="hello">${hello}</p>
-            <p class="kicker" ${state.compose ? 'contenteditable="true" data-inline-p="kicker"' : ''}>${esc(page.kicker)}</p>
-            <h2 ${state.admin ? 'contenteditable="true" data-inline-p="title"' : ''}>${esc(page.title)}</h2>
-            <p class="lead" ${state.admin ? 'contenteditable="true" data-inline-p="lead"' : ''}>${esc(page.lead)}</p>
+            ${isCont && state.compose && anchor ? `<p class="continuation-hint">Sigue el mismo encabezado que «${esc(anchor.title)}». <button type="button" class="btn ghost" data-go="${esc(anchor.id)}">Ir al inicio del tema</button></p>` : ""}
+            <p class="kicker" ${state.compose && !isCont ? 'contenteditable="true" data-inline-p="kicker"' : ''}>${esc(displayKicker)}</p>
+            ${isCont
+              ? `<h2 class="title-continued">${esc(displayTitle)}</h2>`
+              : `<h2 ${state.admin ? 'contenteditable="true" data-inline-p="title"' : ''}>${esc(page.title)}</h2>`}
+            ${(isCont && !String(page.lead || "").trim() && !state.compose) ? "" : `<p class="lead" ${state.compose && !isCont ? 'contenteditable="true" data-inline-p="lead"' : (state.compose && isCont ? 'contenteditable="true" data-inline-p="lead" placeholder="Opcional en continuación"' : (state.admin ? 'contenteditable="true" data-inline-p="lead"' : ""))}>${esc(page.lead || "")}</p>`}
             ${(page.blocks || []).map((b, i) => composeWrap(renderBlock(b, page.id, i), i)).join("")}
             ${composeBar()}
             ${closer ? narratorCard(page) : ""}
@@ -3918,7 +3989,14 @@
       if (page.slideKind === "quiz") return "Cuestionario";
       if (page.slideKind === "chapter" || page.sectionLevel === "chapter") return "Módulo";
       if (page.slideKind === "subchapter" || page.sectionLevel === "subchapter") return "Submódulo";
+      if (isContinuationPage(page)) return "Continuación";
       return "Slide";
+    }
+
+    function pageNavLabel(page) {
+      if (!isContinuationPage(page)) return page.title;
+      const snippet = String(page.blocks?.[0]?.text || page.lead || "").trim().slice(0, 36);
+      return snippet ? `↳ ${snippet}` : "↳ Continuación";
     }
 
     function renderNav() {
@@ -3966,7 +4044,7 @@
             const done = isCloser(p) && state.done[p.id]?.pass;
             const kind = state.compose ? `<small>${esc(pageKindLabel(p))}</small> ` : "";
             const pageReorder = state.compose ? navReorderHtml("data-move-outline-page", p.id) : "";
-            return `<div class="nav-page-row">${pageReorder}<button class="${p.id === state.page ? "active" : ""} ${read ? "read" : ""} ${done ? "done" : ""}" data-go="${esc(p.id)}">${kind}<span class="dot"></span>${esc(p.title)}</button></div>`;
+            return `<div class="nav-page-row">${pageReorder}<button class="${p.id === state.page ? "active" : ""} ${read ? "read" : ""} ${done ? "done" : ""}" data-go="${esc(p.id)}">${kind}<span class="dot"></span>${esc(pageNavLabel(p))}</button></div>`;
           }).join("")}</div>`;
         }).join("");
         return `<section class="nav-chapter">${chapterHead}<div class="nav-subchapters">${groupHtml}</div></section>`;
@@ -3980,6 +4058,7 @@
             <button type="button" data-preset="module">Módulo</button>
             <button type="button" data-preset="submodule">Submódulo</button>
             <button type="button" data-preset="slide">Slide</button>
+            <button type="button" data-preset="continuation" title="Sigue el mismo título/subtítulo del tema actual">Continuación</button>
           </div>
           <p>Preformato</p>
           <div class="nav-create-row">
@@ -4597,6 +4676,14 @@
           page.chapter = page.title;
           renderNav();
         }
+        if (field === "title" && !isContinuationPage(page)) {
+          syncContinuationTitles(page.id);
+        }
+        if (field === "kicker" && !isContinuationPage(page)) {
+          pages().forEach(p => {
+            if (p.continuationOf === page.id) p.kicker = page.kicker;
+          });
+        }
         saveContent();
       } else if (e.target.matches("[data-inline-q]")) {
         const question = (currentPage().quiz || [])[Number(e.target.dataset.inlineQ)];
@@ -4722,18 +4809,52 @@
     });
 
     function insertSlideAfterCurrent() {
+      const cur = currentPage();
       const id = "sec-" + Date.now();
       content.pages.splice(pages().findIndex(p => p.id === state.page) + 1, 0, {
         id,
-        chapter: currentPage().chapter || "Manual",
-        group: currentPage().group || "Contenido",
+        chapter: cur.chapter || "Manual",
+        group: cur.group || "Contenido",
         anchor: "",
         title: "Nueva slide",
-        kicker: "Contenido",
+        kicker: cur.kicker || "Contenido",
         lead: "Escribe la idea principal.",
+        slideKind: "content",
+        sectionLevel: "content",
         audio: "",
         summary: { en: "", es: "" },
         blocks: [{ type: "text", text: "Nuevo párrafo" }],
+        quiz: []
+      });
+      state.page = id;
+      saveContent();
+      render();
+    }
+
+    function insertContinuationAfterCurrent() {
+      const cur = currentPage();
+      if (isPinnedOutlinePage(cur)) {
+        alert("Crea primero un módulo o slide de contenido; la continuación no aplica en carátula o índice.");
+        return;
+      }
+      const anchor = isContinuationPage(cur) ? sectionAnchorPage(cur) : cur;
+      if (!anchor) return;
+      const id = "sec-" + Date.now();
+      content.pages.splice(pages().findIndex(p => p.id === state.page) + 1, 0, {
+        id,
+        chapter: anchor.chapter,
+        group: anchor.group,
+        anchor: "",
+        title: anchor.title,
+        sectionTitle: anchor.title,
+        continuationOf: anchor.id,
+        slideKind: "continuation",
+        sectionLevel: "content",
+        kicker: anchor.kicker,
+        lead: "",
+        audio: "",
+        summary: { en: "", es: "" },
+        blocks: [{ type: "text", text: "Continúa el tema aquí." }],
         quiz: []
       });
       state.page = id;
@@ -4855,6 +4976,12 @@
         }, "after-chapter");
         return;
       }
+      if (kind === "continuation") {
+        const prev = state.page;
+        insertContinuationAfterCurrent();
+        if (state.page !== prev) return;
+        return;
+      }
       const cur = currentPage();
       placePage({
         id,
@@ -4897,7 +5024,7 @@
 
     document.body.addEventListener("click", e => {
       if (state.compose) {
-        const mutates = e.target.closest("[data-preset], [data-add-inline], [data-del-inline], [data-move-block], [data-add-slide], [data-del-slide], [data-add-q], [data-set-correct], [data-add-opt], [data-del-opt], [data-del-q], [data-equip-remove], [data-equip-slide], [data-del-toc-entry], [data-move-toc-page], [data-move-chapter], [data-move-group], [data-move-outline-page], [data-clear-photo]");
+        const mutates = e.target.closest("[data-preset], [data-add-inline], [data-del-inline], [data-move-block], [data-add-slide], [data-add-continuation], [data-del-slide], [data-add-q], [data-set-correct], [data-add-opt], [data-del-opt], [data-del-q], [data-equip-remove], [data-equip-slide], [data-del-toc-entry], [data-move-toc-page], [data-move-chapter], [data-move-group], [data-move-outline-page], [data-clear-photo]");
         if (mutates) remember();
         const equipRemove = e.target.closest("[data-equip-remove]");
         if (equipRemove) {
@@ -5098,6 +5225,11 @@
         if (e.target.closest("[data-add-slide]")) {
           e.preventDefault();
           insertSlideAfterCurrent();
+          return;
+        }
+        if (e.target.closest("[data-add-continuation]")) {
+          e.preventDefault();
+          insertContinuationAfterCurrent();
           return;
         }
         if (e.target.closest("[data-del-slide]")) {

@@ -7,6 +7,7 @@ export function inferSlideKind(page: ManualPage): ManualSlideKind {
   if (page.id === MANUAL_TOC_ID) return "toc";
   if (page.id.startsWith("review-")) return "review";
   if (page.sectionLevel === "subchapter") return "subchapter";
+  if (page.slideKind === "continuation" || page.continuationOf) return "continuation";
   if (page.sectionLevel === "content") return "content";
   return "chapter";
 }
@@ -26,6 +27,7 @@ export function slideKindLabel(kind: ManualSlideKind): string {
     chapter: "Capítulo",
     subchapter: "Subcapítulo",
     content: "Contenido",
+    continuation: "Continuación",
     review: "Resumen y evaluación",
   };
   return labels[kind];
