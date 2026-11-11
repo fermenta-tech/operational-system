@@ -177,10 +177,39 @@
       overflow: hidden;
     }
 
-    #nav {
-      overflow: auto;
+    .nav-shell {
+      flex: 1 1 auto;
       min-height: 0;
-      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav-scroll {
+      flex: 1 1 auto;
+      min-height: 140px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      margin: 0 -2px;
+      padding: 2px 4px 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, .65) transparent;
+    }
+
+    .nav-scroll::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .nav-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, .55);
+      border-radius: 999px;
+    }
+
+    #nav {
+      overflow: visible;
+      min-height: 0;
+      flex: none;
     }
 
     aside.nav h1 {
@@ -2002,6 +2031,62 @@
       margin-left: 8px;
     }
 
+    .nav-chapter-head,
+    .nav-group-head,
+    .nav-page-row {
+      display: flex;
+      align-items: stretch;
+      gap: 4px;
+    }
+
+    .nav-chapter-head .chapter-nav,
+    .nav-group-head .subchapter-nav,
+    .nav-page-row > button[data-go] {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .nav-reorder {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .nav-reorder button {
+      border: 1px solid #dfe6ee;
+      background: #fff;
+      color: #64748b;
+      border-radius: 6px;
+      width: 26px;
+      min-height: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .nav-reorder button:hover {
+      border-color: var(--accent, #c45c26);
+      color: var(--accent, #c45c26);
+    }
+
+    .toc-row-actions {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .toc-row-actions .btn.ghost {
+      font-size: 11px;
+      padding: 4px 8px;
+      min-height: 26px;
+    }
+
     .nav-create {
       display: grid;
       gap: 8px;
@@ -2177,6 +2262,7 @@
 
     .toc-card-row .toc-card {
       flex: 1;
+      min-width: 0;
     }
 
     .toc-card-row .btn.danger {
@@ -2621,7 +2707,7 @@
           <button type="button" id="roleAd">Administrator</button>
         </div>
       </div>
-      <div class="op-box">
+      <div class="op-box" id="opBox">
         <label for="operator">Operator name</label>
         <input id="operator" placeholder="Type your name" />
       </div>
@@ -2632,8 +2718,12 @@
           <button type="button" id="themeLight" class="on">Light</button>
         </div>
       </div>
-      <nav id="nav"></nav>
-      <div id="navCreate"></div>
+      <div class="nav-shell">
+        <div class="nav-scroll" id="navScroll">
+          <nav id="nav"></nav>
+        </div>
+        <div id="navCreate"></div>
+      </div>
       <div class="progress-box">
         Training progress
         <div class="bar"><span id="bar"></span></div>
@@ -2848,10 +2938,121 @@
             <i>Open →</i>
           </a>`;
           if (!state.compose) return card;
-          return `<div class="toc-card-row">${card}<button type="button" class="btn danger" data-del-toc-entry="${esc(p.id)}">Quitar</button></div>`;
+          return `<div class="toc-card-row">${card}<div class="toc-row-actions">
+            <button type="button" class="btn ghost" data-move-toc-page="${esc(p.id)}" data-dir="-1" title="Subir">↑</button>
+            <button type="button" class="btn ghost" data-move-toc-page="${esc(p.id)}" data-dir="1" title="Bajar">↓</button>
+            <button type="button" class="btn danger" data-del-toc-entry="${esc(p.id)}">Quitar</button>
+          </div></div>`;
         })
         .join("");
       return `<div class="toc-grid">${links}</div>`;
+    }
+
+    function isPinnedOutlinePage(p) {
+      return isStructuralPageId(p.id);
+    }
+
+    function orderedChapters() {
+      const out = [];
+      pages().forEach(p => {
+        if (isPinnedOutlinePage(p)) return;
+        const ch = p.chapter || p.group || "";
+        if (ch && !out.includes(ch)) out.push(ch);
+      });
+      return out;
+    }
+
+    function pagesInChapter(chapter) {
+      return pages().filter(p => !isPinnedOutlinePage(p) && (p.chapter || p.group) === chapter);
+    }
+
+    function orderedGroups(chapter) {
+      const out = [];
+      pagesInChapter(chapter).forEach(p => {
+        const g = p.group || "";
+        if (g && !out.includes(g)) out.push(g);
+      });
+      return out;
+    }
+
+    function pagesInGroup(chapter, group) {
+      return pages().filter(p =>
+        !isPinnedOutlinePage(p) &&
+        (p.chapter || p.group) === chapter &&
+        p.group === group
+      );
+    }
+
+    function rebuildPagesFromOutline(chapterOrder) {
+      const prefix = pages().filter(p => isPinnedOutlinePage(p));
+      const tail = pages().filter(p => String(p.id).startsWith("review-"));
+      const body = chapterOrder.flatMap(ch => pagesInChapter(ch));
+      content.pages = [...prefix, ...body, ...tail];
+    }
+
+    function moveChapterBlock(chapter, dir) {
+      const order = orderedChapters();
+      const i = order.indexOf(chapter);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= order.length) return;
+      const next = order.slice();
+      [next[i], next[j]] = [next[j], next[i]];
+      rebuildPagesFromOutline(next);
+      saveContent();
+      render();
+    }
+
+    function moveGroupBlock(chapter, group, dir) {
+      const groups = orderedGroups(chapter);
+      const i = groups.indexOf(group);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= groups.length) return;
+      const groupOrder = groups.slice();
+      [groupOrder[i], groupOrder[j]] = [groupOrder[j], groupOrder[i]];
+      const chapterOrder = orderedChapters();
+      const body = [];
+      chapterOrder.forEach(ch => {
+        if (ch === chapter) body.push(...groupOrder.flatMap(g => pagesInGroup(ch, g)));
+        else body.push(...pagesInChapter(ch));
+      });
+      const prefix = pages().filter(p => isPinnedOutlinePage(p));
+      const tail = pages().filter(p => String(p.id).startsWith("review-"));
+      content.pages = [...prefix, ...body, ...tail];
+      saveContent();
+      render();
+    }
+
+    function moveOutlinePage(pageId, dir) {
+      const list = content.pages;
+      const page = list.find(p => p.id === pageId);
+      if (!page || isPinnedOutlinePage(page)) return;
+      const level = inferSectionLevel(page);
+      if (level === "chapter") {
+        moveChapterBlock(page.chapter || page.group, dir);
+        return;
+      }
+      if (level === "subchapter") {
+        moveGroupBlock(page.chapter || page.group, page.group, dir);
+        return;
+      }
+      const i = list.findIndex(p => p.id === pageId);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= list.length) return;
+      const other = list[j];
+      if (isPinnedOutlinePage(other)) return;
+      if ((other.chapter || other.group) !== (page.chapter || page.group) || other.group !== page.group) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      saveContent();
+      render();
+    }
+
+    function navReorderHtml(attrName, value) {
+      if (!state.compose) return "";
+      const val = esc(value);
+      return `<span class="nav-reorder">
+        <button type="button" title="Subir" ${attrName}="${val}" data-dir="-1">↑</button>
+        <button type="button" title="Bajar" ${attrName}="${val}" data-dir="1">↓</button>
+      </span>`;
     }
 
     function syncTocPage() {
@@ -3738,27 +3939,34 @@
         const groups = [];
         chapterPages.forEach(p => { if (!groups.includes(p.group)) groups.push(p.group); });
         const chapterHead = `
-          <button class="chapter-nav ${chapterOpen ? "open" : ""} ${passed ? "done" : ""}" data-go="${esc(chapterPages[0].id)}">
-            <span><b>${esc(chapter)}</b><small>${chapterRead}/${chapterPages.length} read${passed ? " · quiz passed" : ""}</small></span>
-            <i>${chapterOpen ? "−" : "+"}</i>
-          </button>`;
-        if (!chapterOpen) return chapterHead;
+          <div class="nav-chapter-head">
+            ${navReorderHtml("data-move-chapter", chapter)}
+            <button class="chapter-nav ${chapterOpen ? "open" : ""} ${passed ? "done" : ""}" data-go="${esc(chapterPages[0].id)}">
+              <span><b>${esc(chapter)}</b><small>${chapterRead}/${chapterPages.length} read${passed ? " · quiz passed" : ""}</small></span>
+              <i>${chapterOpen ? "−" : "+"}</i>
+            </button>
+          </div>`;
+        if (!chapterOpen) return `<section class="nav-chapter">${chapterHead}</section>`;
 
         const groupHtml = groups.map(group => {
           const items = chapterPages.filter(p => p.group === group);
           const groupOpen = current.group === group;
           const groupRead = items.filter(p => state.read[p.id]).length;
           const groupHead = `
-            <button class="subchapter-nav ${groupOpen ? "open" : ""}" data-go="${esc(items[0].id)}">
-              <span>${esc(group)}<small>${groupRead}/${items.length}</small></span>
-              <i>${groupOpen ? "−" : "+"}</i>
-            </button>`;
+            <div class="nav-group-head">
+              ${navReorderHtml("data-move-group", `${chapter}\u241f${group}`)}
+              <button class="subchapter-nav ${groupOpen ? "open" : ""}" data-go="${esc(items[0].id)}">
+                <span>${esc(group)}<small>${groupRead}/${items.length}</small></span>
+                <i>${groupOpen ? "−" : "+"}</i>
+              </button>
+            </div>`;
           if (!groupOpen || (items.length === 1 && !state.compose)) return groupHead;
           return groupHead + `<div class="nav-pages">${items.map(p => {
             const read = !!state.read[p.id];
             const done = isCloser(p) && state.done[p.id]?.pass;
             const kind = state.compose ? `<small>${esc(pageKindLabel(p))}</small> ` : "";
-            return `<button class="${p.id === state.page ? "active" : ""} ${read ? "read" : ""} ${done ? "done" : ""}" data-go="${esc(p.id)}">${kind}<span class="dot"></span>${esc(p.title)}</button>`;
+            const pageReorder = state.compose ? navReorderHtml("data-move-outline-page", p.id) : "";
+            return `<div class="nav-page-row">${pageReorder}<button class="${p.id === state.page ? "active" : ""} ${read ? "read" : ""} ${done ? "done" : ""}" data-go="${esc(p.id)}">${kind}<span class="dot"></span>${esc(p.title)}</button></div>`;
           }).join("")}</div>`;
         }).join("");
         return `<section class="nav-chapter">${chapterHead}<div class="nav-subchapters">${groupHtml}</div></section>`;
@@ -4076,6 +4284,7 @@
         if (sideSub) sideSub.textContent = state.compose ? "Edición en el visor" : (VIEWER_PUBLISHED ? "Publicado" : "Borrador");
       }
       document.querySelector("aside.nav .role-box")?.classList.toggle("hidden", VIEWER_PUBLISHED);
+      document.getElementById("opBox")?.classList.toggle("hidden", state.admin || state.compose);
       renderPage();
       renderNav();
       renderEditor();
@@ -4688,7 +4897,7 @@
 
     document.body.addEventListener("click", e => {
       if (state.compose) {
-        const mutates = e.target.closest("[data-preset], [data-add-inline], [data-del-inline], [data-move-block], [data-add-slide], [data-del-slide], [data-add-q], [data-set-correct], [data-add-opt], [data-del-opt], [data-del-q], [data-equip-remove], [data-equip-slide], [data-del-toc-entry], [data-clear-photo]");
+        const mutates = e.target.closest("[data-preset], [data-add-inline], [data-del-inline], [data-move-block], [data-add-slide], [data-del-slide], [data-add-q], [data-set-correct], [data-add-opt], [data-del-opt], [data-del-q], [data-equip-remove], [data-equip-slide], [data-del-toc-entry], [data-move-toc-page], [data-move-chapter], [data-move-group], [data-move-outline-page], [data-clear-photo]");
         if (mutates) remember();
         const equipRemove = e.target.closest("[data-equip-remove]");
         if (equipRemove) {
@@ -4781,6 +4990,36 @@
           if (!snapshot) return;
           remember();
           restoreContent(snapshot);
+          return;
+        }
+        const moveToc = e.target.closest("[data-move-toc-page]");
+        if (moveToc) {
+          e.preventDefault();
+          e.stopPropagation();
+          moveOutlinePage(moveToc.getAttribute("data-move-toc-page"), Number(moveToc.dataset.dir));
+          return;
+        }
+        const moveChapter = e.target.closest("[data-move-chapter]");
+        if (moveChapter) {
+          e.preventDefault();
+          e.stopPropagation();
+          moveChapterBlock(moveChapter.getAttribute("data-move-chapter"), Number(moveChapter.dataset.dir));
+          return;
+        }
+        const moveGroup = e.target.closest("[data-move-group]");
+        if (moveGroup) {
+          e.preventDefault();
+          e.stopPropagation();
+          const raw = moveGroup.getAttribute("data-move-group") || "";
+          const [chapter, group] = raw.split("\u241f");
+          if (chapter && group) moveGroupBlock(chapter, group, Number(moveGroup.dataset.dir));
+          return;
+        }
+        const moveOutline = e.target.closest("[data-move-outline-page]");
+        if (moveOutline) {
+          e.preventDefault();
+          e.stopPropagation();
+          moveOutlinePage(moveOutline.getAttribute("data-move-outline-page"), Number(moveOutline.dataset.dir));
           return;
         }
         const delToc = e.target.closest("[data-del-toc-entry]");
@@ -4962,6 +5201,11 @@
       const sl = e.target.closest("[data-slide]");
       if (sl && !sl.disabled) {
         goRel(Number(sl.getAttribute("data-slide")));
+        return;
+      }
+      const goReorder = e.target.closest("[data-move-chapter], [data-move-group], [data-move-outline-page], [data-move-toc-page]");
+      if (goReorder) {
+        e.preventDefault();
         return;
       }
       const go = e.target.closest("[data-go]");
